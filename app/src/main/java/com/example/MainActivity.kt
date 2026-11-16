@@ -59,6 +59,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -95,7 +96,7 @@ import com.example.ui.path.rememberModulePathStateHolder
 import com.example.ui.quiz.QuizScreen
 import com.example.ui.saved.SavedScreen
 import com.example.ui.simulators.SimulatorsScreen
-import com.example.ui.theme.BelajarMriTheme
+import com.example.ui.theme.CtLearnTheme
 import com.example.ui.theme.CardSlateBorder
 import com.example.ui.theme.CyanBright
 import com.example.ui.theme.CyanDark
@@ -103,10 +104,10 @@ import com.example.ui.theme.DarkNavySlate
 import com.example.ui.theme.DeepObsidian
 import com.example.ui.theme.TextMuted
 import com.example.viewmodel.MainTab
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtViewModel
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: MriViewModel by viewModels()
+    private val viewModel: CtViewModel by viewModels()
 
     private var lastCheckedDate: java.time.LocalDate = java.time.LocalDate.now()
 
@@ -162,7 +163,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            BelajarMriTheme {
+            CtLearnTheme {
+                val saveableStateHolder = rememberSaveableStateHolder()
                 val state by viewModel.uiState.collectAsState()
                 val pathHolder = rememberModulePathStateHolder()
                 var isArcadeOpen by rememberSaveable { mutableStateOf(PathNavigationHints.isArcadeOpen) }
@@ -199,7 +201,7 @@ class MainActivity : ComponentActivity() {
                             exit = ExitTransition.None
                         ) {
                             val savedCount = state.bookmarkedNodeCodes.size + state.bookmarkedGlossaryTerms.size
-                            MriBottomNavigationBar(
+                            CtBottomNavigationBar(
                                 currentTab = state.currentTab,
                                 isModuleDetailOpen = state.selectedModule != null,
                                 isArcadeOpen = isArcadeOpen,
@@ -250,15 +252,17 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel
                                 )
                             } else {
-                                when (state.currentTab) {
-                                    MainTab.BERANDA -> HomeScreen(state = state, viewModel = viewModel)
-                                    MainTab.ANIMASI -> LearningAnimationScreen(state = state, viewModel = viewModel)
-                                    MainTab.SIMULASI -> SimulatorsScreen(state = state, viewModel = viewModel)
-                                    MainTab.TERSIMPAN -> SavedScreen(state = state, viewModel = viewModel)
-                                    MainTab.CATATAN -> NotesScreen(state = state, viewModel = viewModel)
-                                    MainTab.GLOSARIUM -> GlossaryScreen(state = state, viewModel = viewModel)
-                                    MainTab.KUIS -> QuizScreen(state = state, viewModel = viewModel)
-                                    MainTab.KARAKTER -> CharacterRoomScreen(state = state, viewModel = viewModel)
+                                saveableStateHolder.SaveableStateProvider(key = "tab_${state.currentTab.name}") {
+                                    when (state.currentTab) {
+                                        MainTab.BERANDA -> HomeScreen(state = state, viewModel = viewModel)
+                                        MainTab.ANIMASI -> LearningAnimationScreen(state = state, viewModel = viewModel)
+                                        MainTab.SIMULASI -> SimulatorsScreen(state = state, viewModel = viewModel)
+                                        MainTab.TERSIMPAN -> SavedScreen(state = state, viewModel = viewModel)
+                                        MainTab.CATATAN -> NotesScreen(state = state, viewModel = viewModel)
+                                        MainTab.GLOSARIUM -> GlossaryScreen(state = state, viewModel = viewModel)
+                                        MainTab.KUIS -> QuizScreen(state = state, viewModel = viewModel)
+                                        MainTab.KARAKTER -> CharacterRoomScreen(state = state, viewModel = viewModel)
+                                    }
                                 }
                             }
                         }
@@ -274,7 +278,7 @@ class MainActivity : ComponentActivity() {
                             LoadingScreen(
                                 customMessage = when {
                                     isAppOpeningLoading -> null
-                                    isArcadeLoading -> "Arcade & Minigame MRI"
+                                    isArcadeLoading -> "Arcade & Minigame CT-Learn"
                                     else -> state.loadingMessage
                                 },
                                 onFinished = {
@@ -316,7 +320,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MriBottomNavigationBar(
+fun CtBottomNavigationBar(
     currentTab: MainTab,
     isModuleDetailOpen: Boolean = false,
     isArcadeOpen: Boolean = false,

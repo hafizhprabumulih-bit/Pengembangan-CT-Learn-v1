@@ -1,9 +1,9 @@
 package com.example.util.lesson
 
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriNode
-import com.example.data.MriQuizQuestion
-import com.example.data.MriRepository
+import com.example.data.CtNode
+import com.example.data.CtQuizQuestion
+import com.example.data.CtRepository
 import com.example.data.lesson.InteractiveContent
 import com.example.data.lesson.LessonExtras
 import com.example.data.lesson.NodeLessonExtras
@@ -22,7 +22,7 @@ class LessonChunkerAndPlanTest {
 
     @Test
     fun chunker_preservesM01T1_1ParenthesesAndModuleCodes() {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         val node = m01.nodes.first { LegacyNodeCodes.normalize(it.code) == "M01.T1.1" }
 
         val chunks = LessonChunker.chunk(node.detailFull, node.summaryShort)
@@ -46,7 +46,7 @@ class LessonChunkerAndPlanTest {
         assertEquals("Ringkasan pendek simpul.", shortChunks.first().text)
 
         val longParagraphs = (1..14).joinToString("\n\n") { idx ->
-            "Kalimat pembuka paragraf $idx. Penjelasan mendalam mengenai presesi Larmor dan medan magnet statis pada paragraf ke-$idx yang cukup panjang untuk menguji batas penggabungan potongan penjelasan bertahap. Kalimat tambahan ke-$idx menjelaskan waktu relaksasi longitudinal dan transversal secara rinci."
+            "Kalimat pembuka paragraf $idx. Penjelasan mendalam mengenai atenuasi sinar-X dan hukum Beer-Lambert pada paragraf ke-$idx yang cukup panjang untuk menguji batas penggabungan potongan penjelasan bertahap. Kalimat tambahan ke-$idx menjelaskan nilai Hounsfield Unit dan Windowing WW/WL secara rinci."
         }
         assertTrue(longParagraphs.length >= 2500)
         val longChunks = LessonChunker.chunk(longParagraphs, "Ringkasan panjang")
@@ -58,7 +58,7 @@ class LessonChunkerAndPlanTest {
 
     @Test
     fun chunker_doesNotSplitOnAbbreviationsOrDecimalsOrParentheses() {
-        val text = "Frekuensi kerja adalah 63,87 MHz pada magnet 1.5 T (mis. untuk pemeriksaan lutut dan otak, lihat T1.7 atau M07A. untuk detail keselamatan). Sinyal kemudian dibaca oleh kumparan penerima."
+        val text = "Nilai CT Number jaringan berkisar dari -1000 HU hingga +3000 HU (mis. pemeriksaan kepala dan toraks, lihat T1.7 atau M07A. untuk detail dosimetri). Sinyal kemudian didigitalisasi oleh sistem DAS."
         val sentences = LessonChunker.splitSentences(text)
         assertEquals(2, sentences.size)
         assertTrue(sentences[0].contains("63,87 MHz"))
@@ -67,7 +67,7 @@ class LessonChunkerAndPlanTest {
 
     @Test
     fun chunker_singleSentenceParagraphHasNullLeadIn() {
-        val singleSentence = "Proton hidrogen di dalam jaringan tubuh berpresesi mengelilingi arah medan magnet utama B0 dengan frekuensi yang sebanding dengan kekuatan medan magnet tersebut."
+        val singleSentence = "Foton sinar-X menembus irisan tubuh pasien dari 360 derajat sudut tabung dan dikonversi oleh detektor solid-state menjadi profil proyeksi sinogram."
         val chunks = LessonChunker.chunk(singleSentence, "Ringkasan")
         assertEquals(1, chunks.size)
         assertNull(chunks[0].leadIn)
@@ -76,7 +76,7 @@ class LessonChunkerAndPlanTest {
 
     @Test
     fun chunker_runsCleanlyAcrossAll186CurriculumNodes() {
-        val allNodes = MriRepository.modules.flatMap { it.nodes }
+        val allNodes = CtRepository.modules.flatMap { it.nodes }
         assertTrue("Kurikulum harus memiliki minimal 50 simpul", allNodes.size >= 50)
 
         val chunkCounts = mutableListOf<Pair<String, Int>>()
@@ -102,23 +102,23 @@ class LessonChunkerAndPlanTest {
 
     @Test
     fun planBuilder_handlesOptionalStepsAndCapsSegmentsAtTen() {
-        val sampleNode = MriNode(
+        val sampleNode = CtNode(
             code = "M01.T0",
             level = 0,
             title = "Tujuan Belajar",
-            summaryShort = "Memahami dasar sinyal MRI.",
+            summaryShort = "Memahami dasar akuisisi CT Scan.",
             detailFull = (1..8).joinToString("\n\n") { i ->
                 "Inti bahasan $i. Proton hidrogen di dalam air dan lemak menghasilkan sinyal resonansi magnetik ketika diberi pulsa radiofrekuensi yang tepat pada langkah ke-$i."
             },
             analogi = "Seperti kompas kecil yang berputar serempak.",
-            learningGoal = "Memahami rantai dasar sinyal MRI."
+            learningGoal = "Memahami rantai dasar akuisisi CT Scan."
         )
         val quizzes = listOf(
-            MriQuizQuestion(
+            CtQuizQuestion(
                 id = "Q_M01_T0_1",
                 moduleId = "M01",
                 nodeCode = "M01.T0",
-                question = "Apa sumber sinyal utama MRI klinis?",
+                question = "Apa sumber radiasi utama CT Scan klinis?",
                 options = listOf("Hidrogen", "Kalsium", "Besi", "Udara"),
                 correctIndex = 0,
                 explanation = "Hidrogen melimpah di air dan lemak.",
@@ -187,7 +187,7 @@ class LessonChunkerAndPlanTest {
 
     @Test
     fun reducer_enforcesTwoAttemptQuestionRulesAndBackNavigation() {
-        val node = MriNode(
+        val node = CtNode(
             code = "M01.T0",
             level = 0,
             title = "Tujuan Belajar",
@@ -196,7 +196,7 @@ class LessonChunkerAndPlanTest {
             analogi = ""
         )
         val quizzes = listOf(
-            MriQuizQuestion(
+            CtQuizQuestion(
                 id = "Q1",
                 moduleId = "M01",
                 nodeCode = "M01.T0",
@@ -266,7 +266,7 @@ class LessonChunkerAndPlanTest {
 
         // QuizStatsCalculator harus mengabaikan attempt `story:*`
         val catalogQuizzes = listOf(
-            MriQuizQuestion(
+            CtQuizQuestion(
                 id = "Q_CHECK_1",
                 moduleId = "M01",
                 nodeCode = "M01.T0",
@@ -314,14 +314,14 @@ class LessonChunkerAndPlanTest {
         val sentences = LessonChunker.splitSentences(unitText)
         assertEquals("Kalimat unit 1-huruf harus terpecah menjadi 6: $sentences", 6, sentences.size)
 
-        val unmatchedParenText = "Nilai batas B0 dapat berubah (mis. pada protokol cepat. Operator harus memeriksa ulang SAR sebelum memindai."
+        val unmatchedParenText = "Nilai batas CTDIvol dapat berubah (mis. pada protokol cepat. Operator harus memeriksa ulang DLP sebelum memindai."
         val unmatchedSentences = LessonChunker.splitSentences(unmatchedParenText)
         assertEquals(2, unmatchedSentences.size)
     }
 
     @Test
     fun planBuilder_gatesNanoHintsByReviewedAndPreservesTrailingHintAndDraftFlag() {
-        val sampleNode = MriNode(
+        val sampleNode = CtNode(
             code = "M01.T1.1",
             level = 1,
             title = "Spin Hidrogen",
@@ -374,7 +374,7 @@ class LessonChunkerAndPlanTest {
 
     @Test
     fun reducer_encodesDecodesRestoresProgressAndAllowsBackFromUnansweredQuestion() {
-        val sampleNode = MriNode(
+        val sampleNode = CtNode(
             code = "M01.T0",
             level = 0,
             title = "Tujuan",
@@ -383,7 +383,7 @@ class LessonChunkerAndPlanTest {
             analogi = ""
         )
         val quizzes = listOf(
-            MriQuizQuestion(
+            CtQuizQuestion(
                 id = "Q_SPECIAL=1;A%B",
                 moduleId = "M01",
                 nodeCode = "M01.T0",

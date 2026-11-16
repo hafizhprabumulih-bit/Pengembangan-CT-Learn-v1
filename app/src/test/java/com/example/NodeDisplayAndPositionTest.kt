@@ -1,8 +1,8 @@
 package com.example
 
-import com.example.data.MriModule
-import com.example.data.MriNode
-import com.example.data.MriRepository
+import com.example.data.CtModule
+import com.example.data.CtNode
+import com.example.data.CtRepository
 import com.example.util.NodeDisplay
 import com.example.util.NodeStatus
 import com.example.util.PathStateResolver
@@ -14,7 +14,7 @@ import org.junit.Test
 
 class NodeDisplayAndPositionTest {
 
-    private fun node(code: String, sortOrder: Int = 0) = MriNode(
+    private fun node(code: String, sortOrder: Int = 0) = CtNode(
         code = code,
         level = 1,
         title = "Judul $code",
@@ -24,7 +24,7 @@ class NodeDisplayAndPositionTest {
         sortOrder = sortOrder
     )
 
-    private fun module(nodes: List<MriNode>) = MriModule(
+    private fun module(nodes: List<CtNode>) = CtModule(
         id = "M01",
         code = "M01",
         title = "Modul M01",
@@ -55,7 +55,7 @@ class NodeDisplayAndPositionTest {
 
     @Test
     fun displayTitleStripsLeadingCodePrefixOnly() {
-        assertEquals("Peran MRI dalam praktik klinis", NodeDisplay.displayTitle("T1.1 Peran MRI dalam praktik klinis"))
+        assertEquals("Peran CT Scan dalam praktik klinis", NodeDisplay.displayTitle("T1.1 Peran CT Scan dalam praktik klinis"))
         assertEquals("Fakta 6: Dimensi ruang-k", NodeDisplay.displayTitle("T2.10.5 Fakta 6: Dimensi ruang-k"))
         assertEquals("T2* pada gradient echo", NodeDisplay.displayTitle("T2.3 T2* pada gradient echo"))
         assertEquals("Ringkasan Tingkat 1", NodeDisplay.displayTitle("Ringkasan Tingkat 1"))
@@ -65,7 +65,7 @@ class NodeDisplayAndPositionTest {
 
     @Test
     fun everyCurriculumNodeHasNonBlankDisplayLabels() {
-        MriRepository.modules.flatMap { it.nodes }.forEach { n ->
+        CtRepository.modules.flatMap { it.nodes }.forEach { n ->
             assertTrue("Judul tampilan kosong: ${n.code}", NodeDisplay.displayTitle(n).isNotBlank())
             val short = NodeDisplay.shortCode(n.code)
             assertFalse("Kode pendek masih memuat modul: ${n.code} -> $short", short.startsWith("M"))

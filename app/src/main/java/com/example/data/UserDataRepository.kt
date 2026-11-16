@@ -13,8 +13,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.withTransaction
 import com.example.data.local.CurriculumNodeEntity
 import com.example.data.local.CurriculumQuizEntity
-import com.example.data.local.MriDatabase
-import com.example.data.local.MriModuleEntity
+import com.example.data.local.CtDatabase
+import com.example.data.local.CtModuleEntity
 import com.example.data.local.NodeProgressEntity
 import com.example.data.local.QuizAttemptEntity
 import com.example.data.local.StudyDayEntity
@@ -34,17 +34,24 @@ private val seedMutex = Mutex()
 
 data class ArcadeStats(
     val bestScreening: Int = 0,
-    val bestLarmor: Int = 0,
-    val bestArtifact: Int = 0,
+    val bestBolusTrigger: Int = 0,
+    val bestWindowArtifact: Int = 0,
     val minigameRounds: Int = 0,
-    val bestDefense: Int = 0,
-    val bestRhythm: Int = 0,
-    val highestRank: String = "Magang Zona II"
+    val bestMetalDefense: Int = 0,
+    val bestGantryRhythm: Int = 0,
+    val highestRank: String = "Magang Konsol CT"
+)
+
+data class PracticeExamStats(
+    val completedCount: Int = 0,
+    val bestScorePercent: Int = 0,
+    val lastScorePercent: Int = 0,
+    val weakestDomainName: String? = null
 )
 
 class UserDataRepository(
     context: Context,
-    private val database: MriDatabase = MriDatabase.getDatabase(context)
+    private val database: CtDatabase = CtDatabase.getDatabase(context)
 ) {
     private val dataStore = context.applicationContext.dataStore
 
@@ -73,17 +80,23 @@ class UserDataRepository(
         val DAILY_SHIFT_QUIZZES = intPreferencesKey("daily_shift_quizzes")
         val DAILY_SHIFT_LABS = intPreferencesKey("daily_shift_labs")
         val MINIGAME_BEST_SCREENING = intPreferencesKey("minigame_best_screening")
-        val MINIGAME_BEST_LARMOR = intPreferencesKey("minigame_best_larmor")
+        val MINIGAME_BEST_BOLUS_TRIGGER = intPreferencesKey("minigame_best_bolus_trigger")
         val MINIGAME_BEST_ARTIFACT = intPreferencesKey("minigame_best_artifact")
         val MINIGAME_ROUNDS_COMPLETED = intPreferencesKey("minigame_rounds_completed")
-        val ARCADE_HIGH_SCORE_DEFENSE = intPreferencesKey("arcade_high_score_defense")
-        val ARCADE_HIGH_SCORE_RHYTHM = intPreferencesKey("arcade_high_score_rhythm")
+        val ARCADE_HIGH_SCORE_METAL_DEFENSE = intPreferencesKey("arcade_high_score_metal_defense")
+        val ARCADE_HIGH_SCORE_GANTRY_RHYTHM = intPreferencesKey("arcade_high_score_gantry_rhythm")
         val ARCADE_HIGHEST_RANK = stringPreferencesKey("arcade_highest_rank")
         val PREFERRED_READER_MODE = stringPreferencesKey("preferred_reader_mode")
         val LESSON_TAP_HINT_COUNT = intPreferencesKey("lesson_tap_hint_count")
         val MANUAL_REVIEW_NODES = stringSetPreferencesKey("manual_review_nodes")
         val EXCLUDED_REVIEW_NODES = stringSetPreferencesKey("excluded_review_nodes")
         val ALLOW_LESSON_DRAFTS = booleanPreferencesKey("allow_lesson_drafts")
+        val INSTANT_TRANSITIONS = booleanPreferencesKey("instant_transitions")
+        val ENFORCE_CHARACTER_LOCKS = booleanPreferencesKey("enforce_character_locks")
+        val TRYOUT_COMPLETED_COUNT = intPreferencesKey("tryout_completed_count")
+        val TRYOUT_BEST_SCORE = intPreferencesKey("tryout_best_score")
+        val TRYOUT_LAST_SCORE = intPreferencesKey("tryout_last_score")
+        val TRYOUT_LAST_WEAKEST_DOMAIN = stringPreferencesKey("tryout_last_weakest_domain")
 
         fun lessonStepKey(nodeCode: String): Preferences.Key<Int> {
             val norm = LegacyNodeCodes.normalize(nodeCode.trim())
@@ -122,7 +135,7 @@ class UserDataRepository(
     }
 
     val userAvatarIdFlow: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.USER_AVATAR_ID] ?: "radiografer_mri"
+        preferences[PreferencesKeys.USER_AVATAR_ID] ?: "radiografer_ct"
     }
 
     val hasSeenMapGuideFlow: Flow<Boolean> = dataStore.data.map { preferences ->
@@ -334,12 +347,12 @@ class UserDataRepository(
     val arcadeStatsFlow: Flow<ArcadeStats> = dataStore.data.map { prefs ->
         ArcadeStats(
             bestScreening = prefs[PreferencesKeys.MINIGAME_BEST_SCREENING] ?: 0,
-            bestLarmor = prefs[PreferencesKeys.MINIGAME_BEST_LARMOR] ?: 0,
-            bestArtifact = prefs[PreferencesKeys.MINIGAME_BEST_ARTIFACT] ?: 0,
+            bestBolusTrigger = prefs[PreferencesKeys.MINIGAME_BEST_BOLUS_TRIGGER] ?: 0,
+            bestWindowArtifact = prefs[PreferencesKeys.MINIGAME_BEST_ARTIFACT] ?: 0,
             minigameRounds = prefs[PreferencesKeys.MINIGAME_ROUNDS_COMPLETED] ?: 0,
-            bestDefense = prefs[PreferencesKeys.ARCADE_HIGH_SCORE_DEFENSE] ?: 0,
-            bestRhythm = prefs[PreferencesKeys.ARCADE_HIGH_SCORE_RHYTHM] ?: 0,
-            highestRank = prefs[PreferencesKeys.ARCADE_HIGHEST_RANK] ?: "Magang Zona II"
+            bestMetalDefense = prefs[PreferencesKeys.ARCADE_HIGH_SCORE_METAL_DEFENSE] ?: 0,
+            bestGantryRhythm = prefs[PreferencesKeys.ARCADE_HIGH_SCORE_GANTRY_RHYTHM] ?: 0,
+            highestRank = prefs[PreferencesKeys.ARCADE_HIGHEST_RANK] ?: "Magang Konsol CT"
         )
     }
 
@@ -355,20 +368,20 @@ class UserDataRepository(
             prefs[PreferencesKeys.MINIGAME_ROUNDS_COMPLETED] =
                 (prefs[PreferencesKeys.MINIGAME_ROUNDS_COMPLETED] ?: 0) + 1
             val key = when (kindKey) {
-                "ZONE_SCREENING" -> PreferencesKeys.MINIGAME_BEST_SCREENING
-                "LARMOR_TAP" -> PreferencesKeys.MINIGAME_BEST_LARMOR
+                "BORE_SCREENING" -> PreferencesKeys.MINIGAME_BEST_SCREENING
+                "BOLUS_TRIGGER_TAP" -> PreferencesKeys.MINIGAME_BEST_BOLUS_TRIGGER
                 else -> PreferencesKeys.MINIGAME_BEST_ARTIFACT
             }
             val prev = prefs[key] ?: 0
             if (score > prev) prefs[key] = score
 
             val earnedRank = when {
-                score >= 900 -> "Master Superkonduktor"
-                score >= 550 -> "Radiografer Kilat"
-                score >= 250 -> "Penjaga 5 Gauss"
-                else -> "Magang Zona II"
+                score >= 900 -> "Master Konsol CT"
+                score >= 550 -> "Radiografer CT Senior"
+                score >= 250 -> "Operator Siaga ALARA"
+                else -> "Magang Konsol CT"
             }
-            val prevRank = prefs[PreferencesKeys.ARCADE_HIGHEST_RANK] ?: "Magang Zona II"
+            val prevRank = prefs[PreferencesKeys.ARCADE_HIGHEST_RANK] ?: "Magang Konsol CT"
             if (rankLevel(earnedRank) >= rankLevel(prevRank)) {
                 prefs[PreferencesKeys.ARCADE_HIGHEST_RANK] = earnedRank
             }
@@ -377,16 +390,16 @@ class UserDataRepository(
 
     suspend fun recordArcadeResult(kindKey: String, score: Int, rankTitle: String) {
         dataStore.edit { prefs ->
-            val key = if (kindKey == "MAGNET_DEFENSE") {
-                PreferencesKeys.ARCADE_HIGH_SCORE_DEFENSE
+            val key = if (kindKey == "METAL_DEFENSE") {
+                PreferencesKeys.ARCADE_HIGH_SCORE_METAL_DEFENSE
             } else {
-                PreferencesKeys.ARCADE_HIGH_SCORE_RHYTHM
+                PreferencesKeys.ARCADE_HIGH_SCORE_GANTRY_RHYTHM
             }
             val prev = prefs[key] ?: 0
             if (score > prev) {
                 prefs[key] = score
             }
-            val prevRank = prefs[PreferencesKeys.ARCADE_HIGHEST_RANK] ?: "Magang Zona II"
+            val prevRank = prefs[PreferencesKeys.ARCADE_HIGHEST_RANK] ?: "Magang Konsol CT"
             if (rankLevel(rankTitle) >= rankLevel(prevRank)) {
                 prefs[PreferencesKeys.ARCADE_HIGHEST_RANK] = rankTitle
             }
@@ -395,13 +408,58 @@ class UserDataRepository(
 
     val characterCustomizationFlow: Flow<CharacterCustomizationState> = dataStore.data.map { prefs ->
         CharacterCustomizationState(
-            avatarId = prefs[PreferencesKeys.USER_AVATAR_ID] ?: "radiografer_mri",
+            avatarId = prefs[PreferencesKeys.USER_AVATAR_ID] ?: "radiografer_ct",
             equippedHair = prefs[PreferencesKeys.EQUIPPED_HAIR] ?: "hair_default",
             equippedUniform = prefs[PreferencesKeys.EQUIPPED_UNIFORM] ?: "uniform_scrub_mint",
             equippedHeadset = prefs[PreferencesKeys.EQUIPPED_HEADSET] ?: "headset_radio",
-            equippedAccessory = prefs[PreferencesKeys.EQUIPPED_ACCESSORY] ?: "acc_magnet_detector",
+            equippedAccessory = prefs[PreferencesKeys.EQUIPPED_ACCESSORY] ?: "acc_dosimeter_detector",
             backgroundId = prefs[PreferencesKeys.BACKGROUND_ID] ?: "bg_control_room"
         )
+    }
+
+    val instantTransitionsFlow: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[PreferencesKeys.INSTANT_TRANSITIONS] ?: false
+    }
+
+    suspend fun setInstantTransitions(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[PreferencesKeys.INSTANT_TRANSITIONS] = enabled
+        }
+    }
+
+    val enforceCharacterLocksFlow: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[PreferencesKeys.ENFORCE_CHARACTER_LOCKS] ?: false
+    }
+
+    suspend fun setEnforceCharacterLocks(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[PreferencesKeys.ENFORCE_CHARACTER_LOCKS] = enabled
+        }
+    }
+
+    val practiceExamStatsFlow: Flow<PracticeExamStats> = dataStore.data.map { prefs ->
+        PracticeExamStats(
+            completedCount = prefs[PreferencesKeys.TRYOUT_COMPLETED_COUNT] ?: 0,
+            bestScorePercent = prefs[PreferencesKeys.TRYOUT_BEST_SCORE] ?: 0,
+            lastScorePercent = prefs[PreferencesKeys.TRYOUT_LAST_SCORE] ?: 0,
+            weakestDomainName = prefs[PreferencesKeys.TRYOUT_LAST_WEAKEST_DOMAIN]
+        )
+    }
+
+    suspend fun recordPracticeExamResult(scorePercent: Int, weakestDomainName: String?) {
+        val clamped = scorePercent.coerceIn(0, 100)
+        dataStore.edit { prefs ->
+            prefs[PreferencesKeys.TRYOUT_COMPLETED_COUNT] =
+                (prefs[PreferencesKeys.TRYOUT_COMPLETED_COUNT] ?: 0) + 1
+            prefs[PreferencesKeys.TRYOUT_LAST_SCORE] = clamped
+            val prevBest = prefs[PreferencesKeys.TRYOUT_BEST_SCORE] ?: 0
+            if (clamped > prevBest) {
+                prefs[PreferencesKeys.TRYOUT_BEST_SCORE] = clamped
+            }
+            if (!weakestDomainName.isNullOrBlank()) {
+                prefs[PreferencesKeys.TRYOUT_LAST_WEAKEST_DOMAIN] = weakestDomainName
+            }
+        }
     }
 
     suspend fun updateCharacterCustomization(state: CharacterCustomizationState) {
@@ -517,7 +575,7 @@ class UserDataRepository(
         }
     }
 
-    // Curriculum & Quiz Seeding + Queries (CurriculumDao & MriCurriculumDao)
+    // Curriculum & Quiz Seeding + Queries (CurriculumDao & CtCurriculumDao)
     suspend fun seedCurriculumIfNeeded() {
         seedMutex.withLock {
             val snapshot = CurriculumSnapshot.build()
@@ -547,8 +605,8 @@ class UserDataRepository(
         seedCurriculumIfNeeded()
     }
 
-    fun observeAllModules(): Flow<List<MriModuleEntity>> =
-        database.mriCurriculumDao().observeAllModules()
+    fun observeAllModules(): Flow<List<CtModuleEntity>> =
+        database.ctCurriculumDao().observeAllModules()
 
     fun observeCurriculumNodes(): Flow<List<CurriculumNodeEntity>> =
         database.curriculumDao().observeAllNodes()

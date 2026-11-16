@@ -3,7 +3,7 @@ package com.example.util
 import com.example.data.CharacterCatalog
 import com.example.data.CharacterItem
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
+import com.example.data.CtModule
 
 sealed interface ItemUnlockState {
     data class Unlocked(
@@ -33,7 +33,7 @@ object UnlockProgress {
 
     fun evaluate(
         item: CharacterItem,
-        modules: List<MriModule>,
+        modules: List<CtModule>,
         completedNodeCodes: Set<String>,
         equippedItemIds: Set<String> = emptySet(),
         ownedItemIds: Set<String> = emptySet(),
@@ -84,7 +84,7 @@ object UnlockProgress {
 
     fun closestLockedItem(
         items: List<CharacterItem>,
-        modules: List<MriModule>,
+        modules: List<CtModule>,
         completedNodeCodes: Set<String>,
         equippedItemIds: Set<String> = emptySet(),
         ownedItemIds: Set<String> = emptySet(),

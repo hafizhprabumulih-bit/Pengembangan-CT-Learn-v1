@@ -1,26 +1,31 @@
-# Belajar MRI (Android · Jetpack Compose)
+# CT-Learn (Android · Jetpack Compose)
 
-Aplikasi pembelajaran interaktif fisika dasar, pembentukan citra, sekuens, keselamatan, serta artefak Magnetic Resonance Imaging (MRI) untuk mahasiswa radiologi dan radiografer.
+Aplikasi pembelajaran interaktif fisika sinar-X, anatomi dan instrumentasi pesawat Computed Tomography (CT Scan), generasi MSCT, rekonstruksi Sinogram/FBP/IR/DLIR, skala Hounsfield Unit (HU), dosimetri CTDIvol/DLP/SSDE, media kontras Iodin & Bolus Tracking, serta kendali mutu (QA) harian untuk mahasiswa radiologi dan radiografer.
 
-## Fitur Utama Peta Belajar
-- **Peta Kurikulum 9 Bab (18 Modul) di Beranda**: Mengelompokkan `M01`–`M09` menjadi 9 bab berurutan pada jalur zig-zag dengan penanda modul aktif (`CURRENT`), capaian `selesai/total`, serta pengingat rekomendasi `>= 60%` tanpa memblokir akses ke modul lain.
-- **Peta Modul per Simpul (`ModulePathScreen`)**: Menampilkan seluruh **186 simpul** materi dengan pembagian sub-bagian (*Pendahuluan & Tujuan*, *Tingkat 1–3*), konektor progres, penanda simpul spesial (*Tujuan*, *Ringkasan*, *Lab*, *Kuis Evaluasi*), dan sakelar `PATH_STRICT_LOCKS`.
-- **Bottom Sheet Pratinjau & Pembaca Fokus**: Mengetuk simpul menampilkan ringkasan, estimasi waktu baca, jumlah soal kuis, peringatan prasyarat lembut (*non-blocking*), tombol *Mulai belajar*, serta pintasan lab simulasi dan latihan kuis.
-- **Lompat dengan Tes Singkat (`SkipTestBuilder`)**: Simpul terkunci menawarkan tes singkat berisi 2–3 soal yang diambil langsung dari simpul prasyarat yang akan dilewati (dengan cakupan soal penuh pada seluruh 186 simpul / 271 soal kuis). Lulus `>= 2/3` menandai irisan sebagai `SKIP_TEST` (`NodeStatus.SKIPPED`); membaca simpul tersebut kemudian menaikkannya menjadi `READ` (`NodeStatus.DONE`) dengan perolehan XP.
-- **Selebrasi Simpul Selesai & XP Derivatif (`XpCalculator`)**: Menampilkan layar selesai dengan perolehan XP yang dihitung murni dari progres DB (`10 XP/simpul dibaca`, `5 XP/kuis benar unik`, `50 XP/modul tuntas 100%`, `0 XP/simpul dilewati`), status lab terbuka, serta pratinjau progres hadiah karakter.
+## Fitur Utama CT-Learn
+- **Kurikulum Terstruktur 9 Modul (`M01`–`M09`)**: Mencakup **50 simpul materi** lengkap dengan analogi klinis, *nanoHints*, rangkuman interaktif (`lesson_extras.json`), tes lompat (`SkipTestBuilder`), dan **50 soal kuis kurikulum** berbasis tingkat pemahaman.
+- **5 Laboratorium Simulator Konsol CT**:
+  1. Gantry Gen-3, Slip-Ring & Rantai Sinyal Detektor Solid-State/DAS + Efek Off-Centering Laser Isocenter.
+  2. Windowing HU (WW/WL) 3 Potongan Anatomi (Kepala, Toraks, Abdomen) & Kalkulator Atenuasi Beer-Lambert.
+  3. Geometri MSCT Helikal, Pitch (`d / (N × T)`), Filtered Back-Projection vs Iterative Recon/DLIR, dan Kernel.
+  4. Konsol Eksposi, Dosimetri (`CTDIvol`, `SSDE`, `DLP`, `Dosis Efektif`), Kurva Time-Attenuation Bolus Tracking, 3D MPR/MIP/MinIP/VRT & **5 Tantangan Kasus Konsol Klinis** (`CtConsoleCaseEvaluator`).
+  5. Artefak Klinis (Ring, Beam Hardening, Motion, Metal Streak/MAR) & Uji QA Fantom Air 5-ROI Harian.
+- **Try-Out Uji Kompetensi (UKOM) CT Scan (`CtPracticeExamEngine`)**: Bank soal terpadu (50 soal kurikulum + 25 kasus klinis UKOM CT lanjutan) lintas 5 domain kompetensi, lengkap dengan hitung mundur, preservasi jawaban (`rememberSaveable`), dan **Mode Adaptif Prioritas Domain Terlemah**.
+- **Animasi Fisika Interaktif 4 Mode (`LearningAnimationScreen`)**: Rotasi Gantry & Rantai Sinyal, Atenuasi Beer-Lambert & Kontras HU, Sinogram & Rekonstruksi FBP, serta Pitch Helikal & Bow-Tie Filter.
+- **Arcade & Minigame Edukatif (`CtArcadeEngine`, `CtMinigameEngine`)**: *Skrining Persiapan Bore CT*, *Pemicu ROI Bolus Tracking*, *Windowing HU & Artefak CT*, *Metal Streak Defense*, dan *Gantry Sync Rhythm*.
+- **Ruang Karakter & Ekspor Catatan PDF (`NotesPdfExporter`)**: 11 peran spesialis radiologi & CT, sakelar Mode Progresi Kunci Item & Transisi Cepat, serta ekspor Catatan & Kartu Referensi Protokol CT ke PDF/JSON.
 
-## Struktur Komponen Peta Belajar
-- `app/src/main/java/com/example/util/PathStateResolver.kt` — Resolver status simpul/modul (`DONE`, `SKIPPED`, `CURRENT`, `OPEN`, `LOCKED`), prasyarat lembut, dan `PATH_STRICT_LOCKS`.
-- `app/src/main/java/com/example/util/HomePathPlanner.kt` — Pengelompokan 18 modul menjadi 9 bab di Beranda.
-- `app/src/main/java/com/example/util/XpCalculator.kt` — Perhitungan XP derivatif & pratinjau hadiah karakter.
-- `app/src/main/java/com/example/util/SkipTestBuilder.kt` — Penyusun soal dan ambang kelulusan tes lompat simpul.
-- `app/src/main/java/com/example/ui/path/` — Komponen jalur zig-zag (`PathComponents.kt`, `PathGeometry.kt`), `ModulePathScreen.kt`, `ModulePathStateHolder.kt`, `ModuleRouteHost.kt`, `SkipTestDialog.kt`, dan `NodeCompletedScreen.kt`.
-- `app/src/main/java/com/example/data/local/` — Room Database versi `14` dengan migrasi non-destruktif `MIGRATION_13_14` (`ALTER TABLE node_progress ADD COLUMN source TEXT NOT NULL DEFAULT 'READ'`).
+## Struktur Arsitektur Utama
+- `app/src/main/java/com/example/viewmodel/CtViewModel.kt` — State holder utama (`CtUiState`, `CtSimType`), navigasi riwayat sesi, dan orkestrasi Room/DataStore.
+- `app/src/main/java/com/example/util/CtPhysicsCalculator.kt` — Fungsi fisika medis & dosimetri CT murni (*Single Source of Truth*).
+- `app/src/main/java/com/example/util/` — Logika domain murni & dapat diuji di JVM (`PathStateResolver`, `HomePathPlanner`, `XpCalculator`, `CtPracticeExamEngine`, `CtConsoleCaseEvaluator`, `CtArcadeEngine`, `CtMinigameEngine`, `NotesPdfExporter`).
+- `app/src/main/java/com/example/data/` — Repositori kurikulum (`CtCurriculumRepository`, `CtCurriculumModulesPart1/2`, `CtCurriculumQuizzes`), `UserDataRepository`, dan `lesson/LessonExtras.kt`.
+- `app/src/main/java/com/example/data/local/` — Room Database `CtDatabase` (`ct_learn.db`) versi `14` dengan skema ekspor di `app/schemas/com.example.data.local.CtDatabase/` dan migrasi non-destruktif `Migrations.kt`.
 
-## Pengujian & Build CI
-Proyek dilengkapi alur GitHub Actions di `.github/workflows/android-ci.yml` yang menjalankan tes unit JVM/Robolectric dan build APK debug:
+## Pengujian & Build CI (GitHub Actions & Google AI Studio)
+Alur GitHub Actions tersedia pada `.github/workflows/android-ci.yml` dengan JDK 17 dan Gradle 9.3.1:
 
 ```bash
 ./gradlew testDebugUnitTest assembleDebug --stacktrace
 ```
-*(Bila Gradle wrapper tidak tersedia di mesin lokal, jalankan `gradle testDebugUnitTest assembleDebug --stacktrace` dengan Gradle 9.3.1 & JDK 17).*
+*(Bila `./gradlew` tidak ada pada mesin lokal, gunakan `gradle testDebugUnitTest assembleDebug --stacktrace` dengan Gradle 9.3.1 & JDK 17).*

@@ -2,8 +2,8 @@ package com.example.util
 
 import com.example.data.CharacterCatalog
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
-import com.example.data.MriQuizQuestion
+import com.example.data.CtModule
+import com.example.data.CtQuizQuestion
 import com.example.data.UnlockRequirement
 import com.example.data.local.QuizAttemptEntity
 
@@ -13,7 +13,7 @@ import com.example.data.local.QuizAttemptEntity
 object ModuleCompletionCelebration {
 
     fun readProgressOf(
-        module: MriModule,
+        module: CtModule,
         completedCodes: Set<String>,
         skippedCodes: Set<String>
     ): ModuleProgress {
@@ -38,7 +38,7 @@ object ModuleCompletionCelebration {
     }
 
     fun optimisticReadProgress(
-        module: MriModule,
+        module: CtModule,
         completedCodes: Set<String>,
         skippedCodes: Set<String>,
         justCompletedCode: String
@@ -57,7 +57,7 @@ object ModuleCompletionCelebration {
 
     fun shouldShowForReadCompletion(
         moduleId: String,
-        module: MriModule,
+        module: CtModule,
         completedBefore: Set<String>,
         skippedBefore: Set<String>,
         justCompletedCode: String,
@@ -92,9 +92,9 @@ object ModuleCompletionCelebration {
 
     fun findNextRecommendedModule(
         currentModuleId: String,
-        allModules: List<MriModule>,
+        allModules: List<CtModule>,
         completedCodes: Set<String>
-    ): MriModule? {
+    ): CtModule? {
         if (allModules.isEmpty()) return null
         val pathStates = PathStateResolver.resolveAll(allModules, completedCodes)
         val currentIdx = pathStates.indexOfFirst { it.module.id == currentModuleId }
@@ -116,7 +116,7 @@ object ModuleCompletionCelebration {
 
     fun moduleQuizMasteryPercent(
         moduleId: String,
-        quizzes: List<MriQuizQuestion>,
+        quizzes: List<CtQuizQuestion>,
         attempts: List<QuizAttemptEntity>
     ): Int {
         val moduleQuizzes = quizzes.filter { it.moduleId == moduleId }

@@ -3,10 +3,10 @@ package com.example
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.data.local.CurriculumNodeEntity
 import com.example.data.local.CurriculumQuizEntity
-import com.example.data.local.MriDatabase
+import com.example.data.local.CtDatabase
 import com.example.data.local.NodeProgressEntity
 import com.example.data.local.QuizAttemptEntity
 import com.example.data.local.StudyDayEntity
@@ -26,12 +26,12 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class CurriculumSeedReconcileTest {
-    private lateinit var db: MriDatabase
+    private lateinit var db: CtDatabase
 
     @Before
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, MriDatabase::class.java)
+        db = Room.inMemoryDatabaseBuilder(context, CtDatabase::class.java)
             .allowMainThreadQueries()
             .build()
     }
@@ -45,11 +45,11 @@ class CurriculumSeedReconcileTest {
     fun seedCreatesExactlyTheSourceData() = runBlocking {
         db.seedCurriculumIfNeeded()
 
-        val expectedModulesCount = MriRepository.toMriModuleEntities().size
-        val expectedCurrNodesCount = MriRepository.toCurriculumNodeEntities().size
-        val expectedCurrQuizzesCount = MriRepository.toCurriculumQuizEntities().size
+        val expectedModulesCount = CtRepository.toCtModuleEntities().size
+        val expectedCurrNodesCount = CtRepository.toCurriculumNodeEntities().size
+        val expectedCurrQuizzesCount = CtRepository.toCurriculumQuizEntities().size
 
-        assertEquals(expectedModulesCount, db.mriCurriculumDao().getModulesCount())
+        assertEquals(expectedModulesCount, db.ctCurriculumDao().getModulesCount())
         assertEquals(expectedCurrNodesCount, db.curriculumDao().getNodesCount())
         assertEquals(expectedCurrQuizzesCount, db.curriculumDao().getQuizzesCount())
     }
@@ -77,8 +77,8 @@ class CurriculumSeedReconcileTest {
         assertTrue(currQuizzes.none { it.id == "ZZ99_Q1" })
 
         // Pastikan jumlah kembali sama seperti sumber
-        assertEquals(MriRepository.toCurriculumNodeEntities().size, db.curriculumDao().getNodesCount())
-        assertEquals(MriRepository.toCurriculumQuizEntities().size, db.curriculumDao().getQuizzesCount())
+        assertEquals(CtRepository.toCurriculumNodeEntities().size, db.curriculumDao().getNodesCount())
+        assertEquals(CtRepository.toCurriculumQuizEntities().size, db.curriculumDao().getQuizzesCount())
     }
 
     @Test
@@ -87,9 +87,9 @@ class CurriculumSeedReconcileTest {
         db.seedCurriculumIfNeeded()
         db.seedCurriculumIfNeeded()
 
-        assertEquals(MriRepository.toMriModuleEntities().size, db.mriCurriculumDao().getModulesCount())
-        assertEquals(MriRepository.toCurriculumNodeEntities().size, db.curriculumDao().getNodesCount())
-        assertEquals(MriRepository.toCurriculumQuizEntities().size, db.curriculumDao().getQuizzesCount())
+        assertEquals(CtRepository.toCtModuleEntities().size, db.ctCurriculumDao().getModulesCount())
+        assertEquals(CtRepository.toCurriculumNodeEntities().size, db.curriculumDao().getNodesCount())
+        assertEquals(CtRepository.toCurriculumQuizEntities().size, db.curriculumDao().getQuizzesCount())
     }
 
     @Test

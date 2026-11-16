@@ -80,8 +80,8 @@ import com.example.data.CharacterAccentPalette
 import com.example.data.CharacterCatalog
 import com.example.data.CharacterCustomizationState
 import com.example.data.MedicalAvatar
-import com.example.ui.components.MriGlobalAssetImage
-import com.example.ui.components.MriGlobalAssetKey
+import com.example.ui.components.CtGlobalAssetImage
+import com.example.ui.components.CtGlobalAssetKey
 import com.example.ui.theme.CharAccentCyan
 import com.example.ui.theme.CharAccentMint
 import com.example.ui.theme.CharActionDarkText
@@ -283,8 +283,8 @@ fun NanoShiftStatusDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                                 ) {
-                                    MriGlobalAssetImage(
-                                        assetKey = MriGlobalAssetKey.FIRE_STREAK,
+                                    CtGlobalAssetImage(
+                                        assetKey = CtGlobalAssetKey.FIRE_STREAK,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Text(
@@ -305,8 +305,8 @@ fun NanoShiftStatusDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                                 ) {
-                                    MriGlobalAssetImage(
-                                        assetKey = MriGlobalAssetKey.RADIOGRAPHER_CREST,
+                                    CtGlobalAssetImage(
+                                        assetKey = CtGlobalAssetKey.RADIOGRAPHER_CREST,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Text(
@@ -372,16 +372,16 @@ fun NanoSnapshotStudioDialog(
     val masteryPct = if (totalNodesCount > 0) (completedCount * 100) / totalNodesCount else 0
     val defaultRank = when {
         currentAvatar.id == "dosen" -> "Dosen Pembimbing"
-        masteryPct >= 75 -> "Ahli Fisika MR"
+        masteryPct >= 75 -> "Ahli Fisika CT"
         masteryPct >= 35 -> "Radiografer Klinis"
-        else -> "Mahasiswa MRI"
+        else -> "Mahasiswa CT Scan"
     }
     val rankOptions = listOf(
-        "Mahasiswa MRI",
+        "Mahasiswa CT Scan",
         "Radiografer Klinis",
-        "Ahli Fisika MR",
+        "Ahli Fisika CT",
         "Dosen Pembimbing",
-        "Kepala Fisikawan 7T"
+        "Kepala Fisikawan MSCT"
     )
     var selectedRank by remember { mutableStateOf(defaultRank) }
     val idThemes = listOf("Hologram", "Gelap", "Film X-Ray")
@@ -556,8 +556,8 @@ fun NanoSnapshotStudioDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                                 ) {
-                                    MriGlobalAssetImage(
-                                        assetKey = MriGlobalAssetKey.RADIOGRAPHER_CREST,
+                                    CtGlobalAssetImage(
+                                        assetKey = CtGlobalAssetKey.RADIOGRAPHER_CREST,
                                         modifier = Modifier.size(14.dp),
                                         tintAccent = accentPalette.glowColor
                                     )
@@ -579,13 +579,13 @@ fun NanoSnapshotStudioDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                                 ) {
-                                    MriGlobalAssetImage(
-                                        assetKey = MriGlobalAssetKey.SHIELD_5G,
+                                    CtGlobalAssetImage(
+                                        assetKey = CtGlobalAssetKey.SHIELD_ALARA,
                                         modifier = Modifier.size(13.dp),
                                         tintAccent = CharAccentMint
                                     )
                                     Text(
-                                        text = "MRI EDU · $completedCount/$totalNodesCount ($masteryPct%)",
+                                        text = "CT-LEARN · $completedCount/$totalNodesCount ($masteryPct%)",
                                         fontSize = 9.5.sp,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = CharTextPrimary
@@ -623,8 +623,8 @@ fun NanoSnapshotStudioDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    MriGlobalAssetImage(
-                                        assetKey = MriGlobalAssetKey.CHECK_VERIFIED,
+                                    CtGlobalAssetImage(
+                                        assetKey = CtGlobalAssetKey.CHECK_VERIFIED,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Text(
@@ -667,8 +667,8 @@ fun NanoSnapshotStudioDialog(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                                     ) {
-                                        MriGlobalAssetImage(
-                                            assetKey = MriGlobalAssetKey.PULSE_WAVE,
+                                        CtGlobalAssetImage(
+                                            assetKey = CtGlobalAssetKey.PULSE_WAVE,
                                             modifier = Modifier.size(12.dp)
                                         )
                                         Text(
@@ -989,7 +989,7 @@ private fun shareAndSaveProfileCard(
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
-    canvas.drawText("MRI EDU · $masteryPct%", rightRect.centerX(), 81f, pctPaint)
+    canvas.drawText("CT-LEARN · $masteryPct%", rightRect.centerX(), 81f, pctPaint)
 
     // Footer Identitas & Sekuens
     val footerRect = RectF(42f, 764f, width - 42f, height - 40f)
@@ -1022,9 +1022,9 @@ private fun shareAndSaveProfileCard(
     try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, "nano_mri_card_${System.currentTimeMillis()}.png")
+                put(MediaStore.Images.Media.DISPLAY_NAME, "nano_ct_card_${System.currentTimeMillis()}.png")
                 put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/MRI-Learn")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CT-Learn")
             }
             context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)?.let { uri ->
                 context.contentResolver.openOutputStream(uri)?.use { out ->
@@ -1042,7 +1042,7 @@ private fun shareAndSaveProfileCard(
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
             putExtra(Intent.EXTRA_STREAM, shareUri)
-            putExtra(Intent.EXTRA_TEXT, "Kartu Radiografer MRI EDU — $displayName ($rankBadge)")
+            putExtra(Intent.EXTRA_TEXT, "Kartu Radiografer CT-Learn — $displayName ($rankBadge)")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         context.startActivity(Intent.createChooser(shareIntent, "Bagikan Kartu Profil Nano"))

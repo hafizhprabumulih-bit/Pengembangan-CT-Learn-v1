@@ -3,7 +3,7 @@ package com.example
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.example.data.local.MriDatabase
+import com.example.data.local.CtDatabase
 import com.example.data.local.NodeProgressEntity
 import com.example.data.local.QuizAttemptEntity
 import com.example.data.local.StudyDayEntity
@@ -24,12 +24,12 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class RoomDaoTest {
-    private lateinit var db: MriDatabase
+    private lateinit var db: CtDatabase
 
     @Before
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, MriDatabase::class.java)
+        db = Room.inMemoryDatabaseBuilder(context, CtDatabase::class.java)
             .allowMainThreadQueries()
             .build()
     }
@@ -202,7 +202,7 @@ class RoomDaoTest {
     @Test
     fun testModule5RoomDatabaseIntegration() = runBlocking {
         db.seedCurriculumIfNeeded()
-        val mriDao = db.mriCurriculumDao()
+        val mriDao = db.ctCurriculumDao()
         val curriculumDao = db.curriculumDao()
 
         val allModules = mriDao.observeAllModules().first()
@@ -239,7 +239,7 @@ class RoomDaoTest {
     @Test
     fun testModule6AAnd6BRoomDatabaseIntegration() = runBlocking {
         db.seedCurriculumIfNeeded()
-        val mriDao = db.mriCurriculumDao()
+        val mriDao = db.ctCurriculumDao()
         val curriculumDao = db.curriculumDao()
 
         val allModules = mriDao.observeAllModules().first()
@@ -264,7 +264,7 @@ class RoomDaoTest {
     @Test
     fun testModule7ABCIntegration() = runBlocking {
         db.seedCurriculumIfNeeded()
-        val mriDao = db.mriCurriculumDao()
+        val mriDao = db.ctCurriculumDao()
         val curriculumDao = db.curriculumDao()
 
         val allModules = mriDao.observeAllModules().first()
@@ -287,7 +287,7 @@ class RoomDaoTest {
     @Test
     fun testModule8ABCIntegration() = runBlocking {
         db.seedCurriculumIfNeeded()
-        val mriDao = db.mriCurriculumDao()
+        val mriDao = db.ctCurriculumDao()
         val curriculumDao = db.curriculumDao()
 
         val allModules = mriDao.observeAllModules().first()
@@ -307,7 +307,7 @@ class RoomDaoTest {
     @Test
     fun testModule3ABCIntegration() = runBlocking {
         db.seedCurriculumIfNeeded()
-        val mriDao = db.mriCurriculumDao()
+        val mriDao = db.ctCurriculumDao()
         val curriculumDao = db.curriculumDao()
 
         val modules = mriDao.observeAllModules().first()
@@ -508,7 +508,7 @@ class RoomDaoTest {
     @Test
     fun testBugB02AndB13ViewModelQuizAndSeparatedFlashcards() = runBlocking {
         val app = ApplicationProvider.getApplicationContext<android.app.Application>()
-        val vm = com.example.viewmodel.MriViewModel(app)
+        val vm = com.example.viewmodel.CtViewModel(app)
 
         vm.setGlossaryFlashcardMode(true)
         vm.nextFlashcard(10)

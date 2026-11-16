@@ -13,11 +13,11 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.mrilearnv4.ghngpn"
+    applicationId = "com.aistudio.ctlearn.ctscan"
     minSdk = 24
     targetSdk = 36
-    versionCode = 43
-    versionName = "4.0.3"
+    versionCode = 44
+    versionName = "2.0.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

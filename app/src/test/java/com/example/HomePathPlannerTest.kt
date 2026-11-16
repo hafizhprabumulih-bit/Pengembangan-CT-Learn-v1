@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.util.HomePathPlanner
 import com.example.util.NodeStatus
 import org.junit.Assert.assertEquals
@@ -12,7 +12,7 @@ class HomePathPlannerTest {
 
     @Test
     fun groupsEighteenModulesIntoNineChapters() {
-        val chapters = HomePathPlanner.plan(MriRepository.modules, emptySet())
+        val chapters = HomePathPlanner.plan(CtRepository.modules, emptySet())
         assertEquals(9, chapters.size)
         assertEquals(9, chapters.sumOf { it.modules.size })
         assertEquals("M01", chapters.first().chapterKey)
@@ -21,7 +21,7 @@ class HomePathPlannerTest {
 
     @Test
     fun assignsExactlyOneCurrentModuleAtStartAndNeverLocksModules() {
-        val chapters = HomePathPlanner.plan(MriRepository.modules, emptySet())
+        val chapters = HomePathPlanner.plan(CtRepository.modules, emptySet())
         val allStates = chapters.flatMap { it.modules }
 
         val currentCount = allStates.count { it.status == NodeStatus.CURRENT }
@@ -32,8 +32,8 @@ class HomePathPlannerTest {
 
     @Test
     fun completedFirstModuleAdvancesCurrentToSecondAndDimsLaterUnrecommended() {
-        val m01Codes = MriRepository.modules.first { it.id == "M01" }.nodes.map { it.code }.toSet()
-        val chapters = HomePathPlanner.plan(MriRepository.modules, m01Codes)
+        val m01Codes = CtRepository.modules.first { it.id == "M01" }.nodes.map { it.code }.toSet()
+        val chapters = HomePathPlanner.plan(CtRepository.modules, m01Codes)
         val allStates = chapters.flatMap { it.modules }
 
         val m01State = allStates.first { it.module.id == "M01" }

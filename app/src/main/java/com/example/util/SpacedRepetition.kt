@@ -1,7 +1,7 @@
 package com.example.util
 
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
+import com.example.data.CtModule
 import com.example.data.local.QuizAttemptEntity
 
 data class ReviewCandidate(
@@ -43,7 +43,7 @@ object SpacedRepetition {
 
     fun selectDueReviews(
         attempts: List<QuizAttemptEntity>,
-        modules: List<MriModule>,
+        modules: List<CtModule>,
         nowMillis: Long = System.currentTimeMillis(),
         maxItems: Int = 3,
         manualReviewNodes: Set<String> = emptySet(),

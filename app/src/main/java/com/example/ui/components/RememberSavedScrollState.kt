@@ -5,18 +5,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
- * Menyimpan dan memulihkan posisi gulir (scroll offset) per [screenKey] di [MriViewModel]
+ * Menyimpan dan memulihkan posisi gulir (scroll offset) per [screenKey] di [CtViewModel]
  * sehingga menekan tombol Kembali (Back) selalu mengembalikan layar ke posisi terakhir.
  */
 @Composable
 fun rememberRestorableScrollState(
     screenKey: String,
-    viewModel: MriViewModel
+    viewModel: CtViewModel
 ): ScrollState {
     val savedInitial = viewModel.getSavedScrollOffset(screenKey)
     val scrollState = remember(screenKey) {

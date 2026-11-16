@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:drawable="@drawable/mri_icon_bersih"
-    android:inset="20%" />
+    android:drawable="@drawable/ct_scanner_logo_vector"
+    android:inset="16%" />

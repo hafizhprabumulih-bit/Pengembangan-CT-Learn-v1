@@ -5,7 +5,7 @@ import androidx.room.withTransaction
 import com.example.data.LegacyNodeCodes
 
 /** Idempotent: aman dijalankan berulang. Semua perubahan dalam satu transaksi. */
-suspend fun MriDatabase.normalizeLegacyNodeCodes() {
+suspend fun CtDatabase.normalizeLegacyNodeCodes() {
     withTransaction {
         val progressDao = nodeProgressDao()
         val attemptDao = quizAttemptDao()

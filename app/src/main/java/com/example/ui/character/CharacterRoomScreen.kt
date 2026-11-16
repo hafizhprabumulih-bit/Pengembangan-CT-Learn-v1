@@ -37,6 +37,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,7 +62,7 @@ import com.example.R
 import com.example.data.CharacterCatalog
 import com.example.data.CharacterCategory
 import com.example.data.CharacterCustomizationState
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.ui.components.RotatingProgressRing
 import com.example.ui.theme.AmberWarning
 import com.example.ui.theme.CharAccentCyan
@@ -77,15 +78,15 @@ import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.util.ItemUnlockState
 import com.example.util.UnlockProgress
-import com.example.util.rememberMriHaptics
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.util.rememberCtHaptics
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun CharacterRoomScreen(
-    state: MriUiState,
-    viewModel: MriViewModel
+    state: CtUiState,
+    viewModel: CtViewModel
 ) {
     // Gunakan rememberSaveable per field primitif agar tahan rotasi layar tanpa membebani Bundle
     val saved = state.characterCustomization
@@ -124,15 +125,15 @@ fun CharacterRoomScreen(
     var isJumping by remember { mutableStateOf(false) }
     var isWaveActive by rememberSaveable { mutableStateOf(false) }
 
-    // State Interaksi (Body Zones, Rub, Double-Tap Larmor Spin, Shift Card, Studio)
+    // State Interaksi (Body Zones, Rub, Double-Tap Gantry 360Â° Spin, Shift Card, Studio)
     var forcedExpression by remember { mutableStateOf<Expression?>(null) }
-    var larmorSpinTrigger by remember { mutableIntStateOf(0) }
+    var gantrySpinTrigger by remember { mutableIntStateOf(0) }
     var heartBurstTrigger by remember { mutableIntStateOf(0) }
     var shiftMood by rememberSaveable { mutableIntStateOf(3) }
     var showShiftDialog by rememberSaveable { mutableStateOf(false) }
     var showSnapshotStudio by rememberSaveable { mutableStateOf(false) }
 
-    val avatars = MriRepository.avatars
+    val avatars = CtRepository.avatars
     val currentAvatarIndex = avatars.indexOfFirst { it.id == workingState.avatarId }.coerceAtLeast(0)
     val currentAvatar = avatars[currentAvatarIndex]
     val specialistProfile = CharacterCatalog.getSpecialistProfile(workingState.avatarId)
@@ -162,7 +163,7 @@ fun CharacterRoomScreen(
     }
 
     val haptic = LocalHapticFeedback.current
-    val mriHaptics = rememberMriHaptics()
+    val ctHaptics = rememberCtHaptics()
     var isDailyShiftExpanded by rememberSaveable { mutableStateOf(false) }
 
     fun triggerAvatarTap(
@@ -171,9 +172,9 @@ fun CharacterRoomScreen(
         expression: Expression? = null
     ) {
         if (hapticType == HapticFeedbackType.LongPress) {
-            mriHaptics.mediumAction()
+            ctHaptics.mediumAction()
         } else {
-            mriHaptics.lightToggle()
+            ctHaptics.lightToggle()
         }
         interactionCount++
         isJumping = true
@@ -235,7 +236,7 @@ fun CharacterRoomScreen(
                 studyStreakDays = state.studyStreakDays,
                 shiftMood = shiftMood,
                 forcedExpression = forcedExpression,
-                larmorSpinTrigger = larmorSpinTrigger,
+                gantrySpinTrigger = gantrySpinTrigger,
                 heartBurstTrigger = heartBurstTrigger,
                 onOpenSnapshotStudio = {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -244,10 +245,10 @@ fun CharacterRoomScreen(
                 onToggleWave = {
                     isWaveActive = !isWaveActive
                     val waveComment = when (workingState.backgroundId) {
-                        "bg_led_stage" -> if (isWaveActive) "Gelombang RF menyala! Lintasan spiral & radial K-space sedang dipindai!" else null
-                        "bg_lecture_hall" -> if (isWaveActive) "Demonstrasi gelombang pulsa 90° di papan kuliah siap diamati!" else null
-                        "bg_simulation_center" -> if (isWaveActive) "Simulasi rekonstruksi sinyal RF & gradien pusat riset aktif!" else null
-                        else -> if (isWaveActive) "Pulsa RF 90° aktif — vektor Mxy beresonansi pada frekuensi Larmor!" else null
+                        "bg_led_stage" -> if (isWaveActive) "Berkas Sinar-X aktif! Lintasan spiral Helikal & Sinogram sedang direkonstruksi!" else null
+                        "bg_lecture_hall" -> if (isWaveActive) "Demonstrasi rantai sinyal Gantry CT di papan kuliah siap diamati!" else null
+                        "bg_simulation_center" -> if (isWaveActive) "Simulasi Photon-Counting CdTe & rekonstruksi AI DLIR pusat riset aktif!" else null
+                        else -> if (isWaveActive) "Rotasi Gantry 360° aktif — berkas sinar-X menembus titik Laser Isocenter!" else null
                     }
                     if (waveComment != null) {
                         triggerAvatarTap(waveComment, expression = Expression.BERPIKIR)
@@ -281,18 +282,18 @@ fun CharacterRoomScreen(
                             val headItem = CharacterCatalog.getItem(workingState.equippedHair)
                             triggerAvatarTap(
                                 customMessage = headItem?.let { "${it.name}: ${it.clinicalBenefit}." }
-                                    ?: "Visor K-Space Nano dalam kondisi optimal!",
+                                    ?: "Visor HUD Sinogram Nano dalam kondisi optimal!",
                                 expression = if (interactionCount % 2 == 0) Expression.SENANG else Expression.BERPIKIR
                             )
                         }
                         NanoBodyZone.TOOL -> {
                             val acc = CharacterCatalog.getItem(workingState.equippedAccessory)
                             val toolMsg = when (workingState.equippedAccessory) {
-                                "acc_magnet_detector" -> "Detektor Feromagnetik aktif: pembacaan medan tepi < 5 Gauss aman!"
-                                "acc_clipboard" -> "Data konsol cepat: T1w (TR 500ms, TE 15ms) | T2w (TR 3500ms, TE 100ms)."
-                                "acc_phantom" -> "Kalibrasi SNR fantom ACR selesai: homogenitas medan B0 terjaga!"
-                                "acc_laser_pointer" -> "Pointer presentasi siap menyorot kurva relaksasi & spektrum K-Space!"
-                                "acc_handbook_mri" -> "Buku Saku MRI: γ(¹H) = 42,58 MHz/T · Aturan ACR Zona I–IV selalu siap."
+                                "acc_dosimeter_detector" -> "Surveymeter aktif: tingkat paparan radiasi ruang kontrol di balik kaca Pb aman!"
+                                "acc_clipboard" -> "Preset konsol cepat: Brain (WW 80, WL 40) | Lung (WW 1500, WL -600) | Bone (WW 2000, WL 500)."
+                                "acc_phantom" -> "Uji QA Fantom Air 5-ROI selesai: akurasi pusat 0 ± 4 HU & Uniformity ≤ 5 HU!"
+                                "acc_laser_pointer" -> "Pointer presentasi siap menyorot kurva Beer-Lambert & matriks Sinogram!"
+                                "acc_handbook_ct" -> "Buku Saku CT: HU = 1000 × (μ − μ_air) / μ_air · Pitch = d / (N × T) selalu siap."
                                 else -> acc?.let { "${it.name}: ${it.clinicalBenefit}." } ?: "Alat klinis siap digunakan!"
                             }
                             triggerAvatarTap(toolMsg, HapticFeedbackType.LongPress, Expression.BANGGA)
@@ -301,10 +302,10 @@ fun CharacterRoomScreen(
                             val uni = CharacterCatalog.getItem(workingState.equippedUniform)
                             val zoneSuitability = when {
                                 workingState.backgroundId == "bg_chiller_room" && workingState.equippedUniform != "uniform_armor" ->
-                                    "Peringatan M05/M07B: Di Ruang Chiller 4,2K butuh Suit Kryogenik untuk bahaya helium cair!"
+                                    "Peringatan M03: Di Ruang PDU & HV Generator wajib memakai Suit Insinyur Gantry & HV!"
                                 workingState.backgroundId == "bg_scanner_suite" && workingState.equippedHeadset == "headset_none" ->
-                                    "Peringatan M07C: Di Ruang 3T Zona IV wajib memakai pelindung pendengaran terhadap bising gradien!"
-                                else -> uni?.let { "${it.name}: ${it.clinicalBenefit}." } ?: "Seragam bebas komponen feromagnetik!"
+                                    "Peringatan M02: Di Suite Gantry pastikan headset interkom aba-aba napas selalu terhubung!"
+                                else -> uni?.let { "${it.name}: ${it.clinicalBenefit}." } ?: "Seragam siap untuk ruang kontrol & konsol CT!"
                             }
                             triggerAvatarTap(
                                 customMessage = zoneSuitability,
@@ -313,10 +314,10 @@ fun CharacterRoomScreen(
                         }
                     }
                 },
-                onDoubleTapLarmorSpin = {
-                    larmorSpinTrigger++
+                onDoubleTapGantrySpin = {
+                    gantrySpinTrigger++
                     triggerAvatarTap(
-                        customMessage = "Presesi Larmor 63,87 MHz aktif! Spin fase 360° selaras!",
+                        customMessage = "Rotasi Gantry Slip-Ring 0,25 detik aktif! Proyeksi 360° selaras!",
                         hapticType = HapticFeedbackType.LongPress,
                         expression = Expression.BANGGA
                     )
@@ -371,7 +372,7 @@ fun CharacterRoomScreen(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Surface(
                         onClick = {
-                            mriHaptics.lightToggle()
+                            ctHaptics.lightToggle()
                             isDailyShiftExpanded = !isDailyShiftExpanded
                         },
                         color = androidx.compose.ui.graphics.Color.Transparent,
@@ -583,7 +584,7 @@ fun CharacterRoomScreen(
                 selectedCategory = selectedCategory,
                 accentPalette = accentPalette,
                 onSelectCategory = { category ->
-                    mriHaptics.lightToggle()
+                    ctHaptics.lightToggle()
                     selectedCategory = category
                 }
             )
@@ -651,7 +652,8 @@ fun CharacterRoomScreen(
                                 item = item,
                                 modules = state.modulesList,
                                 completedNodeCodes = state.completedNodeCodes,
-                                equippedItemIds = equippedIds
+                                equippedItemIds = equippedIds,
+                                enforceCurriculumLocks = state.enforceCharacterLocks
                             )
                             val isUnlocked = unlockState is ItemUnlockState.Unlocked
                             val unlockProgress = if (unlockState is ItemUnlockState.Locked) unlockState.progress else 1f
@@ -769,39 +771,45 @@ fun CharacterRoomScreen(
                 if (state.modulesList.isNotEmpty()) {
                     state.modulesList.map { mod ->
                         val shortLabel = when (mod.code) {
-                            "M01" -> "Fisika Spin"
-                            "M02" -> "Relaksasi"
-                            "M03A" -> "SE & GRE"
-                            "M03B" -> "IR & EPI"
-                            "M03C" -> "Kontras"
-                            "M04A" -> "Spasial"
-                            "M04B" -> "K-space"
-                            "M04C" -> "Akuisisi"
-                            "M05" -> "Magnet"
-                            "M06A" -> "Gradien"
-                            "M06B" -> "Koil RF"
-                            "M07A" -> "Zona & B0"
-                            "M07B" -> "SAR & B1"
-                            "M07C" -> "dB/dt"
-                            "M08A" -> "Artefak 1"
-                            "M08B" -> "Artefak 2"
-                            "M08C" -> "QA/QC"
-                            "M09" -> "Konsol"
-                            else -> mod.title.take(10)
+                            "M01" -> "Fisika X-Ray"
+                            "M02" -> "Gantry CT"
+                            "M03" -> "Tabung & DAS"
+                            "M04" -> "MSCT & Pitch"
+                            "M05" -> "Rekonstruksi"
+                            "M06" -> "HU & Window"
+                            "M07" -> "Dosimetri CT"
+                            "M08" -> "Kontras & 3D"
+                            "M09" -> "Artefak & QA"
+                            else -> mod.title.take(12)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                         }
                         Triple(mod.code, shortLabel, mod)
                     }
                 } else {
                     listOf(
-                        Triple("M01", "Fisika", null),
-                        Triple("M02", "Relaksasi", null),
-                        Triple("M03A", "Sekuens", null),
-                        Triple("M04A", "K-space", null),
-                        Triple("M05", "Kriogenik", null),
-                        Triple("M06A", "Gradien", null),
-                        Triple("M07A", "Safety", null),
-                        Triple("M08A", "Artefak", null),
-                        Triple("M09", "Konsol", null)
+                        Triple("M01", "Fisika X-Ray", null),
+                        Triple("M02", "Gantry CT", null),
+                        Triple("M03", "Tabung & DAS", null),
+                        Triple("M04", "MSCT & Pitch", null),
+                        Triple("M05", "Rekonstruksi", null),
+                        Triple("M06", "HU & Window", null),
+                        Triple("M07", "Dosimetri CT", null),
+                        Triple("M08", "Kontras & 3D", null),
+                        Triple("M09", "Artefak & QA", null)
                     )
                 }
             }
@@ -820,7 +828,7 @@ fun CharacterRoomScreen(
                     // Toggle khusus pembuka/penutup Galeri Lencana Modul
                     Surface(
                         onClick = {
-                            mriHaptics.lightToggle()
+                            ctHaptics.lightToggle()
                             isBadgeGalleryOpen = !isBadgeGalleryOpen
                         },
                         color = androidx.compose.ui.graphics.Color.Transparent,
@@ -961,6 +969,55 @@ fun CharacterRoomScreen(
                                 }
                             }
                         }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Preferensi Mode Konsol & Progresi Ruang Karakter
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = CharCardSurface,
+                border = BorderStroke(1.dp, CharBorderSlate)
+            ) {
+                Column(
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Preferensi Sistem & Progresi CT-Learn",
+                        color = com.example.ui.theme.TextPrimary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Transisi Cepat Antar-Tab", color = com.example.ui.theme.TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Lewati animasi loading 5 detik saat berpindah tab.", color = com.example.ui.theme.TextMuted, fontSize = 10.5.sp)
+                        }
+                        Switch(
+                            checked = state.instantTransitions,
+                            onCheckedChange = { viewModel.setInstantTransitions(it) }
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Mode Progresi Kunci Item", color = com.example.ui.theme.TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Kunci item alat QA hingga simpul modul prasyarat selesai.", color = com.example.ui.theme.TextMuted, fontSize = 10.5.sp)
+                        }
+                        Switch(
+                            checked = state.enforceCharacterLocks,
+                            onCheckedChange = { viewModel.setEnforceCharacterLocks(it) }
+                        )
                     }
                 }
             }

@@ -148,16 +148,15 @@ interface StudyDayDao {
 }
 
 @Dao
-interface MriCurriculumDao {
+interface CtCurriculumDao {
     @Query("SELECT * FROM mri_modules ORDER BY sortOrder ASC, id ASC")
-    fun observeAllModules(): Flow<List<MriModuleEntity>>
+    fun observeAllModules(): Flow<List<CtModuleEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertModules(modules: List<MriModuleEntity>)
+    suspend fun insertModules(modules: List<CtModuleEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertModule(module: MriModuleEntity)
-
+    suspend fun insertModule(module: CtModuleEntity)
     @Query("SELECT COUNT(*) FROM mri_modules")
     suspend fun getModulesCount(): Int
 
@@ -168,10 +167,11 @@ interface MriCurriculumDao {
 @Dao
 interface CurriculumDao {
     @Query("SELECT * FROM mri_modules ORDER BY sortOrder ASC, id ASC")
-    fun observeAllModules(): Flow<List<MriModuleEntity>>
+    fun observeAllModules(): Flow<List<CtModuleEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertModules(modules: List<MriModuleEntity>)
+    suspend fun insertModules(modules: List<CtModuleEntity>)
+
 
     @Query("SELECT * FROM curriculum_nodes ORDER BY moduleId ASC, sortOrder ASC, level ASC, code ASC")
     fun observeAllNodes(): Flow<List<CurriculumNodeEntity>>

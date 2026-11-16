@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.data.CtCurriculumData
+import com.example.data.CtRepository
 import com.example.data.toDomainModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -9,8 +10,8 @@ import org.junit.Test
 class CtCurriculumDataTest {
 
     @Test
-    fun ctCurriculumDataMatchesMriContractAndEntityMappers() {
-        val moduleEntities = CtCurriculumData.toMriModuleEntities()
+    fun ctCurriculumDataMatchesCtContractAndEntityMappers() {
+        val moduleEntities = CtCurriculumData.toCtModuleEntities()
         val nodeEntities = CtCurriculumData.toCurriculumNodeEntities()
         val quizEntities = CtCurriculumData.toCurriculumQuizEntities()
 
@@ -18,7 +19,6 @@ class CtCurriculumDataTest {
         assertEquals(CtCurriculumData.modules.sumOf { it.nodes.size }, nodeEntities.size)
         assertEquals(CtCurriculumData.quizzes.size, quizEntities.size)
 
-        // Ensure Room entities round-trip cleanly into MriCurriculumData domain models
         val roundTrippedModules = moduleEntities.map { it.toDomainModel() }
         val roundTrippedNodes = nodeEntities.map { it.toDomainModel() }
         val roundTrippedQuizzes = quizEntities.map { it.toDomainModel() }
@@ -27,11 +27,10 @@ class CtCurriculumDataTest {
         assertEquals(nodeEntities.size, roundTrippedNodes.size)
         assertEquals(quizEntities.size, roundTrippedQuizzes.size)
 
-        // Ensure adapter helpers produce identical counts
-        assertEquals(CtCurriculumData.modules.size, CtCurriculumData.toMriModules().size)
+        assertEquals(CtCurriculumData.modules.size, CtCurriculumData.toCtModules().size)
         assertEquals(CtCurriculumData.quizzes.size, CtCurriculumData.toQuizQuestions().size)
-        assertEquals(CtCurriculumData.flashcards.size, CtCurriculumData.toMriFlashcards().size)
-        assertEquals(CtCurriculumData.tissues.size, CtCurriculumData.toTissuePropertiesList().size)
+        assertEquals(CtCurriculumData.flashcards.size, CtCurriculumData.toCtFlashcards().size)
+        assertEquals(CtCurriculumData.tissues.size, CtCurriculumData.toTissueAttenuationList().size)
         assertEquals(CtCurriculumData.glossary.size, CtCurriculumData.toGlossaryItems().size)
     }
 
@@ -72,5 +71,30 @@ class CtCurriculumDataTest {
         assertEquals(40.0f, msct64.calculateBeamCollimationMm(), 0.01f)
         assertEquals(0.8f, msct64.calculatePitch(tableFeedMmPerRot = 32.0f), 0.001f)
         assertEquals(1.4f * 120 * 300 * 10f, msct64.calculateHeatUnits(120, 300, 10f), 0.1f)
+
+        val modules = CtRepository.modules
+        val quizzes = CtRepository.quizzes
+        val allNodes = modules.flatMap { it.nodes }
+        val allNodeCodes = allNodes.map { it.code }.toSet()
+
+        assertEquals(9, modules.size)
+        assertEquals(50, allNodes.size)
+        assertEquals(50, quizzes.size)
+
+        modules.forEach { mod ->
+            assertEquals("totalQuizzes pada ${mod.id} harus sesuai jumlah soal", quizzes.count { it.moduleId == mod.id }, mod.totalQuizzes)
+            assertTrue("Flashcards modul ${mod.id} tidak boleh kosong", mod.flashcards.isNotEmpty())
+        }
+
+        allNodes.forEach { node ->
+            assertTrue("Simpul ${node.code} wajib memiliki labType", !node.labType.isNullOrBlank())
+            val codePattern = Regex("M\\d{2}\\.T\\d(?:\\.\\d)?")
+            codePattern.findAll(node.crossLinks.orEmpty()).forEach { match ->
+                assertTrue(
+                    "Rujukan crossLinks '${match.value}' pada simpul ${node.code} tidak ditemukan di kurikulum",
+                    match.value in allNodeCodes
+                )
+            }
+        }
     }
 }

@@ -34,11 +34,16 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import com.example.util.CtPhysicsCalculator
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -144,10 +149,10 @@ private val gantryComponents = listOf(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CtGantryAnatomyAndChainSimulator() {
-    var coverOpened by remember { mutableStateOf(true) }
-    var gantryRotating by remember { mutableStateOf(true) }
-    var selectedComponentId by remember { mutableIntStateOf(0) }
-    var tableOffsetCm by remember { mutableFloatStateOf(0f) } // -6 cm to +6 cm vertical off-centering
+    var coverOpened by rememberSaveable { mutableStateOf(true) }
+    var gantryRotating by rememberSaveable { mutableStateOf(true) }
+    var selectedComponentId by rememberSaveable { mutableIntStateOf(0) }
+    var tableOffsetCm by rememberSaveable { mutableFloatStateOf(0f) } // -6 cm to +6 cm vertical off-centering
 
     val infiniteTransition = rememberInfiniteTransition(label = "gantry_rot")
     val animAngleDeg by infiniteTransition.animateFloat(
@@ -572,21 +577,35 @@ private fun huToGrayscaleColor(hu: Float, ww: Float, wl: Float): Color {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CtHuWindowingAndBeerLambertSimulator() {
-    var ww by remember { mutableFloatStateOf(80f) }
-    var wl by remember { mutableFloatStateOf(40f) }
-    var selectedPresetName by remember { mutableStateOf("Brain (80/40)") }
+fun CtHuWindowingAndBeerLambertSimulator(
+    state: CtUiState? = null,
+    viewModel: CtViewModel? = null
+) {
+    var ww by rememberSaveable { mutableFloatStateOf(state?.windowWidthHu ?: 80f) }
+    var wl by rememberSaveable { mutableFloatStateOf(state?.windowLevelHu ?: 40f) }
+    var selectedPresetName by rememberSaveable { mutableStateOf("Brain (80/40)") }
+    var sliceIndex by rememberSaveable { mutableIntStateOf(0) } // 0: Kepala, 1: Toraks, 2: Abdomen
+
+    LaunchedEffect(state?.windowWidthHu, state?.windowLevelHu) {
+        if (state != null) {
+            ww = state.windowWidthHu
+            wl = state.windowLevelHu
+            val matched = clinicalWindowPresets.firstOrNull {
+                kotlin.math.abs(it.ww - state.windowWidthHu) < 2f && kotlin.math.abs(it.wl - state.windowLevelHu) < 2f
+            }
+            if (matched != null) selectedPresetName = matched.name
+        }
+    }
 
     // Beer-Lambert & HU Interactive Calculator state
-    var muTissue by remember { mutableFloatStateOf(0.210f) } // cm^-1 (Water = 0.200 cm^-1)
-    var thicknessCm by remember { mutableFloatStateOf(10f) }
+    var muTissue by rememberSaveable { mutableFloatStateOf(0.210f) } // cm^-1 (Water = 0.200 cm^-1)
+    var thicknessCm by rememberSaveable { mutableFloatStateOf(10f) }
 
-    val muWater = 0.200f
-    val calculatedHu = 1000f * (muTissue - muWater) / muWater
-    val transmittedRatio = exp(-muTissue * thicknessCm)
+    val calculatedHu = CtPhysicsCalculator.calculateHu(muTissue).toFloat()
+    val transmittedRatio = CtPhysicsCalculator.beerLambertTransmission(muTissue, thicknessCm)
     val transmittedPct = transmittedRatio * 100f
-    val hvlCm = 0.693f / muTissue
-    val sinogramRaySum = ln(1f / transmittedRatio.coerceAtLeast(1e-6f))
+    val hvlCm = CtPhysicsCalculator.halfValueLayerCm(muTissue)
+    val sinogramRaySum = CtPhysicsCalculator.sinogramRaySum(transmittedRatio)
 
     val minDisplayedHu = (wl - ww / 2f).roundToInt()
     val maxDisplayedHu = (wl + ww / 2f).roundToInt()
@@ -623,6 +642,7 @@ fun CtHuWindowingAndBeerLambertSimulator() {
                                 selectedPresetName = preset.name
                                 ww = preset.ww
                                 wl = preset.wl
+                                viewModel?.setWindowing(preset.ww, preset.wl)
                             },
                             label = { Text(preset.name, fontSize = 11.sp) }
                         )
@@ -630,6 +650,28 @@ fun CtHuWindowingAndBeerLambertSimulator() {
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Multi-Slice Anatomy Level Selector
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf(
+                        0 to "Potongan 1: Kepala (Stroke/Hematoma)",
+                        1 to "Potongan 2: Toraks (Paru/Aorta)",
+                        2 to "Potongan 3: Abdomen (Hepar/Kista)"
+                    ).forEach { (idx, label) ->
+                        FilterChip(
+                            selected = sliceIndex == idx,
+                            onClick = { sliceIndex = idx },
+                            label = { Text(label, fontSize = 10.5.sp) }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Multi-Tissue CT Phantom Canvas
                 Box(
@@ -648,6 +690,7 @@ fun CtHuWindowingAndBeerLambertSimulator() {
                         // Air background (-1000 HU)
                         drawRect(color = huToGrayscaleColor(-1000f, ww, wl))
 
+                        if (sliceIndex == 0) {
                         // Subcutaneous Fat Rim (-80 HU)
                         drawCircle(
                             color = huToGrayscaleColor(-80f, ww, wl),
@@ -686,7 +729,7 @@ fun CtHuWindowingAndBeerLambertSimulator() {
 
                         // Frontal Air Sinus (-950 HU) & Lung-like aerated cell (-780 HU)
                         drawCircle(
-                            color = huToGrayscaleColor(-780f, ww, wl),
+                            color = huToGrayscaleColor(-950f, ww, wl),
                             radius = rMax * 0.14f,
                             center = Offset(cx, cy - rMax * 0.72f)
                         )
@@ -716,6 +759,27 @@ fun CtHuWindowingAndBeerLambertSimulator() {
                             radius = rMax * 0.19f,
                             center = Offset(cx + rMax * 0.40f, cy + rMax * 0.10f)
                         )
+                        } else if (sliceIndex == 1) {
+                            // Slice 1: Toraks (Paru, Nodul, Aorta, Trakea, Vertebra)
+                            drawOval(color = huToGrayscaleColor(-85f, ww, wl), topLeft = Offset(cx - rMax * 1.15f, cy - rMax * 0.85f), size = Size(rMax * 2.3f, rMax * 1.7f))
+                            drawOval(color = huToGrayscaleColor(45f, ww, wl), topLeft = Offset(cx - rMax * 1.05f, cy - rMax * 0.76f), size = Size(rMax * 2.1f, rMax * 1.52f))
+                            drawOval(color = huToGrayscaleColor(-750f, ww, wl), topLeft = Offset(cx - rMax * 0.92f, cy - rMax * 0.58f), size = Size(rMax * 0.76f, rMax * 1.16f))
+                            drawOval(color = huToGrayscaleColor(-750f, ww, wl), topLeft = Offset(cx + rMax * 0.16f, cy - rMax * 0.58f), size = Size(rMax * 0.76f, rMax * 1.16f))
+                            drawCircle(color = huToGrayscaleColor(35f, ww, wl), radius = rMax * 0.13f, center = Offset(cx + rMax * 0.54f, cy - rMax * 0.12f))
+                            drawCircle(color = huToGrayscaleColor(320f, ww, wl), radius = rMax * 0.16f, center = Offset(cx + rMax * 0.05f, cy + rMax * 0.15f))
+                            drawCircle(color = huToGrayscaleColor(-1000f, ww, wl), radius = rMax * 0.11f, center = Offset(cx, cy - rMax * 0.18f))
+                            drawCircle(color = huToGrayscaleColor(1200f, ww, wl), radius = rMax * 0.20f, center = Offset(cx, cy + rMax * 0.52f))
+                        } else {
+                            // Slice 2: Abdomen (Hepar, Kista, Gas Lambung, Aorta, Vertebra)
+                            drawOval(color = huToGrayscaleColor(-90f, ww, wl), topLeft = Offset(cx - rMax * 1.15f, cy - rMax * 0.85f), size = Size(rMax * 2.3f, rMax * 1.7f))
+                            drawOval(color = huToGrayscaleColor(42f, ww, wl), topLeft = Offset(cx - rMax * 1.02f, cy - rMax * 0.74f), size = Size(rMax * 2.04f, rMax * 1.48f))
+                            drawOval(color = huToGrayscaleColor(58f, ww, wl), topLeft = Offset(cx - rMax * 0.90f, cy - rMax * 0.52f), size = Size(rMax * 0.88f, rMax * 0.85f))
+                            drawCircle(color = huToGrayscaleColor(8f, ww, wl), radius = rMax * 0.15f, center = Offset(cx - rMax * 0.50f, cy - rMax * 0.12f))
+                            drawCircle(color = huToGrayscaleColor(-980f, ww, wl), radius = rMax * 0.24f, center = Offset(cx + rMax * 0.40f, cy - rMax * 0.24f))
+                            drawCircle(color = huToGrayscaleColor(52f, ww, wl), radius = rMax * 0.22f, center = Offset(cx + rMax * 0.68f, cy + rMax * 0.18f))
+                            drawCircle(color = huToGrayscaleColor(260f, ww, wl), radius = rMax * 0.13f, center = Offset(cx + rMax * 0.06f, cy + rMax * 0.12f))
+                            drawCircle(color = huToGrayscaleColor(1100f, ww, wl), radius = rMax * 0.20f, center = Offset(cx, cy + rMax * 0.48f))
+                        }
                     }
 
                     Column(
@@ -742,7 +806,11 @@ fun CtHuWindowingAndBeerLambertSimulator() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Legenda Fantom: Tulang (+1400 HU) • Hematoma Kiri (+75 HU) • Korteks (+40 HU) • Substansia Alba (+28 HU) • Infark Kanan (+18 HU) • Ventrikel CSF (+10 HU) • Lemak (-80 HU) • Sinus/Paru (-780 HU)",
+                    text = when (sliceIndex) {
+                        0 -> "Legenda Kepala: Tulang (+1400 HU) • Hematoma Kiri (+75 HU) • Korteks (+40 HU) • Alba (+28 HU) • Infark Kanan (+18 HU) • CSF (+10 HU) • Sinus (-950 HU)"
+                        1 -> "Legenda Toraks: Vertebra (+1200 HU) • Aorta Kontras (+320 HU) • Mediastinum (+45 HU) • Nodul Paru (+35 HU) • Paru (-750 HU) • Trakea (-1000 HU)"
+                        else -> "Legenda Abdomen: Vertebra (+1100 HU) • Aorta (+260 HU) • Hepar (+58 HU) • Kista (+8 HU) • Lemak (-90 HU) • Gas Lambung (-980 HU)"
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -762,6 +830,7 @@ fun CtHuWindowingAndBeerLambertSimulator() {
                     onValueChange = {
                         ww = it
                         selectedPresetName = "Kustom"
+                        viewModel?.setWindowing(ww, wl)
                     },
                     valueRange = 20f..2500f,
                     modifier = Modifier.testTag("slider_ct_ww")
@@ -779,6 +848,7 @@ fun CtHuWindowingAndBeerLambertSimulator() {
                     onValueChange = {
                         wl = it
                         selectedPresetName = "Kustom"
+                        viewModel?.setWindowing(ww, wl)
                     },
                     valueRange = -800f..800f,
                     modifier = Modifier.testTag("slider_ct_wl")

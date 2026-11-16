@@ -3,7 +3,7 @@ package com.example
 import com.example.data.CharacterCatalog
 import com.example.data.CharacterCategory
 import com.example.data.CharacterItem
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.data.UnlockRequirement
 import com.example.util.ItemUnlockState
 import com.example.util.UnlockProgress
@@ -31,7 +31,7 @@ class UnlockProgressTest {
         val item = gatedItem("test_m02", "M02", 5)
         val state = UnlockProgress.evaluate(
             item = item,
-            modules = MriRepository.modules,
+            modules = CtRepository.modules,
             completedNodeCodes = emptySet(),
             enforceCurriculumLocks = false
         )
@@ -41,7 +41,7 @@ class UnlockProgressTest {
         assertNull(
             UnlockProgress.closestLockedItem(
                 items = listOf(item),
-                modules = MriRepository.modules,
+                modules = CtRepository.modules,
                 completedNodeCodes = emptySet(),
                 enforceCurriculumLocks = false
             )
@@ -50,14 +50,14 @@ class UnlockProgressTest {
 
     @Test
     fun enabledLocksComputeProgressAndClosestLockedTip() {
-        val m02 = MriRepository.modules.first { it.id == "M02" }
+        val m02 = CtRepository.modules.first { it.id == "M02" }
         val completedThree = m02.nodes.take(3).map { it.code }.toSet()
         val itemM02 = gatedItem("item_m02", "M02", 5)
         val itemM01 = gatedItem("item_m01", "M01", 10)
 
         val lockedM02 = UnlockProgress.evaluate(
             item = itemM02,
-            modules = MriRepository.modules,
+            modules = CtRepository.modules,
             completedNodeCodes = completedThree,
             enforceCurriculumLocks = true
         )
@@ -70,7 +70,7 @@ class UnlockProgressTest {
 
         val tip = UnlockProgress.closestLockedItem(
             items = listOf(itemM01, itemM02),
-            modules = MriRepository.modules,
+            modules = CtRepository.modules,
             completedNodeCodes = completedThree,
             enforceCurriculumLocks = true
         )
@@ -82,14 +82,14 @@ class UnlockProgressTest {
         val item = gatedItem("grandfathered_item", "M02", 5)
         val equippedState = UnlockProgress.evaluate(
             item = item,
-            modules = MriRepository.modules,
+            modules = CtRepository.modules,
             completedNodeCodes = emptySet(),
             equippedItemIds = setOf("grandfathered_item"),
             enforceCurriculumLocks = true
         )
         val ownedState = UnlockProgress.evaluate(
             item = item,
-            modules = MriRepository.modules,
+            modules = CtRepository.modules,
             completedNodeCodes = emptySet(),
             ownedItemIds = setOf("grandfathered_item"),
             enforceCurriculumLocks = true

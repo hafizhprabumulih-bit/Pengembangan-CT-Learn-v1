@@ -71,9 +71,9 @@ import com.example.R
 import com.example.data.CharacterCustomizationState
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
-import com.example.ui.components.MriGlobalAssetCatalog
-import com.example.ui.components.MriGlobalAssetImage
-import com.example.ui.components.MriGlobalAssetKey
+import com.example.ui.components.CtGlobalAssetCatalog
+import com.example.ui.components.CtGlobalAssetImage
+import com.example.ui.components.CtGlobalAssetKey
 import com.example.ui.theme.AmberWarning
 import com.example.ui.theme.CardSlate
 import com.example.ui.theme.CardSlateBorder
@@ -85,22 +85,22 @@ import com.example.ui.theme.EmeraldSuccess
 import com.example.ui.theme.RoseDanger
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.util.DefenseItemCategory
-import com.example.util.MagnetDefenseState
-import com.example.util.MriArcadeEngine
-import com.example.util.rememberMriHaptics
+import com.example.util.DefenseArtifactCategory
+import com.example.util.MetalDefenseState
+import com.example.util.CtArcadeEngine
+import com.example.util.rememberCtHaptics
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 @Composable
-fun MagnetDefenseScreen(
+fun MetalDefenseScreen(
     characterCustomization: CharacterCustomizationState,
     bestScore: Int,
     onScoreUpdated: (score: Int, rankTitle: String) -> Unit = { _, _ -> },
     onGameFinished: (score: Int, rankTitle: String) -> Unit,
     onBack: () -> Unit
 ) {
-    val haptics = rememberMriHaptics()
+    val haptics = rememberCtHaptics()
     BackHandler {
         if (gameStateScoreHolder > 0) {
             onScoreUpdated(gameStateScoreHolder, gameStateRankHolder)
@@ -108,7 +108,7 @@ fun MagnetDefenseScreen(
         onBack()
     }
 
-    var gameState by remember { mutableStateOf(MagnetDefenseState()) }
+    var gameState by remember { mutableStateOf(MetalDefenseState()) }
     var isPaused by remember { mutableStateOf(false) }
     var reported by remember { mutableStateOf(false) }
     var lastTapRipple by remember { mutableStateOf<Offset?>(null) }
@@ -162,7 +162,7 @@ fun MagnetDefenseScreen(
             val dt = ((nowNs - lastNs) / 1_000_000_000f).coerceIn(0.001f, 0.05f)
             lastNs = nowNs
             val prevLives = gameState.lives
-            gameState = MriArcadeEngine.stepMagnetDefense(gameState, dt)
+            gameState = CtArcadeEngine.stepMetalDefense(gameState, dt)
             if (gameState.lives < prevLives) {
                 haptics.warningBuzz()
             }
@@ -213,7 +213,7 @@ fun MagnetDefenseScreen(
                     color = TextPrimary
                 )
                 Text(
-                    text = "Wave ${gameState.wave} · ${gameState.fieldLabel} · Rekor: ${maxOf(bestScore, gameState.score)}",
+                    text = "Wave ${gameState.wave} · ${gameState.kvpLabel} · Rekor: ${maxOf(bestScore, gameState.score)}",
                     fontSize = 11.sp,
                     color = CyanBright,
                     fontWeight = FontWeight.SemiBold
@@ -262,10 +262,10 @@ fun MagnetDefenseScreen(
                     Button(
                         onClick = {
                             haptics.completionBuzz()
-                            val unsafeCount = gameState.items.count { it.category == DefenseItemCategory.MR_UNSAFE }
+                            val unsafeCount = gameState.items.count { it.category == DefenseArtifactCategory.CT_METAL_ARTIFACT }
                             val bonus = (unsafeCount.coerceAtLeast(1)) * 150
                             gameState = gameState.copy(
-                                items = gameState.items.filter { it.category != DefenseItemCategory.MR_UNSAFE },
+                                items = gameState.items.filter { it.category != DefenseArtifactCategory.CT_METAL_ARTIFACT },
                                 score = gameState.score + bonus,
                                 combo = 0,
                                 deflectedCount = gameState.deflectedCount + unsafeCount,
@@ -289,8 +289,8 @@ fun MagnetDefenseScreen(
                     } else {
                         Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                             repeat(gameState.lives) {
-                                MriGlobalAssetImage(
-                                    assetKey = MriGlobalAssetKey.SHIELD_5G,
+                                CtGlobalAssetImage(
+                                    assetKey = CtGlobalAssetKey.SHIELD_ALARA,
                                     modifier = Modifier.size(18.dp),
                                     tintAccent = if (gameState.lives <= 1) RoseDanger else EmeraldSuccess
                                 )
@@ -313,7 +313,7 @@ fun MagnetDefenseScreen(
                     nanoTipTap++
                     customNanoTip = when {
                         gameState.combo >= 3 -> "Nano: Combo x${gameState.combo} siap! Tekan EMP 5G untuk menyapu seluruh benda bahaya!"
-                        gameState.wave >= 3 -> "Nano: Hati-hati! Di ${gameState.fieldLabel}, benda feromagnetik berbelok spiral!"
+                        gameState.wave >= 3 -> "Nano: Hati-hati! Di ${gameState.kvpLabel}, benda feromagnetik berbelok spiral!"
                         else -> "Nano: Ketuk benda merah (MR Unsafe); biarkan item hijau (MR Safe) masuk ke bore (+45)."
                     }
                 }
@@ -365,7 +365,7 @@ fun MagnetDefenseScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Arena Polar 5 Gauss berlatar aset arena
+        // Arena FOV Gantry CT berlatar aset arena
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
@@ -390,7 +390,7 @@ fun MagnetDefenseScreen(
 
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val center = Offset(size.width * 0.5f, size.height * 0.5f)
-                val r5G = minDimPx * MriArcadeEngine.FIVE_GAUSS_RADIUS
+                val r5G = minDimPx * CtArcadeEngine.SFOV_TARGET_RADIUS
 
                 drawLine(CyanPrimary.copy(alpha = 0.16f), Offset(0f, center.y), Offset(size.width, center.y), 1.5f)
                 drawLine(CyanPrimary.copy(alpha = 0.16f), Offset(center.x, 0f), Offset(center.x, size.height), 1.5f)
@@ -400,7 +400,7 @@ fun MagnetDefenseScreen(
                 gameState.items.forEach { proj ->
                     val px = proj.x * size.width
                     val py = proj.y * size.height
-                    val lineCol = if (proj.category == DefenseItemCategory.MR_UNSAFE) {
+                    val lineCol = if (proj.category == DefenseArtifactCategory.CT_METAL_ARTIFACT) {
                         RoseDanger.copy(alpha = 0.40f)
                     } else {
                         EmeraldSuccess.copy(alpha = 0.28f)
@@ -416,8 +416,8 @@ fun MagnetDefenseScreen(
 
                 val dashPhase = (gameState.elapsedSec * 45f) % 26f
                 val threatNear = gameState.items.any {
-                    it.category == DefenseItemCategory.MR_UNSAFE &&
-                        kotlin.math.hypot(it.x - MriArcadeEngine.BORE_CENTER_X, it.y - MriArcadeEngine.BORE_CENTER_Y) <= MriArcadeEngine.FIVE_GAUSS_RADIUS + 0.13f
+                    it.category == DefenseArtifactCategory.CT_METAL_ARTIFACT &&
+                        kotlin.math.hypot(it.x - CtArcadeEngine.GANTRY_ISOCENTER_X, it.y - CtArcadeEngine.GANTRY_ISOCENTER_Y) <= CtArcadeEngine.SFOV_TARGET_RADIUS + 0.13f
                 }
                 if (threatNear) {
                     drawCircle(
@@ -461,7 +461,7 @@ fun MagnetDefenseScreen(
                             val normX = (tapOffset.x / widthPx).coerceIn(0f, 1f)
                             val normY = (tapOffset.y / heightPx).coerceIn(0f, 1f)
                             val prevScore = gameState.score
-                            val nextState = MriArcadeEngine.tapDefenseAtNormalized(
+                            val nextState = CtArcadeEngine.tapDefenseAtNormalized(
                                 state = gameState,
                                 normX = normX,
                                 normY = normY,
@@ -495,8 +495,8 @@ fun MagnetDefenseScreen(
                 key(proj.id) {
                     val xPx = (proj.x * widthPx - itemSizePx / 2f).roundToInt()
                     val yPx = (proj.y * heightPx - itemSizePx / 2f).roundToInt()
-                    val isUnsafe = proj.category == DefenseItemCategory.MR_UNSAFE
-                    val assetKey = MriGlobalAssetCatalog.resolveKey(MriArcadeEngine.resolveAssetKey(proj))
+                    val isUnsafe = proj.category == DefenseArtifactCategory.CT_METAL_ARTIFACT
+                    val assetKey = CtGlobalAssetCatalog.resolveKey(CtArcadeEngine.resolveAssetKey(proj))
 
                     Surface(
                         modifier = Modifier
@@ -508,7 +508,7 @@ fun MagnetDefenseScreen(
                                     val hitCenter = Offset(proj.x * widthPx, proj.y * heightPx)
                                     lastTapRipple = hitCenter
                                     val prevScore = gameState.score
-                                    val nextState = MriArcadeEngine.tapDefenseProjectile(gameState, proj.id)
+                                    val nextState = CtArcadeEngine.tapDefenseProjectile(gameState, proj.id)
                                     if (isUnsafe) {
                                         haptics.mediumAction()
                                         lastPopup = Triple(hitCenter, "+${nextState.score - prevScore}", true)
@@ -524,7 +524,7 @@ fun MagnetDefenseScreen(
                                     val hitCenter = Offset(proj.x * widthPx, proj.y * heightPx)
                                     lastTapRipple = hitCenter
                                     val prevScore = gameState.score
-                                    val nextState = MriArcadeEngine.tapDefenseProjectile(gameState, proj.id)
+                                    val nextState = CtArcadeEngine.tapDefenseProjectile(gameState, proj.id)
                                     if (isUnsafe) {
                                         haptics.mediumAction()
                                         lastPopup = Triple(hitCenter, "+${nextState.score - prevScore}", true)
@@ -548,7 +548,7 @@ fun MagnetDefenseScreen(
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier.padding(4.dp)
                         ) {
-                            MriGlobalAssetImage(
+                            CtGlobalAssetImage(
                                 assetKey = assetKey,
                                 modifier = Modifier.size(30.dp),
                                 tintAccent = if (isUnsafe) RoseDanger else EmeraldSuccess
@@ -628,8 +628,8 @@ fun MagnetDefenseScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            MriGlobalAssetImage(
-                                assetKey = MriGlobalAssetKey.TROPHY_MEDAL,
+                            CtGlobalAssetImage(
+                                assetKey = CtGlobalAssetKey.TROPHY_MEDAL,
                                 modifier = Modifier.size(44.dp),
                                 tintAccent = AmberWarning
                             )
@@ -652,7 +652,7 @@ fun MagnetDefenseScreen(
                                 Button(
                                     onClick = {
                                         haptics.lightToggle()
-                                        gameState = MagnetDefenseState()
+                                        gameState = MetalDefenseState()
                                         reported = false
                                         isPaused = false
                                     },
@@ -671,7 +671,7 @@ fun MagnetDefenseScreen(
 }
 
 private var gameStateScoreHolder: Int = 0
-private var gameStateRankHolder: String = "Magang Zona II"
+private var gameStateRankHolder: String = "Magang Konsol CT"
 
 private fun Modifier.androidxComposePointerTap(onDown: (Offset) -> Unit): Modifier =
     this.pointerInput(Unit) {

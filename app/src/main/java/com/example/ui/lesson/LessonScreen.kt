@@ -87,15 +87,15 @@ import androidx.compose.ui.window.Dialog
 import com.example.BuildConfig
 import com.example.data.CharacterCustomizationState
 import kotlinx.coroutines.flow.map
-import com.example.data.GlossaryItem
-import com.example.data.MriModule
-import com.example.data.MriNode
-import com.example.data.MriQuizQuestion
-import com.example.data.MriRepository
+import com.example.data.CtGlossaryItem
+import com.example.data.CtModule
+import com.example.data.CtNode
+import com.example.data.CtQuizQuestion
+import com.example.data.CtRepository
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
-import com.example.ui.components.MriGlobalAssetImage
-import com.example.ui.components.MriGlobalAssetKey
+import com.example.ui.components.CtGlobalAssetImage
+import com.example.ui.components.CtGlobalAssetKey
 import com.example.ui.path.ModulePathStateHolder
 import com.example.ui.path.PathNavigationHints
 import com.example.ui.theme.AmberWarning
@@ -120,14 +120,14 @@ import com.example.util.lesson.LessonReducer
 import com.example.util.lesson.LessonState
 import com.example.util.lesson.LessonStep
 import com.example.util.lesson.QuestionPhase
-import com.example.util.rememberMriHaptics
+import com.example.util.rememberCtHaptics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LessonScreen(
-    module: MriModule,
-    node: MriNode,
-    allQuizzes: List<MriQuizQuestion>,
+    module: CtModule,
+    node: CtNode,
+    allQuizzes: List<CtQuizQuestion>,
     characterCustomization: CharacterCustomizationState,
     pathHolder: ModulePathStateHolder,
     isReplayMode: Boolean,
@@ -136,7 +136,7 @@ fun LessonScreen(
     onLessonFinished: () -> Unit
 ) {
     val context = LocalContext.current
-    val haptics = rememberMriHaptics()
+    val haptics = rememberCtHaptics()
     val reduceMotion = rememberReduceMotion()
     val normalizedNodeCode = remember(node.code) { LegacyNodeCodes.normalize(node.code) }
 
@@ -243,7 +243,7 @@ fun LessonScreen(
     }
 
     var showExitConfirmDialog by rememberSaveable { mutableStateOf(false) }
-    var activeGlossaryItem by remember { mutableStateOf<GlossaryItem?>(null) }
+    var activeGlossaryItem by remember { mutableStateOf<CtGlossaryItem?>(null) }
     var interactiveNanoExpression by remember { mutableStateOf(Expression.SENANG) }
     var interactiveNanoBubble by remember { mutableStateOf<String?>(null) }
     var lessonNanoTapCount by remember(lessonState.index, normalizedNodeCode) { mutableStateOf(0) }
@@ -260,12 +260,12 @@ fun LessonScreen(
     }
 
     val relevantGlossary = remember(normalizedNodeCode, module.id) {
-        val nodeSpecific = MriRepository.glossary.filter { item ->
+        val nodeSpecific = CtRepository.glossary.filter { item ->
             LegacyNodeCodes.normalize(item.nodeCode) == normalizedNodeCode ||
                 item.moduleId.equals(module.id, ignoreCase = true) ||
                 item.moduleId.equals(module.code, ignoreCase = true)
         }
-        val others = MriRepository.glossary.filterNot { item ->
+        val others = CtRepository.glossary.filterNot { item ->
             LegacyNodeCodes.normalize(item.nodeCode) == normalizedNodeCode ||
                 item.moduleId.equals(module.id, ignoreCase = true) ||
                 item.moduleId.equals(module.code, ignoreCase = true)
@@ -305,7 +305,7 @@ fun LessonScreen(
                         type = "text/plain"
                         putExtra(
                             Intent.EXTRA_SUBJECT,
-                            "Laporan Materi MRI EDU — $normalizedNodeCode"
+                            "Laporan Materi CT-Learn — $normalizedNodeCode"
                         )
                         putExtra(
                             Intent.EXTRA_TEXT,
@@ -638,7 +638,7 @@ fun LessonScreen(
                         border = BorderStroke(1.dp, CyanPrimary.copy(alpha = 0.45f))
                     ) {
                         Text(
-                            text = item.symbolOrAbbr.ifBlank { "ISTILAH MRI" },
+                            text = item.symbolOrAbbr.ifBlank { "ISTILAH CT" },
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = CyanBright,
@@ -853,7 +853,7 @@ private fun LessonTopBar(
 
 @Composable
 private fun LessonStepBadgeRow(
-    node: MriNode,
+    node: CtNode,
     currentStep: LessonStep
 ) {
     val shortCode = NodeDisplay.shortCode(node.code)
@@ -975,9 +975,9 @@ private fun LessonStepBadgeRow(
 private fun ProgressiveExplainStack(
     steps: List<LessonStep>,
     activeStepIndex: Int,
-    glossaryItems: List<GlossaryItem>,
+    glossaryItems: List<CtGlossaryItem>,
     reduceMotion: Boolean,
-    onGlossaryTermClick: (GlossaryItem) -> Unit
+    onGlossaryTermClick: (CtGlossaryItem) -> Unit
 ) {
     val activeStep = steps.getOrNull(activeStepIndex) ?: return
 
@@ -1001,7 +1001,7 @@ private fun ProgressiveExplainStack(
         label = "lesson_window_slide"
     ) { stepIdx ->
         val step = steps.getOrNull(stepIdx) ?: activeStep
-        var matchedGlossary: GlossaryItem? = null
+        var matchedGlossary: CtGlossaryItem? = null
 
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -1079,7 +1079,7 @@ private fun ProgressiveExplainStack(
                                         end = offset
                                     ).firstOrNull()?.let { ann ->
                                         val item = glossaryItems.firstOrNull { it.term.equals(ann.item, ignoreCase = true) }
-                                            ?: MriRepository.glossary.firstOrNull { it.term.equals(ann.item, ignoreCase = true) }
+                                            ?: CtRepository.glossary.firstOrNull { it.term.equals(ann.item, ignoreCase = true) }
                                         item?.let(onGlossaryTermClick)
                                     }
                                 }
@@ -1160,9 +1160,9 @@ private fun ProgressiveExplainStack(
 
 private fun buildChunkAnnotatedString(
     chunk: LessonChunk,
-    glossaryItems: List<GlossaryItem>,
+    glossaryItems: List<CtGlossaryItem>,
     isActive: Boolean
-): Pair<AnnotatedString, GlossaryItem?> {
+): Pair<AnnotatedString, CtGlossaryItem?> {
     val fullText = if (!chunk.leadIn.isNullOrBlank()) {
         "${chunk.leadIn} ${chunk.text}".trim()
     } else {
@@ -1170,7 +1170,7 @@ private fun buildChunkAnnotatedString(
     }
     val leadLength = chunk.leadIn?.length ?: 0
 
-    data class TermMatch(val item: GlossaryItem, val range: IntRange)
+    data class TermMatch(val item: CtGlossaryItem, val range: IntRange)
     val matches = mutableListOf<TermMatch>()
 
     if (glossaryItems.isNotEmpty()) {
@@ -1585,8 +1585,8 @@ private fun LessonQuestionView(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            MriGlobalAssetImage(
-                                assetKey = if (isCorrect) MriGlobalAssetKey.CHECK_VERIFIED else MriGlobalAssetKey.SPARK_BOLT,
+                            CtGlobalAssetImage(
+                                assetKey = if (isCorrect) CtGlobalAssetKey.CHECK_VERIFIED else CtGlobalAssetKey.SPARK_BOLT,
                                 modifier = Modifier.size(22.dp)
                             )
                             Text(

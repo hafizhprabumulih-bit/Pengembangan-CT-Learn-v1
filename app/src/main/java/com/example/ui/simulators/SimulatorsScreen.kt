@@ -24,38 +24,40 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
-import com.example.viewmodel.SimType
+import com.example.viewmodel.CtSimType
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 import java.util.Locale
 
 internal val ID_LOCALE: Locale = Locale.forLanguageTag("id-ID")
 
 @Composable
 fun SimulatorsScreen(
-    state: MriUiState,
-    viewModel: MriViewModel
+    state: CtUiState,
+    viewModel: CtViewModel
 ) {
     val activeTabIndex = when (state.selectedSimType) {
-        SimType.PESAWAT_MAGNET_M05, SimType.SPIN_LARMOR -> 0
-        SimType.KONTRAS_TR_TE, SimType.FISIKA_DASAR_M01 -> 1
-        SimType.RUANG_K, SimType.SEKUENS_KONTRAS_M03, SimType.GRADIEN_RF_M06 -> 2
-        SimType.SAR_SAFETY, SimType.PROTOKOL_TA_SNR, SimType.KONSOL_VENDOR -> 3
-        SimType.ARTEFAK_QA_M08 -> 4
+        CtSimType.GANTRY_RANTAI_SINYAL -> 0
+        CtSimType.WINDOWING_HU_ATENUASI -> 1
+        CtSimType.MSCT_PITCH_REKON -> 2
+        CtSimType.DOSIMETRI_BOLUS_TRACKING -> 3
+        CtSimType.ARTEFAK_KALIBRASI_QA -> 4
     }
 
     SimulatorsScreen(
         selectedTabIndex = activeTabIndex,
         onSelectTab = { index ->
             val targetSimType = when (index) {
-                0 -> SimType.PESAWAT_MAGNET_M05
-                1 -> SimType.KONTRAS_TR_TE
-                2 -> SimType.RUANG_K
-                3 -> SimType.SAR_SAFETY
-                else -> SimType.ARTEFAK_QA_M08
+                0 -> CtSimType.GANTRY_RANTAI_SINYAL
+                1 -> CtSimType.WINDOWING_HU_ATENUASI
+                2 -> CtSimType.MSCT_PITCH_REKON
+                3 -> CtSimType.DOSIMETRI_BOLUS_TRACKING
+                else -> CtSimType.ARTEFAK_KALIBRASI_QA
             }
             viewModel.selectSimType(targetSimType)
-        }
+        },
+        state = state,
+        viewModel = viewModel
     )
 }
 
@@ -63,7 +65,9 @@ fun SimulatorsScreen(
 @Composable
 fun SimulatorsScreen(
     selectedTabIndex: Int = 0,
-    onSelectTab: (Int) -> Unit = {}
+    onSelectTab: (Int) -> Unit = {},
+    state: CtUiState? = null,
+    viewModel: CtViewModel? = null
 ) {
     val scrollState = rememberScrollState()
     val tabs = listOf(
@@ -132,9 +136,9 @@ fun SimulatorsScreen(
 
         when (selectedTabIndex.coerceIn(0, 4)) {
             0 -> CtGantryAnatomyAndChainSimulator()
-            1 -> CtHuWindowingAndBeerLambertSimulator()
+            1 -> CtHuWindowingAndBeerLambertSimulator(state = state, viewModel = viewModel)
             2 -> CtMsctPitchAndReconstructionSimulator()
-            3 -> CtDosimetryAndBolusTrackingSimulator()
+            3 -> CtDosimetryAndBolusTrackingSimulator(state = state, viewModel = viewModel)
             4 -> CtArtifactAndDailyQaSimulator()
         }
 

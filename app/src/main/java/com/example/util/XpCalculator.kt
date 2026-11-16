@@ -3,8 +3,8 @@ package com.example.util
 import com.example.data.CharacterCatalog
 import com.example.data.CharacterItem
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
-import com.example.data.MriNode
+import com.example.data.CtModule
+import com.example.data.CtNode
 import com.example.data.local.QuizAttemptEntity
 
 object XpRules {
@@ -50,7 +50,7 @@ object XpCalculator {
         completedCodes: Set<String>,
         skippedCodes: Set<String>,
         quizAttempts: List<QuizAttemptEntity>,
-        modules: List<MriModule>
+        modules: List<CtModule>
     ): XpSummary {
         val validNodeCodes = modules.flatMapTo(HashSet()) { module ->
             module.nodes.map { LegacyNodeCodes.normalize(it.code) }
@@ -95,8 +95,8 @@ object XpCalculator {
      * dengan asumsi sebelumnya belum pernah selesai sebagai `READ`.
      */
     fun earnedForNodeCompletion(
-        node: MriNode,
-        module: MriModule,
+        node: CtNode,
+        module: CtModule,
         completedCodesBefore: Set<String>,
         skippedCodesBefore: Set<String>
     ): Int {
@@ -130,7 +130,7 @@ object XpCalculator {
      */
     fun nextUnlockPreview(
         completedCodes: Set<String>,
-        modules: List<MriModule>,
+        modules: List<CtModule>,
         preferredModuleId: String? = null,
         items: List<CharacterItem> = CharacterCatalog.allItems
     ): CharacterUnlockProgress? {

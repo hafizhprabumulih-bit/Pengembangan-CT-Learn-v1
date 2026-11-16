@@ -79,7 +79,7 @@ data class StudyDayEntity(
         Index(value = ["sortOrder"])
     ]
 )
-data class MriModuleEntity(
+data class CtModuleEntity(
     @PrimaryKey val id: String,
     val code: String,
     val title: String,

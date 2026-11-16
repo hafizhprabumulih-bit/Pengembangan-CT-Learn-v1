@@ -76,8 +76,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
-import com.example.data.MriNode
+import com.example.data.CtModule
+import com.example.data.CtNode
 import com.example.ui.theme.AmberWarning
 import com.example.ui.theme.CardSlate
 import com.example.ui.theme.CardSlateBorder
@@ -101,8 +101,8 @@ import com.example.util.PathNodeState
 import com.example.util.PathStateResolver
 import com.example.util.SkipTestBuilder
 import com.example.util.SkipTestPlan
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 import kotlinx.coroutines.launch
 
 private const val PATH_SCROLL_RESTORED_FLAG = 1 shl 30
@@ -110,9 +110,9 @@ private const val PATH_SCROLL_RESTORED_FLAG = 1 shl 30
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModulePathScreen(
-    module: MriModule,
-    state: MriUiState,
-    viewModel: MriViewModel,
+    module: CtModule,
+    state: CtUiState,
+    viewModel: CtViewModel,
     pathHolder: ModulePathStateHolder,
     skippedCodes: Set<String>,
     onOpenNodeReader: (String) -> Unit,
@@ -425,9 +425,9 @@ fun ModulePathScreen(
                     }
 
                     val sectionIllType = when {
-                        sectionIdx == 0 -> NanoIllustrationType.MRI_SCANNER
+                        sectionIdx == 0 -> NanoIllustrationType.CT_GANTRY_SCANNER
                         module.code.startsWith("M01") -> NanoIllustrationType.HYDROGEN_ATOM
-                        module.code.startsWith("M02") -> NanoIllustrationType.MRI_BRAIN_PHOTO
+                        module.code.startsWith("M02") -> NanoIllustrationType.CT_BRAIN_SLICE
                         module.code.startsWith("M03") -> NanoIllustrationType.RF_PULSE
                         module.code.startsWith("M04") -> NanoIllustrationType.K_SPACE
                         module.code.startsWith("M05") -> NanoIllustrationType.CRYO_HELIUM
@@ -821,7 +821,7 @@ fun ModulePathScreen(
 
 @Composable
 private fun ModulePathStickyHeader(
-    module: MriModule,
+    module: CtModule,
     pathState: ModulePathState,
     onBack: () -> Unit,
     onOpenAllNodes: () -> Unit,
@@ -887,7 +887,7 @@ private fun ModulePathStickyHeader(
 
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = module.title.replace("Ruang-k", "K-space").replace("ruang-k", "K-space"),
+                        text = module.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary,
@@ -1077,7 +1077,7 @@ private fun PathNodeSlotContent(
 
 @Composable
 private fun NodePreviewBottomSheetContent(
-    module: MriModule,
+    module: CtModule,
     nodeState: PathNodeState,
     quizCount: Int,
     preferredQuizLevel: Int,
@@ -1499,8 +1499,8 @@ private fun NodePreviewBottomSheetContent(
 
 @Composable
 private fun ModuleQuizSheetContent(
-    module: MriModule,
-    quizzes: List<com.example.data.QuizQuestion>,
+    module: CtModule,
+    quizzes: List<com.example.data.CtQuizQuestion>,
     onStartQuiz: (Int) -> Unit
 ) {
     val t1Count = quizzes.count { it.level == 1 }
@@ -1598,7 +1598,7 @@ private fun ModuleQuizSheetContent(
     }
 }
 
-private fun shortNodeLabel(node: MriNode): String {
+private fun shortNodeLabel(node: CtNode): String {
     val cleanTitle = node.title
         .replace(Regex("^T\\d+(?:\\.\\d+[A-Za-z]?|\\.R)?\\s+"), "")
         .trim()

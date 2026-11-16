@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriRepository
-import com.example.data.local.MriDatabase
+import com.example.data.CtRepository
+import com.example.data.local.CtDatabase
 import com.example.data.local.NodeProgressEntity
 import com.example.data.local.QuizAttemptEntity
 import com.example.data.local.StudyDayEntity
@@ -27,12 +27,12 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class LegacyNodeCodesTest {
-    private lateinit var db: MriDatabase
+    private lateinit var db: CtDatabase
 
     @Before
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, MriDatabase::class.java)
+        db = Room.inMemoryDatabaseBuilder(context, CtDatabase::class.java)
             .allowMainThreadQueries()
             .build()
     }
@@ -44,14 +44,14 @@ class LegacyNodeCodesTest {
 
     @Test
     fun mapTargetsExistInCurriculum() {
-        val allNodeCodesInCurriculum = MriRepository.modules
+        val allNodeCodesInCurriculum = CtRepository.modules
             .flatMap { it.nodes }
             .map { it.code }
             .toSet()
 
         LegacyNodeCodes.MAP.values.forEach { targetCode ->
             assertTrue(
-                "Target code $targetCode should exist in MriRepository curriculum nodes",
+                "Target code $targetCode should exist in CtRepository curriculum nodes",
                 allNodeCodesInCurriculum.contains(targetCode)
             )
         }
@@ -59,14 +59,14 @@ class LegacyNodeCodesTest {
 
     @Test
     fun mapKeysDoNotExistInCurriculum() {
-        val allNodeCodesInCurriculum = MriRepository.modules
+        val allNodeCodesInCurriculum = CtRepository.modules
             .flatMap { it.nodes }
             .map { it.code }
             .toSet()
 
         LegacyNodeCodes.MAP.keys.forEach { legacyCode ->
             assertFalse(
-                "Legacy key code $legacyCode should NOT exist in MriRepository curriculum nodes",
+                "Legacy key code $legacyCode should NOT exist in CtRepository curriculum nodes",
                 allNodeCodesInCurriculum.contains(legacyCode)
             )
         }

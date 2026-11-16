@@ -1,13 +1,13 @@
 package com.example.data
 
+import com.example.data.local.CtModuleEntity
 import com.example.data.local.CurriculumNodeEntity
 import com.example.data.local.CurriculumQuizEntity
-import com.example.data.local.MriModuleEntity
 import java.security.MessageDigest
 import java.util.Locale
 
 class CurriculumSnapshot(
-    val modules: List<MriModuleEntity>,
+    val modules: List<CtModuleEntity>,
     val curriculumNodes: List<CurriculumNodeEntity>,
     val curriculumQuizzes: List<CurriculumQuizEntity>
 ) {
@@ -28,13 +28,12 @@ class CurriculumSnapshot(
     }
 
     companion object {
-        /** Ubah hanya jika SKEMA/CARA seed berubah (bukan isi materi; isi sudah tercakup fingerprint). */
-        const val SEED_TAG = "ct_v1_instrumentation"
+        const val SEED_TAG = "ct_v2_standalone"
 
         fun build() = CurriculumSnapshot(
-            modules = MriRepository.toMriModuleEntities(),
-            curriculumNodes = MriRepository.toCurriculumNodeEntities(),
-            curriculumQuizzes = MriRepository.toCurriculumQuizEntities()
+            modules = CtRepository.toCtModuleEntities(),
+            curriculumNodes = CtRepository.toCurriculumNodeEntities(),
+            curriculumQuizzes = CtRepository.toCurriculumQuizEntities()
         )
     }
 }

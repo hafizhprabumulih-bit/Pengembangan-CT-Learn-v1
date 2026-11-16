@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.util.SkipTestBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -11,14 +11,14 @@ class SkipTestBuilderTest {
 
     @Test
     fun buildsUpToThreeQuestionsFromSkippedNodesWhenAvailable() {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         // Melompat ke simpul kelima di M01 melewati beberapa simpul yang memiliki kuis
         val target = m01.nodes[5].code
         val plan = SkipTestBuilder.build(
             targetNodeCode = target,
             module = m01,
             completedCodes = emptySet(),
-            allQuizzes = MriRepository.quizzes,
+            allQuizzes = CtRepository.quizzes,
             shuffleOptions = false
         )
 
@@ -31,14 +31,14 @@ class SkipTestBuilderTest {
 
     @Test
     fun hidesSkipOptionWhenFewerThanTwoQuestionsExistInSkippedSlice() {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         // Target adalah simpul kedua -> hanya simpul pertama (.T0) yang dilewati
         val target = m01.nodes[1].code
         val plan = SkipTestBuilder.build(
             targetNodeCode = target,
             module = m01,
             completedCodes = emptySet(),
-            allQuizzes = MriRepository.quizzes
+            allQuizzes = CtRepository.quizzes
         )
 
         if (plan.questions.size < 2) {
@@ -61,14 +61,14 @@ class SkipTestBuilderTest {
 
     @Test
     fun excludesAlreadyCompletedNodesFromSkipList() {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         val target = m01.nodes[4].code
         val completed = setOf(m01.nodes[0].code, m01.nodes[1].code)
         val plan = SkipTestBuilder.build(
             targetNodeCode = target,
             module = m01,
             completedCodes = completed,
-            allQuizzes = MriRepository.quizzes
+            allQuizzes = CtRepository.quizzes
         )
 
         assertTrue(plan.nodesToSkip.none { it.code in completed })

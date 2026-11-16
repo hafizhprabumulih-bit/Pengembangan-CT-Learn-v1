@@ -1,8 +1,8 @@
 package com.example.util
 
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
-import com.example.data.MriQuizQuestion
+import com.example.data.CtModule
+import com.example.data.CtQuizQuestion
 
 data class QuizReviewNodeItem(
     val nodeCode: String,
@@ -30,8 +30,8 @@ object QuizSessionResult {
 
     fun compute(
         sessionAnswers: Map<String, Boolean>,
-        sessionQuizzes: List<MriQuizQuestion>,
-        modules: List<MriModule>
+        sessionQuizzes: List<CtQuizQuestion>,
+        modules: List<CtModule>
     ): QuizSessionSummary {
         val total = sessionQuizzes.size
         if (total == 0) {

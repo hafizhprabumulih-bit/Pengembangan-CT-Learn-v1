@@ -1,14 +1,14 @@
 package com.example.util
 
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
-import com.example.data.MriNode
-import com.example.data.QuizQuestion
+import com.example.data.CtModule
+import com.example.data.CtNode
+import com.example.data.CtQuizQuestion
 
 data class SkipTestPlan(
     val targetNodeCode: String,
-    val nodesToSkip: List<MriNode>,
-    val questions: List<QuizQuestion>,
+    val nodesToSkip: List<CtNode>,
+    val questions: List<CtQuizQuestion>,
     val requiredCorrect: Int
 ) {
     val canOfferSkipTest: Boolean
@@ -45,9 +45,9 @@ object SkipTestBuilder {
 
     fun build(
         targetNodeCode: String,
-        module: MriModule,
+        module: CtModule,
         completedCodes: Set<String>,
-        allQuizzes: List<QuizQuestion>,
+        allQuizzes: List<CtQuizQuestion>,
         shuffleOptions: Boolean = true
     ): SkipTestPlan {
         val normalizedTarget = LegacyNodeCodes.normalize(targetNodeCode)
@@ -79,7 +79,7 @@ object SkipTestBuilder {
             .groupBy { LegacyNodeCodes.normalize(it.nodeCode) }
 
         // Ambil round-robin per simpul yang akan dilewati (prioritaskan variasi antar simpul)
-        val selected = mutableListOf<QuizQuestion>()
+        val selected = mutableListOf<CtQuizQuestion>()
         var round = 0
         while (selected.size < SkipTestPlan.MAX_QUESTIONS) {
             var addedInRound = false

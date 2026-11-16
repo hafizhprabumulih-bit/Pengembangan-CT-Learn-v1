@@ -3,7 +3,7 @@
     android:height="1024dp"
     android:viewportWidth="1024"
     android:viewportHeight="1024">
-    <!-- Kartu Akses Pintar Zona IV bertali di tangan kanan Nano -->
+    <!-- Kartu Otorisasi Konsol CT bertali di tangan kanan Nano -->
     <!-- Tali lanyard ke atas tangan -->
     <path
         android:pathData="M760,642 L788,582 L816,642"
@@ -18,7 +18,7 @@
         android:fillColor="#F8FAFC"
         android:strokeColor="#0B1B32"
         android:strokeWidth="12" />
-    <!-- Header kartu Zona IV -->
+    <!-- Header kartu otorisasi CT -->
     <path
         android:pathData="M708,654 H868 V706 H708 Z"
         android:fillColor="#0E7490"

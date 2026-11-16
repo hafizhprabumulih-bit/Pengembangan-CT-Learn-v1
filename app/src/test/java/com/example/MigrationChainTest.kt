@@ -25,7 +25,7 @@ class MigrationChainTest {
 
     @Test
     fun exportedSchemaExistsForCurrentVersion() {
-        val rel = "schemas/com.example.data.local.MriDatabase/$DB_VERSION.json"
+        val rel = "schemas/com.example.data.local.CtDatabase/$DB_VERSION.json"
         val ada = File(rel).exists() || File("app/$rel").exists()
         assertTrue("File skema $rel tidak ditemukan; build sekali lalu commit", ada)
     }

@@ -18,6 +18,108 @@
       "stories": [],
       "interactive": null
     },
+    "M01.T1.1": {
+      "nanoHints": [
+        "Foto Rontgen memampatkan struktur 3D menjadi bayangan 2D yang saling menumpuk.",
+        "CT menghilangkan superposisi dengan berkas fan-beam tipis dari ratusan sudut rotasi."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Radiografi konvensional mengalami superposisi organ dan keterbatasan kontras jaringan lunak.",
+          "Tomografi komputasi memecah irisan tubuh menjadi matriks voxel dengan nilai atenuasi mu unik.",
+          "CT membedakan selisih atenuasi kurang dari 0,5% pada skala Hounsfield Unit."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M01.T1.1:1",
+          "scenario": "Pada foto toraks AP konvensional, nodul kecil berdensitas rendah di belakang bayangan jantung atau tulang iga sulit terlihat jelas.",
+          "question": "Mekanisme utama apa yang membuat CT Scan mampu memvisualisasikan nodul tersebut tanpa terhalang iga?",
+          "options": [
+            "Akuisisi proyeksi berkas tipis dari 360 derajat di sekitar pasien menghilangkan superposisi anatomi",
+            "CT menggunakan gelombang suara ultrasonik frekuensi tinggi yang menembus tulang",
+            "CT memperbesar luas kaset film Rontgen menjadi dua meter",
+            "CT mematikan berkas sinar-X saat melewati daerah jantung"
+          ],
+          "correctIndex": 0,
+          "explanation": "Pengukuran atenuasi terkolimasi dari banyak sudut proyeksi memungkinkan komputer merekonstruksi penampang aksial bebas superposisi.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M01.T1.2": {
+      "nanoHints": [
+        "Bremsstrahlung menghasilkan spektrum kontinu akibat perlambatan elektron dekat inti.",
+        "Radiasi karakteristik Tungsten muncul di puncak energi diskret sekitar 59 dan 67 keV."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Sekitar 99% energi tumbukan elektron berubah menjadi panas dan hanya sekitar 1% menjadi sinar-X.",
+          "Bremsstrahlung mendominasi spektrum keluaran tabung pada rentang 80-140 kVp.",
+          "kVp menentukan energi maksimum berkas, sedangkan mAs menentukan jumlah foton (kuantitas)."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M01.T1.2:1",
+          "scenario": "Seorang operator menaikkan tegangan tabung dari 80 kVp ke 120 kVp saat memindai pasien dewasa bertubuh besar.",
+          "question": "Perubahan apa yang terjadi pada spektrum sinar-X keluaran anoda Tungsten?",
+          "options": [
+            "Energi maksimum (keV puncak) dan daya tembus rata-rata berkas meningkat signifikan",
+            "Energi foton karakteristik Tungsten turun menjadi setengahnya",
+            "Seluruh energi tumbukan berubah menjadi sinar-X tanpa menghasilkan panas anoda",
+            "Nomor atom target Tungsten meningkat dari 74 menjadi 120"
+          ],
+          "correctIndex": 0,
+          "explanation": "Kenaikan kVp memperbesar energi kinetik elektron proyektil sehingga menaikkan E_max dan energi efektif spektrum Bremsstrahlung.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M01.T2.1": {
+      "nanoHints": [
+        "Efek Fotolistrik sebanding dengan Z^3 / E^3 dan menciptakan kontras tulang vs Iodin.",
+        "Hamburan Compton bergantung pada kerapatan elektron serta memicu kabut scatter."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Efek Fotolistrik menyerap total foton energi rendah pada jaringan bernomor atom Z tinggi (Kalsium, Iodin).",
+          "Pada energi CT diagnostik (~60-75 keV rata-rata), hamburan Compton paling banyak terjadi di jaringan lunak.",
+          "Kisi anti-scatter post-patient mencegah foton Compton salah arah menurunkan kontras citra."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M01.T2.1:1",
+          "scenario": "Pada CT Angiografi dengan kontras Iodin (Z=53, K-edge 33,2 keV), operator menurunkan tegangan tabung dari 120 kVp ke 80 kVp pada pasien ramping.",
+          "question": "Mengapa kontras pembuluh darah berisi Iodin tampak jauh lebih terang pada 80 kVp?",
+          "options": [
+            "Peningkatan peluang Efek Fotolistrik karena energi rata-rata berkas mendekati K-edge Iodin (33,2 keV)",
+            "Penurunan total jumlah proton di dalam pembuluh darah pasien",
+            "Hilangnya seluruh hamburan Compton sehingga tulang menjadi tembus pandang",
+            "Detektor otomatis mengalikan nilai HU dengan faktor dua"
+          ],
+          "correctIndex": 0,
+          "explanation": "Penampang serapan fotolistrik meningkat tajam (~ Z^3 / E^3) saat energi foton lebih dekat di atas ambang K-edge Iodin.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
     "M01.T2.2": {
       "nanoHints": [
         "Setiap 1 HVL memangkas intensitas sinar-X menjadi separuh (50%) dari nilai awalnya.",
@@ -47,7 +149,7 @@
           "explanation": "Melewati 1 HVL menyisakan 50%, sehingga melewati 2 HVL menyisakan (0,5)^2 = 25% dari intensitas awal.",
           "reviewed": true,
           "reviewedBy": "Tim Fisika Medis CT",
-          "reviewedAt": "2026-11-15"
+          "reviewedAt": "2026-11-16"
         }
       ],
       "interactive": {
@@ -63,10 +165,146 @@
         ]
       }
     },
+    "M01.T3.1": {
+      "nanoHints": [
+        "Foton energi rendah cepat terserap oleh jaringan dan meningkatkan dosis kulit pasien.",
+        "Filtrasi Aluminium-Tembaga + Bow-Tie mengeraskan berkas sebelum mengenai tubuh."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Berkas polikromatik mengalami pergeseran energi rata-rata ke arah lebih tinggi saat menembus jaringan.",
+          "Tanpa koreksi beam hardening, bagian tengah objek homogen tampak lebih gelap (cupping artifact).",
+          "Pre-filtrasi datar dan bow-tie menyerap soft X-rays yang tidak berkontribusi membentuk citra."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M01.T3.1:1",
+          "scenario": "Dalam uji fantom air silinder tanpa koreksi kalibrasi pengerasan berkas, nilai HU di pusat fantom terbaca lebih negatif dibandingkan tepi luar.",
+          "question": "Fenomena fisik apakah yang menyebabkan pusat silinder air tampak lebih gelap tersebut?",
+          "options": [
+            "Beam Hardening (Cupping Artifact) karena lintasan tengah paling tebal menyerap lebih banyak foton lunak",
+            "Terlalu tingginya resolusi matriks 1024 x 1024 pada konsol",
+            "Kelebihan cairan pendingin oli di dalam heat exchanger",
+            "Kecepatan rotasi meja yang terlalu lambat saat topogram"
+          ],
+          "correctIndex": 0,
+          "explanation": "Lintasan sinar-X melalui diameter tengah paling tebal sehingga berkas paling banyak mengalami pengerasan dan nilai mu terukur lebih rendah.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M02.T0": {
+      "nanoHints": [
+        "Instalasi CT terbagi atas tiga ruang fungsi: Gantry Room, Ruang Konsol, dan Komputer IRS.",
+        "Diameter bore standar berkisar 70-85 cm dengan rentang tilt gantry +-30 derajat."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Ketahui komponen luar dan dalam Gantry serta alur sinyal menuju konsol operator.",
+          "Pahami peran Laser Isocenter (Aksial, Koronal, Sagital) terhadap akurasi AEC dan noise.",
+          "Kuasai fungsi kolimator pra-pasien, pasca-pasien, dan Bow-Tie Filter."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M02.T0:1",
+          "scenario": "Pesawat CT baru selesai dipasang dan radiografer mengecek jalur komunikasi darurat sebelum melayani pasien pertama.",
+          "question": "Fasilitas apa yang wajib tersedia di meja konsol operator untuk memantau pasien di ruang pemeriksaan?",
+          "options": [
+            "Kaca timbal pb penahan radiasi, sistem interkom dua arah, dan tombol Emergency Stop merah",
+            "Tirai kain tipis dan termometer ruangan analog saja",
+            "Kabel tegangan tinggi terbuka di sebelah monitor DICOM",
+            "Pintu kaca biasa tanpa lapisan ekuivalen timbal"
+          ],
+          "correctIndex": 0,
+          "explanation": "Ruang konsol terlindungi dinding dan kaca Pb ekuivalen timbal serta memiliki interkom dan tombol Emergency Stop darurat.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M02.T1.1": {
+      "nanoHints": [
+        "Dinding ruang Gantry dilapisi timbal atau beton barit untuk menahan radiasi hambur.",
+        "Ruang komputer IRS memiliki pendingin terpisah agar proses rekonstruksi berjalan stabil."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Scan Room menampung Gantry, meja pasien carbon fiber, dan power injector kontras.",
+          "Control Room menampung workstation akuisisi, kontrol interkom, dan sakelar eksposi aman radiasi.",
+          "Technical/Computer Room menampung kabinet HV transformer, chiller, dan server IRS."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M02.T1.1:1",
+          "scenario": "Saat mendesain ruang instalasi MSCT 128-slice di rumah sakit, fisikawan medis menentukan ketebalan Pb pada kaca pengamat operator.",
+          "question": "Tujuan utama pelapisan timbal (Pb) dan segel interlock pada pintu ruang CT adalah:",
+          "options": [
+            "Menahan radiasi sinar-X primer maupun hambur Compton agar dosis petugas dan area publik di bawah NBD",
+            "Menahan kebocoran medan magnet 3 Tesla ke koridor luar",
+            "Meningkatkan kecepatan putaran anoda tabung sinar-X",
+            "Mencegah cahaya matahari masuk ke detektor gas Xenon"
+          ],
+          "correctIndex": 0,
+          "explanation": "Proteksi struktur ruang CT dirancang menahan foton sinar-X energi tinggi hingga 140 kVp beserta hamburannya.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M02.T1.2": {
+      "nanoHints": [
+        "Rotating frame berputar membawa tabung, HV generator, pendingin oli, dan busur detektor.",
+        "Bore besar 80-85 cm memudahkan posisi pasien trauma, obesitas, dan radioterapi."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Panel kontrol samping bore mengatur ketinggian meja, gerakan in/out, gantry tilt, dan laser.",
+          "Tabung sinar-X dan busur detektor selalu terpasang berhadapan 180 derajat pada rotating frame.",
+          "Pendinginan gantry menjaga kestabilan suhu kristal detektor dan kapasitas panas tabung."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M02.T1.2:1",
+          "scenario": "Seorang pasien dengan cedera bahu dan fiksator eksternal membutuhkan pemindaian CT Kepala darurat, namun bahunya hampir menyentuh bingkai bore.",
+          "question": "Fitur fisik Gantry manakah yang paling membantu mencegah tabrakan fisik selama proses scan?",
+          "options": [
+            "Sensor pengaman tepi bore (anti-collision) serta pemilihan gantry dengan aperture wide-bore (78-85 cm)",
+            "Mempersempit Window Width pada monitor konsol ke 40 HU",
+            "Melepas penutup depan busur detektor sebelum eksposi dimulai",
+            "Mematikan sistem slip-ring agar gantry tidak berputar"
+          ],
+          "correctIndex": 0,
+          "explanation": "Wide-bore gantry memberi ruang ekstra bagi alat fiksasi dan sensor anti-collision menghentikan gerakan meja sebelum terjadi benturan.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
     "M02.T2.1": {
       "nanoHints": [
         "Tabung sinar-X dan busur detektor dipasang berhadapan 180 derajat di rangka putar.",
-        "HV Generator ikut berputar di dalam gantry berkat pasokan daya dari Slip-Ring."
+        "Laser Koronal memandu ketinggian vertikal meja agar pusat tubuh tepat di Isocenter."
       ],
       "nanoHintsReviewed": true,
       "recap": {
@@ -92,7 +330,7 @@
           "explanation": "Off-centering membuat profil tubuh tidak sejajar dengan lekuk tengah Bow-Tie Filter dan mengubah magnifikasi topogram scout sehingga kalkulasi mA pada AEC menjadi tidak akurat.",
           "reviewed": true,
           "reviewedBy": "Tim Fisika Medis CT",
-          "reviewedAt": "2026-11-15"
+          "reviewedAt": "2026-11-16"
         }
       ],
       "interactive": {
@@ -108,6 +346,176 @@
         ]
       }
     },
+    "M02.T2.2": {
+      "nanoHints": [
+        "Kolimator pra-pasien dari Tungsten menentukan lebar berkas sinar-X sekaligus dosis pasien.",
+        "Bow-Tie Filter tebal di tepi dan tipis di tengah agar intensitas ke detektor merata."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Pre-patient collimator mengurangi dosis penumbra yang tidak mengenai baris detektor aktif.",
+          "Post-patient anti-scatter septa menyaring foton Compton menyimpang sebelum menyentuh kristal.",
+          "Bow-Tie Filter menyesuaikan profil berkas terhadap bentuk silinder/elips tubuh pasien."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M02.T2.2:1",
+          "scenario": "Radiografer memilih protokol Kepala Pediatrik dibandingkan Toraks Dewasa di konsol CT modern.",
+          "question": "Penyesuaian mekanis otomatis apakah yang terjadi di kolimasi tabung saat beralih ke protokol kepala kecil?",
+          "options": [
+            "Pesawat menggeser masuk Small Bow-Tie Filter dengan bukaan SFOV sempit yang menghemat dosis tepi",
+            "Pesawat melepas seluruh kolimator pra-pasien agar berkas selebar mungkin",
+            "Busur detektor diputar 90 derajat menjauhi tabung sinar-X",
+            "Filter Aluminium diganti menjadi lembaran timbal padat 5 mm"
+          ],
+          "correctIndex": 0,
+          "explanation": "Pemilihan Small Bow-Tie Filter menyesuaikan redaman tepi dengan diameter kecil objek kepala/anak sehingga dosis radiasi permukaan turun signifikan.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M02.T3.1": {
+      "nanoHints": [
+        "Meja Carbon Fiber kuat menyangga beban berat namun sangat rendah atenuasi sinar-X.",
+        "Konsol operator modern memakai dua workstation terpisah: akuisisi dan post-processing."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Serat karbon memiliki nomor atom Z rendah sehingga tidak menimbulkan artefak bayangan atau dosis berlebih.",
+          "Akurasi indeks pergerakan meja (mm/rotasi) wajib diuji berkala (< +-1 mm).",
+          "Tombol Reset ke nol pada panel samping menyelaraskan koordinat z = 0 dengan referensi anatomi."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M02.T3.1:1",
+          "scenario": "Saat memindai CT Abdomen, meja bergerak masuk terus-menerus selama rotasi helikal menyangga pasien seberat 140 kg.",
+          "question": "Mengapa papan meja pasien wajib dibuat dari material Carbon Fiber dan bukan pelat aluminium atau baja?",
+          "options": [
+            "Carbon Fiber ber-Z sangat rendah sehingga hampir tidak menyerap sinar-X dan bebas streak artifact",
+            "Carbon Fiber meningkatkan atenuasi hingga 1000 HU agar mudah terlihat di latar gambar",
+            "Pelat baja akan berputar mengikuti kecepatan putar anoda tabung",
+            "Carbon Fiber memancarkan elektron tambahan menuju detektor"
+          ],
+          "correctIndex": 0,
+          "explanation": "Komposit karbon meminimalkan atenuasi di lintasan posterior sehingga tidak mengurangi foton ke detektor atau menambah beam hardening.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M03.T0": {
+      "nanoHints": [
+        "Peta Modul 3 melacak perjalanan energi dari Slip-Ring hingga data logaritmik DAS.",
+        "Kapasitas panas MHU menentukan berapa lama tabung sanggup memindai beruntun."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Hubungkan peran HV Generator, Tabung MHU tinggi, Slip-Ring, Detektor, dan DAS.",
+          "Bandingkan efisiensi detektor Solid-State Gd2O2S vs bilik Gas Xenon serta teknologi PCD CdTe.",
+          "Kuasai cara DAS menghitung P = ln(I0/I) pada ribuan sudut per rotasi."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M03.T0:1",
+          "scenario": "Dalam sebuah kasus CT Angiografi Run-Off tungkai sepanjang 110 cm, dibutuhkan paparan daya tinggi selama belasan detik non-stop.",
+          "question": "Spesifikasi komponen apakah yang paling menentukan apakah pemindaian panjang dapat selesai tanpa jeda pendinginan tabung?",
+          "options": [
+            "Kapasitas simpan panas anoda (MHU) serta laju pembuangan panas (kHU/menit) sistem pendingin",
+            "Ukuran lebar layar monitor rekonstruksi di ruang radiolog",
+            "Jumlah tombol pintas pada papan ketik konsol",
+            "Warna lapisan cat pada penutup depan gantry"
+          ],
+          "correctIndex": 0,
+          "explanation": "Beban panas tinggi pada scan vaskular panjang menuntut anoda ber-MHU besar dan Heat Exchanger cepat agar tabung tidak memicu cooling delay.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M03.T1.1": {
+      "nanoHints": [
+        "Tabung CT memakai anoda besar paduan W-Re-Mo-Graphite dengan kapasitas 5-8+ MHU.",
+        "Liquid Metal Bearing (Ga-In-Sn) hening, awet, dan mengalirkan panas langsung ke oli."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Tabung Rontgen biasa (0,3 MHU) akan meleleh bila dipakai memindai CT helikal kontinu.",
+          "Anoda berputar cepat (3.600-10.000 RPM) menyebarkan panas di sepanjang lintasan track fokal.",
+          "Sistem pendingin oli-ke-udara atau oli-ke-air mendinginkan selubung tabung di atas gantry."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M03.T1.1:1",
+          "scenario": "Sebuah rumah sakit melakukan 60 pemeriksaan CT scan harian beruntun pada pasien trauma dan onkologi dengan beban mAs tinggi.",
+          "question": "Keunggulan utama penggunaan Liquid Metal Bearing (Gallium-Indium-Tin) dibandingkan ball bearing baja konvensional adalah:",
+          "options": [
+            "Tidak ada kontak gesek bola mekanis, bebas suara berisik, tahan gaya G tinggi, dan konduktivitas termal tinggi",
+            "Menggantikan kebutuhan tabung vakum kaca dan anoda Tungsten",
+            "Memungkinkan berkas sinar-X keluar dari dua arah berlawanan",
+            "Menghilangkan kebutuhan filtrasi Aluminium dan Bow-Tie"
+          ],
+          "correctIndex": 0,
+          "explanation": "Pelumas logam cair mengalirkan panas terus-menerus dari poros anoda ke sistem pendingin oli tanpa keausan bola bantalan.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M03.T1.2": {
+      "nanoHints": [
+        "Focal spot kecil (0,5-0,6 mm) mempertajam detail tulang telinga dalam dan stent koroner.",
+        "z-Flying Focal Spot menggeser berkas elektron magnetik sehingga sampling sumbu-z berlipat."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Ukuran focal spot kecil menekan geometric unsharpness (penumbra), tetapi membatasi daya mA maksimal.",
+          "Focal spot besar (~1,2 mm) dipakai pada abdomen/pasien obesitas yang memerlukan mA tinggi.",
+          "Teknologi Flying Focal Spot (in-plane & z-axis) menggandakan jumlah proyeksi per rotasi."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M03.T1.2:1",
+          "scenario": "Pada protokol HRCT Tulang Temporal untuk mengevaluasi osikula telinga tengah berdiameter kurang dari 1 mm, ketajaman tepi sangat menentukan diagnosis.",
+          "question": "Pilihan ukuran Focal Spot dan teknologi tabung apakah yang paling mendukung ketajaman spasial tinggi tersebut?",
+          "options": [
+            "Small Focal Spot (~0,5-0,6 mm) dikombinasikan dengan defleksi Flying Focal Spot",
+            "Large Focal Spot 2,0 mm dengan ketebalan irisan 10 mm",
+            "Menurunkan matriks citra menjadi 128 x 128 piksel",
+            "Mengaktifkan filter Soft Kernel ber-resolusi rendah"
+          ],
+          "correctIndex": 0,
+          "explanation": "Focal spot kecil meminimalkan kabur geometris sementara z-FFS menggandakan kerapatan sampel spasial tanpa menambah lebar celah detektor.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
     "M03.T2.1": {
       "nanoHints": [
         "Anoda tabung CT memiliki kapasitas panas 5-8+ MHU untuk menahan beban scan helikal.",
@@ -122,7 +530,284 @@
         ],
         "reviewed": true
       },
-      "stories": [],
+      "stories": [
+        {
+          "id": "story:M03.T2.1:1",
+          "scenario": "Pada pemindaian CT Angiografi Aorta Torako-Abdominal sepanjang 65 cm, Gantry harus berputar 0,35 detik per rotasi secara terus-menerus tanpa berhenti.",
+          "question": "Kombinasi perangkat keras manakah yang memungkinkan suplai daya dan pengiriman data tanpa kabel terbelit?",
+          "options": [
+            "Low-Voltage Slip-Ring + HF Inverter di atas Rotating Frame + Transmisi Data Optik Nirsentuh",
+            "Kabel koaksial tegangan tinggi sepanjang 30 meter yang digulung balik",
+            "Tabung anoda diam dengan detektor film Rontgen",
+            "Baterai sekali pakai tanpa generator tegangan tinggi"
+          ],
+          "correctIndex": 0,
+          "explanation": "Slip-Ring menyalurkan daya listrik ke HF HV Generator yang ikut berputar di Gantry, sedangkan data Sinogram dikirim melalui link optik laser nirsentuh.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": {
+        "type": "REVEAL_CHAIN",
+        "title": "Rantai Konversi Energi Instrumentasi Pesawat CT",
+        "intro": "Telusuri tahap konversi sinyal dari listrik menuju data digital Sinogram:",
+        "reviewed": true,
+        "steps": [
+          { "text": "Slip-Ring menyalurkan daya listrik AC menuju High-Frequency HV Generator di Rotating Frame." },
+          { "text": "Tabung Sinar-X CT (5-8 MHU) mempercepat elektron menumbuk anoda Tungsten menjadi foton sinar-X." },
+          { "text": "Kristal sintilator Solid-State (Gd2O2S) menyerap sinar-X dan memancarkan kilatan cahaya tampak." },
+          { "text": "Silicon Photodiode mengubah cahaya menjadi arus pA-nA, lalu DAS mendigitalkannya menjadi ln(I0/I)." }
+        ]
+      }
+    },
+    "M03.T2.2": {
+      "nanoHints": [
+        "Detektor Solid-State Gd2O2S menyerap 95-99% foton dengan afterglow < 0,01%.",
+        "Gas Xenon tidak dipakai lagi di MSCT karena efisiensi rendah (45-60%) dan tak bisa 2D."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Efisiensi kuantum (QDE) tinggi pada kristal keramik Gd2O2S langsung menekan dosis radiasi pasien.",
+          "Afterglow ultra-singkat mencegah bayangan sisa antar sudut proyeksi pada rotasi 0,28 detik.",
+          "Susunan matriks ubin 2D detektor solid-state memungkinkan hadirnya MSCT 16 hingga 320 slice."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M03.T2.2:1",
+          "scenario": "Sebuah pesawat CT generasi lama memakai bilik gas Xenon bertekanan, sedangkan pesawat baru memakai array keramik Gadolinium Oxysulfide (Gd2O2S).",
+          "question": "Keuntungan klinis langsung dari peralihan ke detektor Solid-State Gd2O2S bagi pasien adalah:",
+          "options": [
+            "Dosis radiasi jauh lebih hemat karena 95-99% foton tertangkap dan mendukung akuisisi multi-slice cepat",
+            "Pasien tidak perlu berbaring di atas meja karbon saat dipindai",
+            "Sinar-X berubah menjadi sinyal suara frekuensi radio",
+            "Detektor tidak membutuhkan konverter analog ke digital lagi"
+          ],
+          "correctIndex": 0,
+          "explanation": "Kerapatan atom tinggi pada keramik Gd2O2S memaksimalkan penyerapan foton sinar-X sehingga citra tetap jernih pada mAs lebih rendah.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M03.T3.1": {
+      "nanoHints": [
+        "DAS melakukan 4 langkah: Pre-amp, Current Integrator, Multiplexer, dan Log-ADC 16-24 bit.",
+        "Fungsi ln(I0/I) mengubah atenuasi eksponensial menjadi penjumlahan linier voxel."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Reference detector mengukur intensitas udara bebas (I0) secara simultan untuk menormalkan fluktuasi mA.",
+          "Logarithmic ADC rentang dinamis tinggi (>1 juta:1) merekam udara hingga tulang/logam tanpa saturasi.",
+          "Kegagalan satu kanal DAS memicu garis vertikal di sinogram yang berujung menjadi Ring Artifact."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M03.T3.1:1",
+          "scenario": "Selama rotasi gantry 0,33 detik, keluaran tabung sinar-X berfluktuasi tipis sebesar +-1,5% antar sudut proyeksi.",
+          "question": "Bagaimana modul DAS mencegah fluktuasi daya sesaat tersebut merusak akurasi nilai HU citra?",
+          "options": [
+            "Membaca kanal Reference Detector di tepi berkas (I0 aktual) pada tiap view lalu menghitung P = ln(I0/I)",
+            "Menghentikan rotasi gantry dan mengulang scan dari awal",
+            "Menghapus 50% baris data proyeksi secara acak sebelum rekonstruksi",
+            "Mengganti seluruh gambar menjadi skala biner 1-bit"
+          ],
+          "correctIndex": 0,
+          "explanation": "Reference detector di sisi berkas udara selalu memberi nilai I0 aktual sesaat sehingga rasio ln(I0/I) tetap presisi.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M03.T3.2": {
+      "nanoHints": [
+        "Dual-Energy CT memakai 2 spektrum (80 vs 140 kVp) untuk memetakan Iodin & Asam Urat.",
+        "Photon-Counting CT (CdTe) menghitung foton satu per satu tanpa tahap cahaya tampak."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "DECT menghasilkan citra Virtual Non-Contrast (VNC), peta perfusi iodin, dan reduksi artefak logam.",
+          "Detektor PCD berbahan semikonduktor CdTe atau CZT mengeliminasi electronic noise.",
+          "Tanpa sekat pembatas optik yang tebal, PCD mencapai resolusi spasial ultra-tinggi (~0,15 mm)."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M03.T3.2:1",
+          "scenario": "Pada evaluasi batu ginjal pasien kolik renal dan karakterisasi stent koroner sempit, dokter menginginkan pemisahan komposisi asam urat vs kalsium oksalat.",
+          "question": "Teknologi CT apakah yang memungkinkan karakterisasi komposisi material langsung beserta pengurangan dosis signifikan?",
+          "options": [
+            "Dual-Energy Spectral CT (atau Photon-Counting CT dengan pemilahan energy bins)",
+            "CT Generasi ke-1 mode Translate-Rotate single pencil beam",
+            "Penambahan filter timbal 10 mm di depan detektor gas Xenon",
+            "Menggunakan Simple Back-Projection tanpa filter konvolusi"
+          ],
+          "correctIndex": 0,
+          "explanation": "Dual-Energy dan PCD menganalisis perubahan rasio atenuasi antar energi tinggi-rendah untuk membedakan Z efektif material seperti asam urat vs kalsium.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M04.T0": {
+      "nanoHints": [
+        "Generasi ke-3 Rotate-Rotate mendominasi MSCT karena kompatibel dengan sekat anti-scatter.",
+        "Beam Pitch = d / W mengatur kecepatan cakupan z-axis sekaligus tumpang tindih data."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Bandingkan evolusi CT Generasi I s.d. V (EBCT) serta Dual-Source & Wide-Detector.",
+          "Bedakan matriks detektor Uniform vs Adaptive Array pada konstruksi MSCT.",
+          "Kuasai perhitungan Beam Pitch dan pengaruhnya terhadap dosis serta resolusi profil irisan (SSP)."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M04.T0:1",
+          "scenario": "Seorang manajer radiologi membandingkan spesifikasi MSCT 16-slice, 64-slice, dan Wide-Detector 320-slice untuk layanan jantung koroner.",
+          "question": "Keunggulan utama Wide-Detector 256/320-slice pada pemindaian jantung adalah:",
+          "options": [
+            "Lebar cakupan sumbu-z 16 cm mampu memindai seluruh jantung dalam satu detak tanpa pergeseran meja",
+            "Detektornya menggunakan gas Xenon bertekanan rendah",
+            "Menghilangkan perlunya tabung sinar-X berkapasitas panas tinggi",
+            "Memperlambat rotasi gantry menjadi 10 detik per putaran"
+          ],
+          "correctIndex": 0,
+          "explanation": "Cakupan z 16 cm melampaui tinggi jantung (~12-14 cm) sehingga akuisisi dilakukan dalam 1 rotasi bebas artefak step/slab mismatch.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M04.T1.1": {
+      "nanoHints": [
+        "Gen-1 & Gen-2 lambat karena gerak Translate-Rotate mekanik yang harus berhenti-berbalik.",
+        "Gen-4 ring statis 360 derajat boros ribuan detektor dan tidak bisa memakai sekat fokus."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Gen-1 memakai berkas pensil 1 detektor; butuh ~4-5 menit untuk 1 irisan kepala.",
+          "Gen-3 Rotate-Rotate memutar tabung & busur detektor sinkron sehingga sekat Tungsten selalu terfokus ke anoda.",
+          "Geometri fixed-angle Gen-3 rentan Ring Artifact apabila kalibrasi satu kanal bergeser."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M04.T1.1:1",
+          "scenario": "Meski CT Generasi ke-4 (Rotate-Stationary) memakai cincin detektor penuh 360 derajat yang tahan Ring Artifact, seluruh vendor MSCT modern memilih arsitektur Generasi ke-3.",
+          "question": "Alasan teknis paling menentukan mengapa Generasi ke-3 menjadi standar tunggal MSCT modern adalah:",
+          "options": [
+            "Sudut tetap tabung-detektor mendukung kisi anti-scatter terfokus & biaya matriks 2D multi-baris jauh lebih efisien",
+            "Generasi ke-3 menggunakan dua kali lipat lebih banyak elemen detektor dibanding Generasi ke-4",
+            "Generasi ke-4 hanya bisa dipakai untuk foto rontgen ekstremitas",
+            "Generasi ke-3 tidak membutuhkan sistem slip-ring"
+          ],
+          "correctIndex": 0,
+          "explanation": "Mengisi cincin penuh 360 derajat (Gen-4) dengan ratusan baris detektor Solid-State sangat mahal dan tidak bisa memakai anti-scatter grid terfokus karena tabung terus berubah sudut.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M04.T1.2": {
+      "nanoHints": [
+        "EBCT memakai defleksi berkas elektron magnetik (33-50 ms) tanpa komponen mekanik berputar.",
+        "Dual-Source CT memakai 2 tabung + 2 detektor (90 derajat) untuk CT Jantung cepat."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Resolusi temporal Dual-Source mencapai ~66 ms sehingga mampu membekukan koroner meski HR tinggi.",
+          "Prospective Step-and-Shoot ECG-Gating menembakkan radiasi hanya pada jendela diastolik 70-75% R-R.",
+          "Retrospective Spiral ECG-Gating merekam sepanjang siklus jantung dengan modulasi arus ECG untuk hemat dosis."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M04.T1.2:1",
+          "scenario": "Pasien irama jantung reguler 58 bpm menjalani CT Angiografi Koroner (CCTA) dengan target dosis radiasi serendah mungkin (< 2 mSv).",
+          "question": "Mode ECG-Gating manakah yang paling tepat dipilih untuk kondisi irama reguler tersebut?",
+          "options": [
+            "Prospective ECG-Gating (Step-and-Shoot) dengan eksposi hanya pada fase mid-diastolik 70-75% R-R",
+            "Retrospective Spiral pitch 0,15 dengan mA maksimal sepanjang 100% siklus tanpa ECG pulsing",
+            "Mematikan sinkronisasi EKG agar meja bergerak acak",
+            "Memindai dalam mode Topogram statis tanpa rotasi gantry"
+          ],
+          "correctIndex": 0,
+          "explanation": "Prospective ECG-Gating mematikan sinar-X di luar jendela diastolik tenang (70-75% R-R), memangkas dosis hingga 70-80% dibanding mode retrospektif konvensional.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": {
+        "type": "REVEAL_CHAIN",
+        "title": "Alur Akuisisi Prospective ECG-Gating pada CCTA",
+        "intro": "Ikuti mekanisme pemindaian koroner hemat dosis saat detak jantung terdeteksi:",
+        "reviewed": true,
+        "steps": [
+          { "text": "Elektroda EKG memantau puncak gelombang R dan menghitung kestabilan interval R-R pasien." },
+          { "text": "Sistem hanya menyalakan eksposi tabung sinar-X pada fase relaksasi jantung (70-75% siklus R-R)." },
+          { "text": "Sinar-X padam otomatis sementara meja bergeser cepat ke blok koordinat sumbu-z berikutnya." },
+          { "text": "Siklus diulang hingga seluruh arteri koroner tercakup sempurna bebas artefak gerak." }
+        ]
+      }
+    },
+    "M04.T2.1": {
+      "nanoHints": [
+        "Pada SSCT lebar irisan diatur kolimator; pada MSCT ditentukan kombinasi baris detektor.",
+        "Matriks MSCT memungkinkan pemindaian isotropik (0,5-0,625 mm) di seluruh tubuh."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Tipe array detektor MSCT meliputi Uniform Matrix, Adaptive Array, dan Hybrid Array.",
+          "Kolimasi 64 x 0,625 mm menghasilkan lebar berkas total W = 40 mm per rotasi.",
+          "Voxel isotropik membuat rekonstruksi MPR Koronal & Sagital sama tajamnya dengan Aksial."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M04.T2.1:1",
+          "scenario": "Pada MSCT 64-slice konvensional dengan konfigurasi detektor 64 x 0,625 mm, operator ingin merekonstruksi potongan tebal 5 mm untuk dibaca cepat radiolog.",
+          "question": "Bagaimana cara pesawat MSCT membentuk irisan 5 mm tersebut dari akuisisi irisan tipis 0,625 mm?",
+          "options": [
+            "Menggabungkan sinyal (binning) 8 baris kanal detektor atau menebalkan irisan saat rekonstruksi dari raw data tipis",
+            "Memutar meja pasien menyamping 90 derajat selama proses scan",
+            "Hanya menyalakan 1 baris detektor terluar dan membuang sisanya",
+            "Memperbesar Window Width menjadi 5000 HU di layar"
+          ],
+          "correctIndex": 0,
+          "explanation": "MSCT mengakuisisi data beresolusi tipis (0,625 mm) lalu menggabungkannya secara digital untuk irisan tebal, sehingga data tipis tetap tersedia untuk 3D/MPR.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
       "interactive": null
     },
     "M04.T2.2": {
@@ -154,7 +839,324 @@
           "explanation": "Pitch > 1 (1,2 - 1,4) memperbesar pergeseran meja per rotasi sehingga waktu scan total sangat singkat dan artefak gerakan napas dapat dihindari.",
           "reviewed": true,
           "reviewedBy": "Tim Fisika Medis CT",
-          "reviewedAt": "2026-11-15"
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M04.T3.1": {
+      "nanoHints": [
+        "Pitch tinggi memperlebar Slice Sensitivity Profile (SSP) sehingga resolusi z agak menurun.",
+        "Adaptive Dose Shield menutup kolimator dinamis agar over-ranging di ujung scan berkurang."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Interpolasi z-axis 180 LI mengubah lintasan spiral miring menjadi irisan bidang aksial datar.",
+          "Over-beaming adalah penumbra berkas di ujung array detektor; over-ranging adalah ekstra rotasi helikal di awal/akhir scan.",
+          "Dynamic/Adaptive Collimator memblokir paparan over-ranging yang tidak masuk ke gambar rekonstruksi."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M04.T3.1:1",
+          "scenario": "Pada pemindaian helikal rentang pendek (mis. CT Leher 12 cm dengan wide-cone 40 mm dan Pitch 1,35), fisikawan medis memperhatikan porsi dosis ekstra di ujung batas scan.",
+          "question": "Teknologi apakah yang aktif menutup setengah celah kolimator secara dinamis di awal dan akhir rentang helikal untuk memotong dosis tak terpakai?",
+          "options": [
+            "Adaptive Dose Shield (Dynamic Z-Collimator) untuk memangkas Over-Ranging",
+            "Menghapus Bow-Tie Filter dari dalam rangka berputar",
+            "Menurunkan kecepatan meja hingga 0 mm/detik di tengah scan",
+            "Mengaktifkan Sharp Bone Kernel pada saat rekonstruksi selesai"
+          ],
+          "correctIndex": 0,
+          "explanation": "Over-ranging menambah setengah rotasi di awal dan akhir scan untuk interpolasi z; Adaptive Dose Shield memblokir bagian berkas luar yang tak direkonstruksi.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M05.T0": {
+      "nanoHints": [
+        "Sinogram adalah matriks (sudut theta vs posisi detektor t) berisi data ln(I0/I).",
+        "Raw Data wajib tersedia bila ingin mengubah Kernel atau DFOV secara retrospektif."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Kuasai konsep Transformasi Radon yang mengubah irisan anatomi menjadi gelombang sinus di Sinogram.",
+          "Pahami mengapa Simple Back-Projection menghasilkan artefak kabur 1/r dan bagaimana FBP memperbaikinya.",
+          "Bandingkan Kernel Soft vs Sharp serta rekonstruksi generasi terbaru (IR & AI DLIR)."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M05.T0:1",
+          "scenario": "Setelah pasien turun dari meja dan berkas citra DICOM berketebalan 5 mm sudah terkirim ke PACS, dokter bedah meminta rekonstruksi ulang 0,6 mm.",
+          "question": "Syarat mutlak di konsol CT agar rekonstruksi irisan tipis 0,6 mm dapat dilakukan tanpa mengulang scan pasien adalah:",
+          "options": [
+            "Data mentah proyeksi (Raw Data / Sinogram) masih tersimpan di hard disk lokal konsol CT",
+            "Pasien masih harus berada di dalam bore gantry dengan kontras terpasang",
+            "Monitor PACS diubah kecerahannya ke Bone Window",
+            "Operator melakukan zoom digital pada gambar tebal 5 mm"
+          ],
+          "correctIndex": 0,
+          "explanation": "Retro-Recon membutuhkan Raw Data proyeksi asli sebelum dikonvolusi menjadi gambar DICOM akhir.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M05.T1.1": {
+      "nanoHints": [
+        "Satu titik objek di luar pusat gambar menggambar kurva sinus pada grafik Sinogram.",
+        "Kerusakan satu kanal detektor menciptakan garis lurus vertikal di sepanjang sumbu sudut."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Transformasi Radon memetakan garis integral atenuasi dari sudut 0-360 derajat ke ruang proyeksi.",
+          "Data proyeksi mentah disebut Raw Data dan ukurannya jauh lebih besar daripada citra DICOM.",
+          "Gerakan pasien mendadak selama rotasi terlihat sebagai patahan/diskontinuitas pada kurva Sinogram."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M05.T1.1:1",
+          "scenario": "Pada evaluasi raw data teknis, tampak satu garis vertikal lurus gelap-terang dari atas ke bawah pada grafik Sinogram.",
+          "question": "Temuan pada Sinogram tersebut akan bermanifestasi menjadi artefak apakah pada citra aksial setelah direkonstruksi?",
+          "options": [
+            "Ring Artifact (cincin konsentris mengelilingi titik Isocenter)",
+            "Motion Artifact berbentuk bayangan ganda di dinding perut",
+            "Out-of-Field bright shading di tepi luar bahu",
+            "Efek volume parsial pada korteks ginjal"
+          ],
+          "correctIndex": 0,
+          "explanation": "Satu kanal detektor yang konsisten melenceng di semua sudut 0-360 derajat (garis vertikal di sinogram) terproyeksi balik menjadi lingkaran tepat di radius kanal tersebut.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M05.T1.2": {
+      "nanoHints": [
+        "Back-projection mentah meninggalkan kabur 1/r (star artifact) di sekeliling titik padat.",
+        "Filter Ramp/Kernel menekan komponen frekuensi rendah kabur sebelum proyeksi balik."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Simple Back-Projection menumpuk kembali sinar dari semua sudut tetapi menyebabkan gambar buram.",
+          "Filtered Back Projection (FBP) mengonvolusi setiap baris proyeksi dengan kernel negatif-tepi sebelum diproyeksikan.",
+          "Efek pembatalan lobe negatif di sekitar tepi menghilangkan artefak bintang 1/r sehingga tepi menjadi tajam."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M05.T1.2:1",
+          "scenario": "Sebuah simulasi rekonstruksi fantom titik logam kecil menggunakan metode Back-Projection polos tanpa langkah penyaringan matematis.",
+          "question": "Bentuk cacat citra khas apa yang pasti muncul mengelilingi titik berdensitas tinggi tersebut?",
+          "options": [
+            "Pola kabur bintang memancar (1/r star blurring artifact) akibat tumpang-tindih sinar tak tersaring",
+            "Seluruh layar berubah menjadi hitam seragam 0 HU",
+            "Citra membesar dua kali lipat dari DFOV yang disetel",
+            "Titik logam berpindah otomatis ke tepi luar gambar"
+          ],
+          "correctIndex": 0,
+          "explanation": "Sinar yang melintasi objek tetap menyisakan kontribusi nilai positif di sepanjang lintasannya di luar objek (berkurang sebanding 1/r) sebelum difilter kernel.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M05.T2.1": {
+      "nanoHints": [
+        "Soft Kernel meredam quantum noise agar kontras jaringan lunak otak terlihat jelas.",
+        "Sharp/Bone Kernel mempertajam batas tepi korteks tulang namun menaikkan noise."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Simple Back-Projection menimbulkan kabur bintang 1/r sehingga wajib difilter (FBP).",
+          "Retrospective Reconstruction ke Kernel atau DFOV baru wajib menggunakan Raw Data.",
+          "Iterative Reconstruction (IR) & AI DLIR menekan noise pada protokol dosis rendah."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M05.T2.1:1",
+          "scenario": "Pasien kecelakaan lalu lintas menjalani satu kali scan CT Kepala. Dokter meminta seri Parenkim Otak untuk mencari perdarahan dan seri Tulang tipis 0,625 mm untuk mencari fraktur basis kranii.",
+          "question": "Apa tindakan tepat radiografer di konsol tanpa memindai ulang pasien?",
+          "options": [
+            "Melakukan Retro-Recon dari Raw Data: satu seri dengan Soft Kernel + Brain Window, dan satu seri dengan Sharp/Bone Kernel + Bone Window",
+            "Memindai ulang pasien dua kali dengan dosis radiasi ganda",
+            "Hanya melakukan zoom in pada gambar Brain Window yang tebal",
+            "Menggunakan Bone Kernel untuk membaca parenkim substansia alba otak"
+          ],
+          "correctIndex": 0,
+          "explanation": "Selama Raw Data (Sinogram) masih tersimpan, operator dapat merekonstruksi ulang (Retro-Recon) ke berbagai kombinasi Kernel dan ketebalan irisan tanpa menambah dosis radiasi.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": {
+        "type": "REVEAL_CHAIN",
+        "title": "Tahapan Rekonstruksi Citra CT dari Sinogram ke DICOM",
+        "intro": "Urutkan proses komputasi di dalam Image Reconstruction System (IRS):",
+        "reviewed": true,
+        "steps": [
+          { "text": "DAS mengirimkan ribuan profil proyeksi logaritmik P(t, theta) yang membentuk matriks Sinogram." },
+          { "text": "Pada mode Helikal, komputer melakukan interpolasi z-axis (180 LI) menjadi bidang aksial datar." },
+          { "text": "Setiap profil proyeksi dikonvolusikan dengan Filter Kernel (Soft/Standard atau Sharp/Bone)." },
+          { "text": "Back-Projection / Iterative DLIR memetakan nilai mu(x,y) ke matriks 512x512 dan mengonversinya ke skala HU." }
+        ]
+      }
+    },
+    "M05.T3.1": {
+      "nanoHints": [
+        "Iterative Reconstruction (IR) mencocokkan proyeksi ulang model dengan raw data nyata.",
+        "AI DLIR memisahkan noise tanpa memberi tekstur plastik berlebihan seperti IR kuat."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "FBP sangat cepat tetapi cepat berderau (grainy) apabila mAs diturunkan untuk proteksi dosis.",
+          "Hybrid/Model-Based IR menurunkan dosis radiasi ~30-60% sambil mempertahankan resolusi kontras.",
+          "Deep Learning Image Reconstruction (DLIR) menjaga tekstur alami citra klinis di protokol ultra-low dose."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M05.T3.1:1",
+          "scenario": "Pada skrining Kanker Paru Dosis Rendah (LDCT), operator memakai mAs sangat rendah sehingga rekonstruksi FBP tradisional tampak penuh bintik noise.",
+          "question": "Algoritma rekonstruksi manakah yang paling efektif menekan noise sambil mempertahankan tekstur parenkim paru alami?",
+          "options": [
+            "AI Deep Learning Image Reconstruction (DLIR) atau Model-Based Iterative Reconstruction",
+            "Simple Back-Projection polos tanpa ramp filter",
+            "Menaikkan Sharp/Edge Kernel tingkat tertinggi di atas FBP dosis rendah",
+            "Mengurangi matriks gambar menjadi 64 x 64 piksel"
+          ],
+          "correctIndex": 0,
+          "explanation": "DLIR dilatih menggunakan pasangan raw data dosis rendah vs citra dosis standar sehingga mampu membuang quantum noise tanpa mengorbankan struktur halus nodul paru.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M06.T0": {
+      "nanoHints": [
+        "Voxel isotropik bersisi x = y = z sama panjang menghasilkan MPR bebas efek tangga.",
+        "Hounsfield Unit menormalkan atenuasi jaringan terhadap air (0 HU) dan udara (-1000 HU)."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Bedakan Scan FOV (ukuran area iradiasi fisik) dari Display FOV (area tampilan rekonstruksi).",
+          "Hafalkan nilai HU anatomi penting: Udara, Paru, Lemak, Air, Darah Akut, Korteks Tulang.",
+          "Terapkan Window Width (kontras) dan Window Level (kecerahan) serta kenali Partial Volume Effect."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M06.T0:1",
+          "scenario": "Seorang dokter mengecek nilai kepadatan sebuah massa pada kelenjar adrenal menggunakan alat ukur ROI di konsol PACS.",
+          "question": "Nilai ambang HU non-kontras berapakah yang sangat mendukung karakteristik adenoma kaya lemak yang jinak?",
+          "options": [
+            "Kurang dari atau sama dengan +10 HU (karena kandungan lemak intraseluler menurunkan nilai HU)",
+            "Lebih dari +1000 HU setara tulang korteks",
+            "Tepat -1000 HU setara udara bebas",
+            "Antara +300 s.d. +450 HU setara aorta berisi kontras"
+          ],
+          "correctIndex": 0,
+          "explanation": "Adenoma adrenal kaya lemak memiliki atenuasi rendah (<= 10 HU pada CT non-kontras), menandakan kegunaan diagnostik langsung skala HU kuantitatif.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M06.T1.1": {
+      "nanoHints": [
+        "Ukuran piksel = DFOV / Matriks; memperkecil DFOV langsung mempertajam detail spasial.",
+        "Voxel isotropik menuntut irisan rekonstruksi tipis (0,5-0,625 mm) seukuran sisi piksel."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "SFOV harus mencakup seluruh tubuh pasien guna menghindari Out-of-Field artifact di tepi gambar.",
+          "DFOV menentukan wilayah target yang dipetakan ke matriks 512 x 512 (atau 1024 x 1024).",
+          "Memperkecil DFOV secara retrospektif dari Raw Data lebih tajam ketimbang digital zoom."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M06.T1.1:1",
+          "scenario": "Setelah CT Abdomen (SFOV 500 mm) selesai, dokter meminta rekonstruksi terfokus pada vertebra lumbal untuk menilai garis fraktur halus.",
+          "question": "Tindakan konsol manakah yang menghasilkan ukuran piksel fisik terkecil dan gambar tulang belakang paling tajam?",
+          "options": [
+            "Merekonstruksi ulang dari Raw Data dengan DFOV sempit (mis. 150 mm) terpusat di korpus vertebra + Sharp Kernel",
+            "Mengklik tombol magnifying zoom 3x pada gambar Abdomen DFOV 400 mm yang sudah jadi",
+            "Memperlebar SFOV menjadi 700 mm saat rekonstruksi ulang",
+            "Mengubah ketebalan irisan dari 1 mm menjadi 8 mm"
+          ],
+          "correctIndex": 0,
+          "explanation": "Targeted Retro-Recon dengan DFOV kecil memetakan seluruh matriks 512 x 512 langsung ke area vertebra sehingga dimensi piksel (mm) menyusut nyata.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M06.T1.2": {
+      "nanoHints": [
+        "Air = 0 HU, Udara = -1000 HU, Lemak = -50..-100 HU, Darah Segar = +55..+80 HU.",
+        "Skala Extended HU 16-bit hingga +30.000 HU membedakan jenis logam implan tanpa saturasi."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Rumus HU: 1000 x (mu_jaringan - mu_air) / mu_air; setiap perubahan 1 HU = 0,1% selisih mu air.",
+          "Skala 12-bit standar mencakup -1024 s.d. +3071 HU (4096 tingkatan).",
+          "Skala Extended 16-bit mencegah pemotongan (clipping) nilai HU logam implan gigi atau prostesis panggul."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M06.T1.2:1",
+          "scenario": "Pada citra CT Kepala non-kontras ditemukan lesi bikonkaf berbatas tegas di ruang epidural dengan nilai pengukuran ROI rata-rata +72 HU.",
+          "question": "Berdasarkan peta kuantitatif skala Hounsfield Unit, lesi apakah yang paling sesuai dengan angka +72 HU tersebut?",
+          "options": [
+            "Perdarahan akut / Hematoma Epidural segar (gumpalan darah kaya hemoglobin berdensitas +60 s.d. +80 HU)",
+            "Kista arachnoid berisi cairan serebrospinal murni (+0 s.d. +15 HU)",
+            "Lipoma intrakranial berlemak murni (-60 s.d. -100 HU)",
+            "Pneumocephalus (udara bebas intrakranial -1000 HU)"
+          ],
+          "correctIndex": 0,
+          "explanation": "Konsentrasi protein hemoglobin padat pada bekuan darah akut menaikkan nilai atenuasi secara khas ke +55 hingga +85 HU.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
         }
       ],
       "interactive": null
@@ -173,7 +1175,160 @@
         ],
         "reviewed": true
       },
-      "stories": [],
+      "stories": [
+        {
+          "id": "story:M06.T2.1:1",
+          "scenario": "Pasien datang dengan hemiparesis mendadak 90 menit yang lalu. Pada CT Kepala non-kontras dengan Brain Window rutin (WW 80, WL 40), hipodensitas dini di nukleus lentiformis masih samar.",
+          "question": "Bagaimana pengaturan Windowing harus diubah untuk menonjolkan kontras stroke iskemik hiperakut?",
+          "options": [
+            "Menyempitkan Window Width ke Stroke Window (WW 40, WL 40) agar selisih kecil HU tampak kontras tinggi",
+            "Melebarkan Window Width menjadi Bone Window (WW 2500, WL 500)",
+            "Mengubah Window Level ke Lung Window (WW 1500, WL -600)",
+            "Menurunkan ukuran matriks menjadi 64 x 64 piksel"
+          ],
+          "correctIndex": 0,
+          "explanation": "Stroke Window (WW 40, WL 40) memetakan rentang sempit +20 s.d. +60 HU ke seluruh gradasi hitam-putih layar sehingga penurunan beberapa HU akibat edema sitotoksik dini tampak jelas.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M06.T3.1": {
+      "nanoHints": [
+        "Voxel tebal mencampur dua jaringan berbeda menjadi satu nilai HU rata-rata bias.",
+        "Irisan tipis (< 1-1,5 mm) penting saat menilai kista renal kecil (< 1 cm) atau nodul paru."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Partial Volume Effect merata-ratakan HU tulang + parenkim atau kista + jaringan sekitar dalam satu voxel.",
+          "Pada fosa posterior, pencampuran voxel antara os petrosum dan batang otak menurunkan akurasi HU.",
+          "Solusi efektif: rekonstruksi ketebalan irisan tipis dan penempatan ROI tepat di pusat lesi."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M06.T3.1:1",
+          "scenario": "Sebuah kista ginjal jinak berukuran 6 mm terbaca +35 HU pada irisan rekonstruksi tebal 7 mm, menyerupai massa padat atau kista hiperdens.",
+          "question": "Langkah apa yang harus dilakukan untuk membuktikan apakah +35 HU tersebut akibat Partial Volume Effect?",
+          "options": [
+            "Merekonstruksi irisan tipis 0,625-1 mm melintasi kista lalu mengukur ulang ROI di bagian tengah lesi",
+            "Melebarkan irisan menjadi 15 mm agar angka HU makin rata",
+            "Mengubah Window Level dari +40 menjadi -600 HU",
+            "Mengabaikan pengukuran dan langsung menyuntikkan ulang pasien"
+          ],
+          "correctIndex": 0,
+          "explanation": "Pada irisan 7 mm, voxel ikut memuat parenkim ginjal (+40 HU) di atas/bawah kista 6 mm (+5 HU); irisan 1 mm mengisolasi isi cairan kista sebenarnya.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M07.T0": {
+      "nanoHints": [
+        "Kualitas citra CT menyeimbangkan Noise, Spatial Resolution, dan Low-Contrast.",
+        "ALARA menuntut dosis serendah mungkin yang tetap menghasilkan informasi diagnostik layak."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Pahami rumus Effective mAs = (mA x t_rot) / Pitch dan dampaknya pada noise serta dosis.",
+          "Kuasai definisi CTDI100, CTDIw, CTDIvol, DLP, SSDE, dan Dosis Efektif (mSv).",
+          "Terapkan Automatic Exposure Control (AEC), Diagnostic Reference Level (DRL), dan protokol pediatrik."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M07.T0:1",
+          "scenario": "Seorang dokter anak meminta penurunan dosis ekstrem tanpa melihat bobot klinis pasien hingga seluruh parenkim hepar penuh bintik noise tak terbaca.",
+          "question": "Prinsip optimasi proteksi radiasi yang paling tepat dalam situasi tersebut adalah:",
+          "options": [
+            "Mencapai kualitas citra diagnostik yang memadai (justifikasi + optimasi ALARA), bukan sekadar dosis paling rendah tanpa nilai diagnostik",
+            "Mematikan tabung sinar-X selama setengah rotasi agar dosis selalu 0 mGy",
+            "Memakai parameter CT Abdomen dewasa 140 kVp pada seluruh pasien anak",
+            "Menghapus seluruh data laporan dosis DLP dari sistem PACS"
+          ],
+          "correctIndex": 0,
+          "explanation": "Jika dosis terlalu rendah hingga citra non-diagnostik dan scan harus diulang, total dosis pasien justru menjadi berlipat; kuncinya adalah optimasi diagnostik.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M07.T1.1": {
+      "nanoHints": [
+        "Effective mAs = (mA x Waktu Rotasi) / Pitch menentukan kuantitas foton per volume irisan.",
+        "Dosis berbanding lurus dengan mAs, dan naik secara eksponensial terhadap kenaikan kVp."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Penurunan kVp dari 120 ke 80-100 kVp pada CTA/anak menekan dosis secara dramatis dan meningkatkan kontras Iodin.",
+          "Waktu rotasi cepat (0,28-0,35 detik) membekukan gerakan jantung dan diafragma.",
+          "Jika Pitch dinaikkan tanpa kompensasi, pesawat dengan mode Effective mAs konstan otomatis menaikkan mA tabung."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M07.T1.1:1",
+          "scenario": "Protokol standar memakai 300 mA, waktu rotasi 0,5 detik, dan Pitch 1,0 sehingga Effective mAs tercatat 150 mAs.",
+          "question": "Jika operator mengganti Pitch menjadi 1,5 tanpa mengaktifkan mode Effective mAs konstan (mA tetap 300 mA dan t_rot 0,5 detik), berapakah Effective mAs baru?",
+          "options": [
+            "100 mAs (dosis turun sepertiga karena berkas melewati tiap irisan lebih cepat)",
+            "225 mAs (dosis naik satu setengah kali lipat)",
+            "150 mAs tanpa perubahan apa pun pada dosis",
+            "450 mAs (tiga kali lipat dosis awal)"
+          ],
+          "correctIndex": 0,
+          "explanation": "Effective mAs = (300 x 0,5) / 1,5 = 100 mAs. Pada mA tetap, menaikkan Pitch secara langsung menurunkan CTDIvol.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M07.T1.2": {
+      "nanoHints": [
+        "Noise sebanding 1/sqrt(mAs): untuk memangkas noise 50%, dosis perlu naik 4x lipat.",
+        "Low-contrast resolution paling rentan rusak apabila quantum noise meningkat tinggi."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Spatial resolution ditentukan oleh ukuran fokus tabung, lebar sel detektor, DFOV/matriks, dan Filter Kernel.",
+          "Irisan ultra-tipis meningkatkan ketajaman sumbu-z tetapi menaikkan noise bila mAs tidak disesuaikan.",
+          "Deteksi metastasis hepar kecil (+10 HU beda dari parenkim) sangat bergantung pada Low-Contrast Detectability."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M07.T1.2:1",
+          "scenario": "Seorang dokter memeriksa metastasis hepar kecil yang hanya berbeda 12 HU dari jaringan hati normal di sekitarnya.",
+          "question": "Kombinasi parameter manakah yang PALING optimal untuk mempertahankan Low-Contrast Resolution parenkim hepar?",
+          "options": [
+            "Soft/Standard Kernel + irisan 3-5 mm + kecukupan mAs (dan/atau DLIR) agar Quantum Noise tetap rendah",
+            "Bone Kernel ultra-tajam + irisan 0,5 mm + mAs minimum",
+            "Menyetel Window Width menjadi 2500 HU dan Window Level +500 HU",
+            "Mematikan penyaring data dan memakai Simple Back-Projection"
+          ],
+          "correctIndex": 0,
+          "explanation": "Lesi ber-kontras rendah mudah tenggelam oleh noise; Soft Kernel dan irisan 3-5 mm menjaga rasio sinyal terhadap noise (CNR) tetap tinggi.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
       "interactive": null
     },
     "M07.T2.1": {
@@ -186,11 +1341,175 @@
         "items": [
           "Effective mAs = (mA * t_rot) / Pitch menentukan kuantitas foton per volume irisan.",
           "CTDIvol = CTDIw / Pitch mengukur intensitas dosis rata-rata pada fantom 16 cm atau 32 cm.",
-          "Membatasi panjang scan (Scan Length L) seperlunya langsung menurunkan nilai DLP."
+          "Membatasi panjang scan (Scan Length L) seperlunya langsung menurunkan nilai DLP dan SSDE."
         ],
         "reviewed": true
       },
-      "stories": [],
+      "stories": [
+        {
+          "id": "story:M07.T2.1:1",
+          "scenario": "Pada pemeriksaan CT Abdomen rutin dengan CTDIvol = 12 mGy, rentang scan yang diperlukan secara klinis dari diafragma ke simfisis pubis adalah 35 cm, namun operator membuka kotak scan sepanjang 50 cm.",
+          "question": "Berapa kelebihan DLP yang diterima pasien akibat rentang scan ekstra 15 cm tersebut?",
+          "options": [
+            "DLP bertambah 180 mGy.cm (dari 420 mGy.cm menjadi 600 mGy.cm) tanpa manfaat diagnostik tambahan",
+            "DLP tidak berubah sama sekali karena CTDIvol tetap 12 mGy",
+            "DLP justru berkurang setengahnya",
+            "CTDIvol turun menjadi 0 mGy"
+          ],
+          "correctIndex": 0,
+          "explanation": "DLP = CTDIvol x L. Tambahan panjang scan 15 cm mengalikan 12 mGy x 15 cm = +180 mGy.cm ekstra. Membatasi z-coverage sesuai indikasi klinis adalah langkah proteksi radiasi paling langsung.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M07.T3.1": {
+      "nanoHints": [
+        "AEC memodulasi arus mA otomatis mengikuti ketebalan anatomi pada topogram scout.",
+        "Gunakan protokol berbasis berat badan (weight-based) serta 80-100 kVp pada pasien anak."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Modulasi Z-axis & Angular X-Y AEC memangkas dosis hingga 30-50% dengan noise seragam di seluruh tubuh.",
+          "DRL (Diagnostic Reference Level) adalah batas acuan investigasi audit dosis rumah sakit, bukan batas hukum kaku.",
+          "Hindari pemeriksaan CT Abdomen multifase berulang pada anak bila 1 fase vena porta sudah diagnostik."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M07.T3.1:1",
+          "scenario": "Rumah sakit mengaudit laporan dosis bulanan dan menemukan nilai median CTDIvol CT Kepala Dewasa melewati angka DRL nasional sebesar 60 mGy.",
+          "question": "Langkah audit klinis yang benar sesuai konsep Diagnostic Reference Level (DRL) adalah:",
+          "options": [
+            "Meninjau optimasi protokol kVp/mAs, kekuatan Iterative/DLIR, dan kepatuhan centering tanpa mengorbankan mutu diagnosis",
+            "Menghapus catatan DLP di sistem konsol agar laporan terlihat di bawah DRL",
+            "Menolak seluruh pasien gawat darurat stroke yang memerlukan CT Kepala",
+            "Mengganti seluruh CT Kepala menjadi foto polos AP saja"
+          ],
+          "correctIndex": 0,
+          "explanation": "DRL berfungsi sebagai instrumen pemicu evaluasi optimasi protokol ketika dosis tipikal fasilitas secara konsisten berada di atas tolok ukur.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": {
+        "type": "REVEAL_CHAIN",
+        "title": "Alur Optimasi Dosis AEC & Centering Pasien",
+        "intro": "Susun cara kerja Automatic Exposure Control (AEC) menjaga kualitas gambar sekaligus menekan dosis:",
+        "reviewed": true,
+        "steps": [
+          { "text": "Radiografer memosisikan organ target pasien tepat di tengah Laser Isocenter gantry." },
+          { "text": "Pesawat mengambil Topogram (AP & Lateral) untuk mengukur atenuasi dan diameter tubuh per tingkat z." },
+          { "text": "Konsol menghitung profil modulasi arus mA secara longitudinal (z-axis) dan rotasional (X-Y angular)." },
+          { "text": "Selama rotasi gantry, arus mA otomatis turun di area paru berudara dan naik di area bahu/panggul padat." }
+        ]
+      }
+    },
+    "M08.T0": {
+      "nanoHints": [
+        "Kontras Iodin non-ionik aman untuk CTA cepat, tetapi wajib skrining fungsi eGFR.",
+        "Teknik 3D MPR, MIP, dan MinIP memaksimalkan informasi dari tumpukan voxel isotropik."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Verifikasi riwayat alergi dan fungsi ginjal (kreatinin/eGFR) sebelum injeksi kontras Iodin IV.",
+          "Kuasai cara kerja Dual-Head Power Injector, laju alir (mL/dtk), dan fungsi Saline Chaser.",
+          "Bedakan waktu akuisisi fase vaskular (Arteri, Vena Porta, Delayed) serta metode post-processing 3D."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M08.T0:1",
+          "scenario": "Pasien dewasa dijadwalkan menjalani CT Abdomen 3 Fase (Non-kontras, Arteri, Vena Porta) dengan indikasi evaluasi lesi fokal hati.",
+          "question": "Mengapa urutan fase non-kontras penting diambil sebelum injeksi kontras Iodin dimulai?",
+          "options": [
+            "Menjadi baseline nilai HU asli guna membedakan kalsifikasi/perdarahan spontan dari penyangatan kontras sejati",
+            "Memanaskan kateter vena pasien dengan sinar-X",
+            "Mengosongkan kandung kemih pasien secara otomatis",
+            "Menurunkan nilai keV tabung sinar-X menjadi 10 kVp"
+          ],
+          "correctIndex": 0,
+          "explanation": "Tanpa fase pre-kontras, struktur hiperdens (kalsifikasi atau bekuan darah) bisa keliru dianggap mengalami enhancement vaskular.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M08.T1.1": {
+      "nanoHints": [
+        "Risiko CI-AKI meningkat bila eGFR < 30 mL/menit/1,73 m^2; evaluasi hidrasi IV.",
+        "Reaksi anafilaksis berat (sesak/hipotensi) ditangani segera dengan Epinefrin IM."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Iodin (Z=53) menyerap sinar-X kuat melalui efek fotolistrik sehingga lumen vaskular naik +250 hingga +500 HU.",
+          "Klasifikasikan reaksi akut ringan (urtikaria), sedang (bronkospasme), hingga berat (syok anafilaksis).",
+          "Troli emergensi wajib selalu siap di samping ruang gantry sebelum injeksi kontras dimulai."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M08.T1.1:1",
+          "scenario": "Dua menit setelah injeksi media kontras Iodin IV, pasien tiba-tiba mengeluh sesak napas berat, suara napas mengi/stridor, bibir bengkak, dan tekanan darah turun drastis.",
+          "question": "Tindakan medis darurat lini pertama yang PALING krusial selain meminta bantuan tim resusitasi dan memberi oksigen adalah:",
+          "options": [
+            "Menghentikan injeksi segera dan memberikan Epinefrin (Adrenalin) 1:1000 intramuskular di paha anterolateral",
+            "Memberikan segelas air putih dingin dan melanjutkan scan helikal",
+            "Memasang kompres es pada pembuluh darah fossa antekubiti",
+            "Menaikkan kVp pesawat CT menjadi 140 kVp"
+          ],
+          "correctIndex": 0,
+          "explanation": "Epinefrin IM 0,3-0,5 mg adalah terapi lini pertama penyelamat nyawa pada reaksi anafilaksis berat pasca-kontras Iodin.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M08.T1.2": {
+      "nanoHints": [
+        "CTA memakai flow rate 4-6 mL/dtk dengan IV kanul 18G-20G & batas tekanan <= 325 PSI.",
+        "Saline Chaser mendorong sisa kontras dari vena ke jantung & mencegah streak SVC."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Tabung A berisi kontras hangat (37 derajat C) menurunkan viskositas; Tabung B berisi NaCl 0,9%.",
+          "Durasi injeksi (detik) = Volume (mL) / Flow Rate (mL/detik).",
+          "Bila terjadi ekstravasasi, hentikan injektor, cabut/aspirasi, elevasikan lengan, beri kompres dingin."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M08.T1.2:1",
+          "scenario": "Di pertengahan detik ke-4 injeksi kontras dengan Power Injector 4,5 mL/dtk, pasien berteriak kesakitan dan tampak bengkak keras di area tempat kanul 20G fossa antekubiti.",
+          "question": "Urutan penanganan klinis ekstravasasi kontras yang benar adalah:",
+          "options": [
+            "Tekan tombol STOP injektor segera, aspirasi bila memungkinkan lalu lepas kanul, elevasi ekstremitas & kompres dingin",
+            "Menaikkan batas tekanan injektor menjadi 500 PSI untuk menembus sumbatan",
+            "Memijat keras benjolan ke arah pergelangan tangan agar cepat tersebar",
+            "Membiarkan pasien pulang tanpa observasi kompartemen vaskular"
+          ],
+          "correctIndex": 0,
+          "explanation": "Menghentikan injeksi menghentikan kebocoran; elevasi di atas jantung & kompres dingin meredakan edema serta nyeri jaringan subkutan.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
       "interactive": null
     },
     "M08.T2.1": {
@@ -207,7 +1526,171 @@
         ],
         "reviewed": true
       },
-      "stories": [],
+      "stories": [
+        {
+          "id": "story:M08.T2.1:1",
+          "scenario": "Pasien dengan kecurigaan diseksi aorta torakalis menjalani CTA Aorta menggunakan Dual-Head Power Injector (laju 4,5 mL/detik diikuti 40 mL Saline Chaser).",
+          "question": "Bagaimana pengaturan Bolus Tracking yang tepat agar akuisisi dimulai tepat di puncak fase arterial?",
+          "options": [
+            "Meletakkan ROI pada Aorta Ascendens/Descendens dengan ambang pemicu +120 s.d. +150 HU",
+            "Meletakkan ROI pada jaringan lemak subkutis dengan ambang -80 HU",
+            "Menunggu waktu tunda 10 menit (fase delayed urografi) baru memulai scan",
+            "Menyuntikkan kontras tanpa Saline Chaser dengan kecepatan 0,2 mL/detik"
+          ],
+          "correctIndex": 0,
+          "explanation": "Penempatan ROI di lumen aorta dengan trigger +120 s.d. +150 HU memastikan meja bergerak dan memindai tepat ketika kolom kontras Iodin pekat mengisi lumen arteri.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": {
+        "type": "REVEAL_CHAIN",
+        "title": "Alur Protokol Aman Injeksi Kontras Iodin & Bolus Tracking",
+        "intro": "Susun langkah standar pelaksanaan CT Angiografi dengan Power Injector:",
+        "reviewed": true,
+        "steps": [
+          { "text": "Verifikasi nilai eGFR (>= 30 mL/menit/1,73 m2), riwayat alergi, dan pasang kanul IV 18G-20G di fossa antekubiti." },
+          { "text": "Lakukan uji patensi vena dengan flush NaCl 0,9% manual dan atur batas tekanan injektor <= 300-325 PSI." },
+          { "text": "Tempatkan lingkaran ROI Bolus Tracking di lumen arteri target (ambang +120 HU) lalu mulai injeksi kontras + Saline Chaser." },
+          { "text": "Saat kurva HU ROI menembus ambang batas, meja otomatis menuju titik awal dan memulai scan helikal fase arterial." }
+        ]
+      }
+    },
+    "M08.T3.1": {
+      "nanoHints": [
+        "MIP menonjolkan HU tertinggi untuk arteri CTA, MinIP menonjolkan HU terendah bronkus.",
+        "Curved MPR meluruskan pembuluh darah berkelok (aorta/koroner/ureter) dalam satu bidang."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "MPR menyusun ulang irisan aksial menjadi Koronal, Sagital, Oblik, atau Curved MPR tanpa kehilangan resolusi.",
+          "MIP memproyeksikan intensitas tertinggi sepanjang ketebalan slab untuk mengevaluasi aneurisma & nodul paru.",
+          "3D VRT memetakan nilai HU ke kurva warna dan transparansi untuk visualisasi bedah ortopedi atau pembuluh."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M08.T3.1:1",
+          "scenario": "Dokter paru ingin mengevaluasi penyempitan saluran udara bronkus serta area terperangkapnya udara (air-trapping) dan emfisema di parenkim paru.",
+          "question": "Teknik proyeksi post-processing manakah yang paling menonjolkan jalan napas berisi udara tersebut?",
+          "options": [
+            "MinIP (Minimum Intensity Projection) yang hanya menampilkan nilai HU paling rendah di dalam slab",
+            "MIP (Maximum Intensity Projection) yang menyorot struktur tulang belakang paling putih",
+            "Bone Kernel Windowing dengan Window Level +800 HU",
+            "Meningkatkan ketebalan irisan ke 20 mm dengan proyeksi rata-rata polos"
+          ],
+          "correctIndex": 0,
+          "explanation": "MinIP mempertahankan piksel ber-HU terendah (-900 s.d. -1000 HU) sepanjang slab sehingga trakea, bronkus, dan bula emfisema tampil jernih.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M09.T0": {
+      "nanoHints": [
+        "Tiap artefak mencerminkan cacat fisik pada pasien, berkas polikromatik, atau detektor.",
+        "Tube Warm-Up, Air Calibration, dan uji Fantom Air 5-ROI merupakan rutinitas wajib pagi."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Kelompokkan artefak CT menjadi berbasis fisika/pasien vs berbasis kerusakan instrumentasi pesawat.",
+          "Lakukan Tube Warm-Up bertahap agar anoda dingin terhindar dari retak termal (thermal shock).",
+          "Evaluasi 5 ROI fantom air harian terhadap toleransi akurasi 0 +- 4 HU dan uniformity <= 5 HU."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M09.T0:1",
+          "scenario": "Radiografer jaga pagi baru menghidupkan pesawat CT setelah ruang dimatikan total selama akhir pekan (suhu anoda dingin).",
+          "question": "Tindakan persiapan apakah yang wajib dijalankan sebelum pasien darurat diposisikan di atas meja?",
+          "options": [
+            "Menjalankan Tube Warm-Up otomatis bertahap lalu Fast Air Calibration dengan bore kosong",
+            "Langsung memindai CT Angiografi 140 kVp 500 mA agar anoda cepat panas",
+            "Memindai fantom air tanpa menyalakan tabung sinar-X",
+            "Melepas filter bow-tie dari dalam gantry"
+          ],
+          "correctIndex": 0,
+          "explanation": "Tube Warm-Up menaikkan suhu target anoda bertahap tanpa kejutan termal sementara Air Calibration memastikan seluruh kanal detektor ter-nolkan.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M09.T1.1": {
+      "nanoHints": [
+        "Pita gelap di fosa posterior di antara os petrosum disebabkan oleh Beam Hardening.",
+        "Aktifkan algoritma MAR dan naikkan kVp untuk menekan garis starburst di sekitar logam."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Beam Hardening menghasilkan dua bentuk: Cupping Artifact dan Hounsfield Dark Bands di tulang tebal.",
+          "Metal Streak berasal dari photon starvation ekstrem; diatasi dengan kVp tinggi, irisan tipis, MAR, atau DECT.",
+          "Motion Artifact memicu bayangan ganda di sinogram dan ditekan dengan rotasi cepat (< 0,35 dtk) & fiksasi."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M09.T1.1:1",
+          "scenario": "Pada CT Kepala pasien dengan beberapa mahkota gigi dan sekrup implan logam berat di mandibula, muncul garis pancaran hitam-putih tajam yang menutupi jaringan dasar lidah.",
+          "question": "Kombinasi langkah teknis manakah yang paling efektif mengurangi artefak logam tersebut pada rekonstruksi ulang atau scan berikutnya?",
+          "options": [
+            "Mengaktifkan rekonstruksi Metal Artifact Reduction (MAR), memiringkan gantry (tilt) menghindari logam, dan menggunakan irisan tipis / 140 kVp",
+            "Menurunkan kVp menjadi 70 kVp agar foton lebih banyak terserap logam",
+            "Menjalankan Fast Air Calibration berkali-kali saat pasien masih berada di meja",
+            "Menyuruh pasien menggerakkan rahang selama rotasi gantry"
+          ],
+          "correctIndex": 0,
+          "explanation": "MAR mengoreksi data sinogram yang mengalami photon starvation di area logam, sedangkan kVp lebih tinggi atau tilt gantry mengurangi intensitas streak fisik.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": null
+    },
+    "M09.T1.2": {
+      "nanoHints": [
+        "Ring Artifact selalu berpusat di Isocenter pada pesawat CT Generasi ke-3 Rotate-Rotate.",
+        "Lengan melampaui batas SFOV akan memicu pita terang Out-of-Field di tepi gambar."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Ring Artifact terjadi karena drift gain/offset atau kerusakan salah satu kanal detektor Gen-3.",
+          "Out-of-Field Artifact terjadi karena bagian anatomi di luar batas Scan FOV masih melemahkan berkas lateral.",
+          "Windmill Artifact (baling-baling) pada helikal pitch tinggi ditekan dengan menurunkan pitch atau z-FFS."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M09.T1.2:1",
+          "scenario": "Pasien trauma bahu tidak mampu mengangkat kedua lengan ke atas kepala saat CT Torako-Abdomen, sehingga lengan bawah memanjang di luar lingkaran SFOV 50 cm.",
+          "question": "Artefak apakah yang berpotensi besar muncul di sisi kanan dan kiri gambar abdomen?",
+          "options": [
+            "Out-of-Field (Incomplete Projection) Artifact berupa garis dan pita terang tebal di kedua tepi citra",
+            "Ring Artifact melingkar tepat di titik pusat pembuluh aorta",
+            "Cupping artifact akibat kegagalan pendingin oli tabung",
+            "Zebra stripe artifact akibat kegagalan kompresor gas Xenon"
+          ],
+          "correctIndex": 0,
+          "explanation": "Lengan di luar SFOV menyerap foton pada sudut lateral namun tak punya grid koordinat rekonstruksi sehingga memicu pita shading terang di tepi gambar.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
       "interactive": null
     },
     "M09.T2.1": {
@@ -224,7 +1707,69 @@
         ],
         "reviewed": true
       },
-      "stories": [],
+      "stories": [
+        {
+          "id": "story:M09.T2.1:1",
+          "scenario": "Pada hasil scan CT Kepala pasien pertama di pagi hari, tampak lingkaran konsentris tajam tepat mengelilingi pusat gambar (Isocenter) di seluruh irisan aksial.",
+          "question": "Artefak apakah ini dan apa langkah perbaikan pertama yang harus dilakukan radiografer?",
+          "options": [
+            "Ring Artifact akibat drift kalibrasi kanal detektor Gen-3; kosongkan bore gantry dan jalankan Fast Air Calibration",
+            "Motion Artifact akibat pasien bergerak; naikkan Pitch menjadi 2,0",
+            "Metal Artifact; suntikkan media kontras Iodin tambahan",
+            "Out-of-Field Artifact; matikan sistem pendingin ruangan"
+          ],
+          "correctIndex": 0,
+          "explanation": "Lingkaran konsentris berpusat di Isocenter adalah Ring Artifact khas geometri Rotate-Rotate Generasi ke-3; menjalankan Air Calibration dengan bore kosong menyamakan kembali tabel gain/offset detektor.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
+      "interactive": {
+        "type": "REVEAL_CHAIN",
+        "title": "Prosedur Standar Pagi Hari & Uji QA Fantom Air 5-ROI",
+        "intro": "Urutkan tahapan persiapan pesawat CT sebelum melayani pasien pertama:",
+        "reviewed": true,
+        "steps": [
+          { "text": "Jalankan prosedur Tube Warm-Up bertahap hingga suhu anoda mencapai kapasitas panas kerja aman (~15-25% MHU)." },
+          { "text": "Pastikan lubang Bore Gantry kosong sepenuhnya, lalu jalankan Fast Air Calibration untuk menyamakan gain detektor." },
+          { "text": "Pasang Fantom Air Silinder tepat di titik Laser Isocenter dan lakukan scan protokol QA standar." },
+          { "text": "Ukur 5 ROI (Pusat & jam 12, 3, 6, 9): pastikan HU pusat 0 +/- 4 HU, Uniformity <= 5 HU, dan bebas Ring Artifact." }
+        ]
+      }
+    },
+    "M09.T3.1": {
+      "nanoHints": [
+        "Uji fantom air memakai 5 ROI: 1 di pusat dan 4 di tepi pada arah jam 12, 3, 6, dan 9.",
+        "Batas lulus QA harian: akurasi air pusat 0 +- 4 HU dan selisih keseragaman <= 5 HU."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Fantom air harus diposisikan tepat di pusat Laser Isocenter (x=0, y=0) sebelum eksposi QA.",
+          "Uniformity = maks |HU_perifer - HU_pusat| tidak boleh melebihi 5 HU guna mendeteksi cupping/capping.",
+          "Nilai Standar Deviasi (SD/Quantum Noise) di ROI pusat dipantau terhadap rentang baseline pesawat."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M09.T3.1:1",
+          "scenario": "Dalam uji QA pagi pada fantom air silinder, ROI pusat terbaca -0,5 HU sedangkan keempat ROI perifer jam 12, 3, 6, 9 rata-rata terbaca +7,2 HU.",
+          "question": "Bagaimana evaluasi kelayakan QA harian untuk hasil pengukuran fantom air tersebut?",
+          "options": [
+            "Akurasi air pusat lolos (0 +- 4 HU), tetapi GAGAL uji Uniformity karena selisih tepi-pusat 7,7 HU (> 5 HU)",
+            "Seluruh parameter lulus sempurna karena nilai ROI pusat mendekati 0 HU",
+            "Gagal akurasi air karena air seharusnya terbaca +1000 HU",
+            "Fantom harus diganti dengan tabung oksigen aluminium"
+          ],
+          "correctIndex": 0,
+          "explanation": "Selisih absolut perifer vs pusat sebesar 7,7 HU melampaui batas toleransi <= 5 HU dan menunjukkan cupping artifact akibat penyimpangan koreksi beam hardening/kalibrasi.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-16"
+        }
+      ],
       "interactive": null
     }
   }

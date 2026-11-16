@@ -51,8 +51,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.data.GlossaryItem
-import com.example.data.MriRepository
+import com.example.data.CtGlossaryItem
+import com.example.data.CtRepository
 import com.example.ui.components.AnimatedBookmarkPill
 import com.example.ui.components.FlashcardDeckSection
 import com.example.ui.components.StudyModeToggleBar
@@ -67,18 +67,18 @@ import com.example.ui.theme.DeepObsidian
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 
 @Composable
 fun GlossaryScreen(
-    state: MriUiState,
-    viewModel: MriViewModel,
+    state: CtUiState,
+    viewModel: CtViewModel,
     modifier: Modifier = Modifier
 ) {
     var selectedTermForDetail by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedItemForDetail = remember(selectedTermForDetail) {
-        selectedTermForDetail?.let { term -> MriRepository.glossary.find { it.term == term } }
+        selectedTermForDetail?.let { term -> CtRepository.glossary.find { it.term == term } }
     }
 
     Column(
@@ -91,7 +91,7 @@ fun GlossaryScreen(
 
         // 1. PINNED TOP HEADER & SEARCH: Tetap di atas, tidak bergerak saat di-swipe!
         Text(
-            text = "Glosarium Medis & Fisika MRI",
+            text = "Glosarium Medis & Instrumentasi CT Scan",
             style = MaterialTheme.typography.titleLarge,
             color = TextPrimary,
             fontWeight = FontWeight.Bold,
@@ -100,7 +100,7 @@ fun GlossaryScreen(
 
         // Study Mode Toggle Bar: Daftar Kamus vs Flashcards Hafalan
         StudyModeToggleBar(
-            primaryLabel = "Daftar Kamus (${MriRepository.glossary.size})",
+            primaryLabel = "Daftar Kamus (${CtRepository.glossary.size})",
             flashcardLabel = "Flashcards Hafalan",
             isFlashcardMode = state.isGlossaryFlashcardMode,
             onSelectMode = { viewModel.setGlossaryFlashcardMode(it) }
@@ -115,7 +115,7 @@ fun GlossaryScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("glossary_search_input"),
-            placeholder = { Text("Cari terminologi klinis (Larmor, TR, TE, FID, SAR, DWI, ADC, FLAIR)...", fontSize = 12.sp, color = TextMuted) },
+            placeholder = { Text("Cari terminologi klinis (HU, Pitch, CTDIvol, DLP, Slip-Ring, DAS, FBP, Bolus Tracking)...", fontSize = 12.sp, color = TextMuted) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -163,7 +163,7 @@ fun GlossaryScreen(
 
         // Bookmark + Module Filter Pills
         val savedBadgeCount = if (state.isGlossaryFlashcardMode) {
-            MriRepository.flashcards.count { state.isFlashcardBookmarked(it) }
+            CtRepository.flashcards.count { state.isFlashcardBookmarked(it) }
         } else {
             state.bookmarkedGlossaryTerms.size
         }
@@ -230,7 +230,7 @@ fun GlossaryScreen(
         val query = state.glossarySearchQuery.trim().lowercase()
 
         if (state.isGlossaryFlashcardMode) {
-            val filteredCards = MriRepository.flashcards.filter { card ->
+            val filteredCards = CtRepository.flashcards.filter { card ->
                 val matchesQuery = query.isEmpty() ||
                     card.frontTitle.lowercase().contains(query) ||
                     card.frontSubtitle.lowercase().contains(query) ||
@@ -268,7 +268,7 @@ fun GlossaryScreen(
                 }
             )
         } else {
-            val filteredList = MriRepository.glossary.filter { item ->
+            val filteredList = CtRepository.glossary.filter { item ->
                 val matchesQuery = query.isEmpty() ||
                     item.term.lowercase().contains(query) ||
                     item.symbolOrAbbr.lowercase().contains(query) ||
@@ -320,7 +320,7 @@ fun GlossaryScreen(
                 onToggleBookmark = { viewModel.toggleGlossaryBookmark(item.term) },
                 onDismiss = { selectedTermForDetail = null },
                 onNavigate = {
-                    val modulesSource = state.modulesList.ifEmpty { MriRepository.modules }
+                    val modulesSource = state.modulesList.ifEmpty { CtRepository.modules }
                     val mod = modulesSource.find { it.id == item.moduleId }
                         ?: modulesSource.find { it.id == item.nodeCode.substringBefore(".") }
                         ?: modulesSource.find { it.id.startsWith(item.moduleId) }
@@ -338,7 +338,7 @@ fun GlossaryScreen(
 
 @Composable
 fun GlossaryCard(
-    item: GlossaryItem,
+    item: CtGlossaryItem,
     isBookmarked: Boolean,
     onToggleBookmark: () -> Unit,
     onClick: () -> Unit
@@ -438,7 +438,7 @@ fun GlossaryCard(
 
 @Composable
 fun GlossaryDetailDialog(
-    item: GlossaryItem,
+    item: CtGlossaryItem,
     isBookmarked: Boolean,
     onToggleBookmark: () -> Unit,
     onDismiss: () -> Unit,

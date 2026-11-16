@@ -1,90 +1,88 @@
 package com.example
 
-import com.example.data.MriRepository
-import com.example.data.TissueProperties
-import com.example.viewmodel.MriUiState
+import com.example.data.CtRepository
+import com.example.data.CtTissueAttenuation
+import com.example.viewmodel.CtUiState
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ExampleUnitTest {
     @Test
-    fun testLarmorFrequencyCalculation() {
-        val b0 = 1.5f
-        val gamma1H = MriRepository.GAMMA_1H // 42.58
-        val freq1H = gamma1H * b0
-        assertEquals(63.87f, freq1H, 0.05f)
+    fun testEffectiveMasAndPixelSizeCalculation() {
+        val state = CtUiState(
+            tubeMa = 250f,
+            rotationTimeSec = 0.5f,
+            helicalPitch = 1.0f,
+            displayFovMm = 256f,
+            reconstructionMatrix = 512
+        )
+        assertEquals(125f, state.effectiveMas, 0.01f)
+        assertEquals(0.5f, state.pixelSizeMm, 0.001f)
 
-        val b0_3T = 3.0f
-        val freq3T = gamma1H * b0_3T
-        assertEquals(127.74f, freq3T, 0.05f)
+        val highPitchState = state.copy(helicalPitch = 1.25f)
+        assertEquals(100f, highPitchState.effectiveMas, 0.01f)
     }
 
     @Test
-    fun testContrastWeightingClassification() {
-        // T1w parameters (TR short, TE short)
-        val stateT1 = MriUiState(trMs = 500f, teMs = 15f)
-        assertEquals("Pembobotan T1-Weighted (T1w)", stateT1.weightingType)
+    fun testCtDosimetryAndDrlLimitCalculation() {
+        val standardBody = CtUiState(
+            tubeKvp = 120,
+            tubeMa = 200f,
+            rotationTimeSec = 0.5f,
+            helicalPitch = 1.0f,
+            scanLengthCm = 30f,
+            isHeadPhantom = false
+        )
+        // effectiveMas = 100 mAs, CTDIvol (Body 32cm @ 120kVp) = 8.5 mGy, DLP = 255 mGy.cm, E = 255 * 0.015 = 3.825 mSv
+        assertEquals(8.5f, standardBody.ctdiVolMgy, 0.05f)
+        assertEquals(255f, standardBody.dlpMgyCm, 0.5f)
+        assertEquals(3.825f, standardBody.effectiveDoseMsv, 0.02f)
+        assertFalse(standardBody.isDrlExceeded)
 
-        // T2w parameters (TR long, TE long)
-        val stateT2 = MriUiState(trMs = 3500f, teMs = 90f)
-        assertEquals("Pembobotan T2-Weighted (T2w)", stateT2.weightingType)
-
-        // B-11: PDw parameters (TR >= 2000, TE <= 30) vs Intermediate/Mixed parameters
-        val statePd = MriUiState(trMs = 2500f, teMs = 20f)
-        assertEquals("Pembobotan Proton Density (PDw)", statePd.weightingType)
-
-        val stateMixed = MriUiState(trMs = 1200f, teMs = 25f)
-        assertEquals("Pembobotan Campuran (Mixed / Intermediate)", stateMixed.weightingType)
+        val highDoseBody = standardBody.copy(tubeKvp = 140, tubeMa = 450f)
+        assertTrue("High 140 kVp + 450 mA body exposure must flag DRL warning", highDoseBody.isDrlExceeded)
     }
 
     @Test
-    fun testCalculatedSignalZeroRelaxationTimeGuard_B14() {
-        val tissueZero = TissueProperties(
-            id = "zero_test",
-            name = "Zero Tissue",
-            t1Ms = 0f,
-            t2Ms = 0f,
-            protonDensity = 1.0f,
+    fun testIterativeReconNoiseReductionAndHuCalculation() {
+        val fbpState = CtUiState(isIterativeReconActive = false)
+        val irState = CtUiState(isIterativeReconActive = true)
+        assertTrue(irState.estimatedNoiseSdHu < fbpState.estimatedNoiseSdHu)
+
+        val water = CtTissueAttenuation(
+            id = "water_test",
+            name = "Air Murni",
+            huMin = 0,
+            huMax = 0,
+            huTypical = 0,
+            muPerCmAt120kVp = CtRepository.MU_WATER_120_KVP,
+            recommendedWindow = "Brain",
             description = "Test",
             clinicalNote = "Test"
         )
-        val state = MriUiState(trMs = 500f, teMs = 20f, selectedTissue = tissueZero)
-        val signal = state.calculatedSignal
-        assertTrue("Signal should be finite and not NaN", !signal.isNaN() && signal.isFinite())
-        assertTrue("Signal should be clamped within 0..1", signal in 0f..1f)
+        val huWater = CtUiState(selectedTissue = water).calculatedHu
+        assertEquals(0, huWater)
     }
 
     @Test
-    fun testCompletedCountExcludesOrphanNodeCodes_B10() {
-        val state = MriUiState(
-            modulesList = MriRepository.modules,
+    fun testCompletedCountExcludesOrphanNodeCodes() {
+        val state = CtUiState(
+            modulesList = CtRepository.modules,
             completedNodeCodes = setOf("M01.T1.1", "M02.T1.1", "ORPHAN.LEGACY.999", "M03A.KUIS")
         )
         assertEquals(2, state.completedCount)
     }
 
     @Test
-    fun testSarClampedIndicator_B16() {
-        val highSarState = MriUiState(
-            selectedB0 = 7.0f,
-            flipAngleDeg = 180f,
-            patientWeightKg = 45f,
-            isTseSequence = true
-        )
-        assertTrue("Raw SAR should exceed 5.5 W/kg under extreme 7T TSE settings", highSarState.rawCalculatedSar > 5.5f)
-        assertEquals(5.5f, highSarState.calculatedSar, 0.001f)
-        assertTrue("isSarClamped flag must be true when clamped at 5.5 W/kg", highSarState.isSarClamped)
-    }
-
-    @Test
     fun testCurriculumRepositoryIntegrity() {
-        assertTrue("Modules should not be empty", MriRepository.modules.isNotEmpty())
-        assertTrue("Glossary should contain key terms", MriRepository.glossary.size >= 8)
-        assertTrue("Quizzes should contain questions", MriRepository.quizzes.size >= 5)
+        assertTrue("Modules should not be empty", CtRepository.modules.isNotEmpty())
+        assertTrue("Glossary should contain key CT terms", CtRepository.glossary.size >= 8)
+        assertTrue("Quizzes should contain questions", CtRepository.quizzes.size >= 5)
 
-        MriRepository.modules.forEach { module ->
+        CtRepository.modules.forEach { module ->
             assertNotNull(module.id)
             assertNotNull(module.title)
             assertTrue("Module ${module.id} should have nodes", module.nodes.isNotEmpty())
@@ -98,7 +96,7 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testStreakCalendarSevenDaysModuloLogic_NB02() {
+    fun testStreakCalendarSevenDaysModuloLogic() {
         fun activeDaysInWeek(streakDays: Int): Int =
             if (streakDays <= 0) 0 else ((streakDays - 1) % 7) + 1
 
@@ -113,13 +111,13 @@ class ExampleUnitTest {
 
     @Test
     fun testFlashcardsAndBookmarkStateMatching() {
-        val allCards = MriRepository.flashcards
+        val allCards = CtRepository.flashcards
         assertTrue("Flashcards deck should not be empty", allCards.isNotEmpty())
 
         val sampleNodeCard = allCards.first { !it.isGlossaryCard }
         val sampleGlossaryCard = allCards.first { it.isGlossaryCard }
 
-        val stateWithBookmarks = MriUiState(
+        val stateWithBookmarks = CtUiState(
             bookmarkedNodeCodes = setOf(sampleNodeCard.nodeCode),
             bookmarkedGlossaryTerms = setOf(sampleGlossaryCard.glossaryTermKey)
         )
@@ -134,4 +132,3 @@ class ExampleUnitTest {
         )
     }
 }
-

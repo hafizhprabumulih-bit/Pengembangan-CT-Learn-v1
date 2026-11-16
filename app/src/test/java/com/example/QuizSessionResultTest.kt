@@ -1,7 +1,7 @@
 package com.example
 
-import com.example.data.MriQuizQuestion
-import com.example.data.MriRepository
+import com.example.data.CtQuizQuestion
+import com.example.data.CtRepository
 import com.example.util.QuizSessionResult
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -10,9 +10,9 @@ import org.junit.Test
 
 class QuizSessionResultTest {
 
-    private fun makeQuizzes(nodeCodes: List<String>): List<MriQuizQuestion> =
+    private fun makeQuizzes(nodeCodes: List<String>): List<CtQuizQuestion> =
         nodeCodes.mapIndexed { idx, code ->
-            MriQuizQuestion(
+            CtQuizQuestion(
                 id = "Q_$idx",
                 moduleId = "M01",
                 nodeCode = code,
@@ -28,7 +28,7 @@ class QuizSessionResultTest {
     fun allCorrectProducesThreeStarsAndEmptyReviewList() {
         val quizzes = makeQuizzes(listOf("M01.T1.1", "M01.T1.2", "M01.T1.3", "M01.T1.4"))
         val answers = quizzes.associate { it.id to true }
-        val result = QuizSessionResult.compute(answers, quizzes, MriRepository.modules)
+        val result = QuizSessionResult.compute(answers, quizzes, CtRepository.modules)
 
         assertEquals(4, result.correctCount)
         assertEquals(0, result.wrongCount)
@@ -43,7 +43,7 @@ class QuizSessionResultTest {
     fun allWrongProducesZeroStarsAndNotPassed() {
         val quizzes = makeQuizzes(listOf("M01.T1.1", "M01.T1.2"))
         val answers = quizzes.associate { it.id to false }
-        val result = QuizSessionResult.compute(answers, quizzes, MriRepository.modules)
+        val result = QuizSessionResult.compute(answers, quizzes, CtRepository.modules)
 
         assertEquals(0, result.correctCount)
         assertEquals(2, result.wrongCount)
@@ -57,7 +57,7 @@ class QuizSessionResultTest {
     fun exactlySeventyPercentPassesWithOneStar() {
         val quizzes = makeQuizzes((1..10).map { "M01.T1.1" })
         val answers = quizzes.mapIndexed { i, q -> q.id to (i < 7) }.toMap()
-        val result = QuizSessionResult.compute(answers, quizzes, MriRepository.modules)
+        val result = QuizSessionResult.compute(answers, quizzes, CtRepository.modules)
 
         assertEquals(70, result.percentage)
         assertTrue(result.passed)
@@ -77,7 +77,7 @@ class QuizSessionResultTest {
             "Q_2" to false,
             "Q_3" to false
         )
-        val result = QuizSessionResult.compute(answers, quizzes, MriRepository.modules)
+        val result = QuizSessionResult.compute(answers, quizzes, CtRepository.modules)
 
         assertEquals(4, result.wrongQuizIds.size)
         assertEquals(2, result.reviewNodes.size)

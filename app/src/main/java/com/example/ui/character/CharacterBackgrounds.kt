@@ -50,7 +50,7 @@ fun StageBackgroundCanvas(
             alignment = Alignment.BottomCenter
         )
 
-        // 2. Penyeimbang Warna Tema Gelap MRI & Panggung Bercahaya (Agar Avatar Putih Tetap Kontras dan Jelas)
+        // 2. Penyeimbang Warna Tema Gelap CT-Learn & Panggung Bercahaya (Agar Avatar Putih Tetap Kontras dan Jelas)
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height

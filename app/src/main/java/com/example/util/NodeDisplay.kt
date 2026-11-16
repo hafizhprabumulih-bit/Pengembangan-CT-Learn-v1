@@ -1,6 +1,6 @@
 package com.example.util
 
-import com.example.data.MriNode
+import com.example.data.CtNode
 
 /**
  * Pemformat label simpul untuk teks yang dilihat pengguna (murni, tanpa dependensi Android).
@@ -29,12 +29,12 @@ object NodeDisplay {
         return rest
     }
 
-    /** Judul simpul tanpa awalan kode (mis. "T1.1 Peran MRI ..." -> "Peran MRI ..."). */
+    /** Judul simpul tanpa awalan kode (mis. "T1.1 Peran CT Scan ..." -> "Peran CT Scan ..."). */
     fun displayTitle(title: String): String {
         val trimmed = title.trim()
         val stripped = titlePrefix.replaceFirst(trimmed, "").trim()
         return stripped.ifBlank { trimmed }
     }
 
-    fun displayTitle(node: MriNode): String = displayTitle(node.title)
+    fun displayTitle(node: CtNode): String = displayTitle(node.title)
 }

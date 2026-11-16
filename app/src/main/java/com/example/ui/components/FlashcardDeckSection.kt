@@ -74,7 +74,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.data.MriFlashcard
+import com.example.data.CtFlashcard
 import com.example.ui.theme.AmberAccent
 import com.example.ui.theme.AmberDark
 import com.example.ui.theme.CardSlate
@@ -94,13 +94,13 @@ import kotlin.random.Random
 
 @Composable
 fun FlashcardDeckSection(
-    cards: List<MriFlashcard>,
+    cards: List<CtFlashcard>,
     currentIndex: Int,
     isFlipped: Boolean,
     shuffleSeed: Int,
     masteredCardIds: Set<String>,
-    isCardBookmarked: (MriFlashcard) -> Boolean,
-    onToggleBookmark: (MriFlashcard) -> Unit,
+    isCardBookmarked: (CtFlashcard) -> Boolean,
+    onToggleBookmark: (CtFlashcard) -> Unit,
     onFlip: () -> Unit,
     onPrev: (Int) -> Unit,
     onNext: (Int) -> Unit,
@@ -514,7 +514,7 @@ fun StudyModeToggleBar(
     onSelectMode: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptics = com.example.util.rememberMriHaptics()
+    val haptics = com.example.util.rememberCtHaptics()
     Row(
         modifier = modifier
             .fillMaxWidth()

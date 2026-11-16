@@ -1,8 +1,8 @@
 package com.example.util.lesson
 
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriNode
-import com.example.data.MriQuizQuestion
+import com.example.data.CtNode
+import com.example.data.CtQuizQuestion
 import com.example.data.lesson.LessonExtras
 import com.example.util.NodeDisplay
 
@@ -19,8 +19,8 @@ data class LessonPlan(
 object LessonPlanBuilder {
 
     fun build(
-        node: MriNode,
-        quizzes: List<MriQuizQuestion>,
+        node: CtNode,
+        quizzes: List<CtQuizQuestion>,
         extras: LessonExtras? = null,
         allowDrafts: Boolean = false
     ): LessonPlan {

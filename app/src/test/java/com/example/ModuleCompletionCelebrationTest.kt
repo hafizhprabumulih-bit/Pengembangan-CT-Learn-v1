@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.util.ModuleCompletionCelebration
 import com.example.util.ModuleProgress
 import org.junit.Assert.assertEquals
@@ -32,18 +32,18 @@ class ModuleCompletionCelebrationTest {
 
     @Test
     fun findsNextRecommendedModuleAndReturnsNullWhenAllDone() {
-        val m01Codes = MriRepository.modules.first { it.id == "M01" }.nodes.map { it.code }.toSet()
+        val m01Codes = CtRepository.modules.first { it.id == "M01" }.nodes.map { it.code }.toSet()
         val next = ModuleCompletionCelebration.findNextRecommendedModule(
             currentModuleId = "M01",
-            allModules = MriRepository.modules,
+            allModules = CtRepository.modules,
             completedCodes = m01Codes
         )
         assertEquals("M02", next?.id)
 
-        val allCodes = MriRepository.modules.flatMap { it.nodes }.map { it.code }.toSet()
+        val allCodes = CtRepository.modules.flatMap { it.nodes }.map { it.code }.toSet()
         val none = ModuleCompletionCelebration.findNextRecommendedModule(
             currentModuleId = "M09",
-            allModules = MriRepository.modules,
+            allModules = CtRepository.modules,
             completedCodes = allCodes
         )
         assertNull(none)
@@ -56,7 +56,7 @@ class ModuleCompletionCelebrationTest {
 
     @Test
     fun readCompletionCelebrationWaitsUntilAllSkippedNodesAreActuallyRead() {
-        val m02 = MriRepository.modules.first { it.id == "M02" }
+        val m02 = CtRepository.modules.first { it.id == "M02" }
         val allCodes = m02.nodes.map { it.code }
         val skipped = setOf(allCodes[0])
         val readBefore = allCodes.drop(1).dropLast(1).toSet()

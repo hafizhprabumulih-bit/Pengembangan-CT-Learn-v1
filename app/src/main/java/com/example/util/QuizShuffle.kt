@@ -1,6 +1,6 @@
 package com.example.util
 
-import com.example.data.QuizQuestion
+import com.example.data.CtQuizQuestion
 import kotlin.random.Random
 
 /**
@@ -8,7 +8,7 @@ import kotlin.random.Random
  * menghitung ulang correctIndex (P2).
  */
 object QuizShuffle {
-    fun shuffled(q: QuizQuestion): QuizQuestion {
+    fun shuffled(q: CtQuizQuestion): CtQuizQuestion {
         if (q.options.size < 2 || q.correctIndex !in q.options.indices) return q
         val order = q.options.indices.shuffled(Random(q.id.hashCode()))
         return q.copy(

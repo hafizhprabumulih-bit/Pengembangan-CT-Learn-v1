@@ -3,7 +3,7 @@
     android:height="1024dp"
     android:viewportWidth="1024"
     android:viewportHeight="1024">
-    <!-- Jas Kardio-MRI Navy di torso Nano (x=335..689, y=580..850) -->
+    <!-- Jas Kardio-CT Navy di torso Nano (x=335..689, y=580..850) -->
     <path
         android:pathData="M342,608 C392,584 632,584 682,608 L704,804 C692,844 612,864 512,864 C412,864 332,844 320,804 Z"
         android:fillColor="#172554"

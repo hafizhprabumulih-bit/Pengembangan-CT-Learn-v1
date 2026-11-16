@@ -1,7 +1,7 @@
 package com.example
 
-import com.example.data.MriQuizQuestion
-import com.example.data.MriRepository
+import com.example.data.CtQuizQuestion
+import com.example.data.CtRepository
 import com.example.data.local.QuizAttemptEntity
 import com.example.util.LevelQuizCompletionState
 import com.example.util.LevelQuizStatus
@@ -12,9 +12,9 @@ import org.junit.Test
 
 class LevelQuizStatusTest {
 
-    private fun sampleQuestions(count: Int): List<MriQuizQuestion> =
+    private fun sampleQuestions(count: Int): List<CtQuizQuestion> =
         (1..count).map { idx ->
-            MriQuizQuestion(
+            CtQuizQuestion(
                 id = "Q_T1_$idx",
                 moduleId = "M01",
                 nodeCode = "M01.T1.$idx",
@@ -27,7 +27,7 @@ class LevelQuizStatusTest {
         }
 
     private fun sampleNodeStates(done: Boolean): List<PathNodeState> {
-        val node = MriRepository.modules.first().nodes.first()
+        val node = CtRepository.modules.first().nodes.first()
         return listOf(
             PathNodeState(
                 node = node,

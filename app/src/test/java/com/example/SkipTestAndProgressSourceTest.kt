@@ -3,9 +3,9 @@ package com.example
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.data.UserDataRepository
-import com.example.data.local.MriDatabase
+import com.example.data.local.CtDatabase
 import com.example.data.local.NodeProgressEntity
 import com.example.util.NodeStatus
 import com.example.util.PathStateResolver
@@ -25,13 +25,13 @@ import org.robolectric.annotation.Config
 @Config(sdk = [34])
 class SkipTestAndProgressSourceTest {
     private lateinit var context: Context
-    private lateinit var db: MriDatabase
+    private lateinit var db: CtDatabase
     private lateinit var repository: UserDataRepository
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        db = Room.inMemoryDatabaseBuilder(context, MriDatabase::class.java)
+        db = Room.inMemoryDatabaseBuilder(context, CtDatabase::class.java)
             .allowMainThreadQueries()
             .build()
         repository = UserDataRepository(context, db)
@@ -44,7 +44,7 @@ class SkipTestAndProgressSourceTest {
 
     @Test
     fun skippedNodesResolveAsSkippedAndUpgradeToReadOnReadCompletion() = runBlocking {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         val preReadCode = m01.nodes[0].code
         val skippedSlice = listOf(m01.nodes[1].code, m01.nodes[2].code)
 
@@ -61,7 +61,7 @@ class SkipTestAndProgressSourceTest {
         val skipSet = db.nodeProgressDao().getNodeCodesBySource("SKIP_TEST").toSet()
         val pathBeforeUpgrade = PathStateResolver.resolveModule(
             module = m01,
-            allModules = MriRepository.modules,
+            allModules = CtRepository.modules,
             completedCodes = rows.keys,
             strictLocks = true,
             skippedCodes = skipSet
@@ -82,7 +82,7 @@ class SkipTestAndProgressSourceTest {
         val updatedSkipSet = db.nodeProgressDao().getNodeCodesBySource("SKIP_TEST").toSet()
         val pathAfterUpgrade = PathStateResolver.resolveModule(
             module = m01,
-            allModules = MriRepository.modules,
+            allModules = CtRepository.modules,
             completedCodes = db.nodeProgressDao().getAll().map { it.nodeCode }.toSet(),
             strictLocks = true,
             skippedCodes = updatedSkipSet
@@ -93,7 +93,7 @@ class SkipTestAndProgressSourceTest {
 
     @Test
     fun skipTestDoesNotCreateOrInflateStudyDayStreakCount() = runBlocking {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         val today = java.time.LocalDate.now().toString()
         val skippedSlice = listOf(m01.nodes[0].code, m01.nodes[1].code)
 

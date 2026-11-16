@@ -2,7 +2,7 @@ package com.example
 
 import com.example.data.CharacterCatalog
 import com.example.data.CharacterCategory
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.ui.character.AvatarLayerRegistry
 import com.example.ui.character.Expression
 import java.io.File
@@ -78,12 +78,12 @@ class CharacterCatalogGuardTest {
 
     @Test
     fun allElevenSpecialistRolesHaveValidProfilesAndDefaultLoadouts() {
-        val avatars = MriRepository.avatars
+        val avatars = CtRepository.avatars
         assertEquals("Harus ada 11 peran spesialis", 11, avatars.size)
 
         val mrsoAvatar = avatars.find { it.id == "petugas_proteksi_radiasi" }
         assertNotNull("Peran petugas_proteksi_radiasi harus ada", mrsoAvatar)
-        assertEquals("Label petugas keselamatan MRI harus MRSO (bukan PPR)", "MRSO", mrsoAvatar?.label)
+        assertEquals("Label petugas proteksi radiasi CT harus PPR", "PPR", mrsoAvatar?.label)
         assertEquals("Kategori RAMBUT harus berjudul Kepala", "Kepala", CharacterCategory.RAMBUT.title)
 
         val hairIds = CharacterCatalog.hairItems.map { it.id }.toSet()

@@ -1,9 +1,9 @@
 package com.example.util
 
-import com.example.data.MriModule
+import com.example.data.CtModule
 
 data class HomeModuleNodeState(
-    val module: MriModule,
+    val module: CtModule,
     val globalIndex: Int,
     val done: Int,
     val total: Int,
@@ -31,7 +31,7 @@ object HomePathPlanner {
     }
 
     fun plan(
-        modules: List<MriModule>,
+        modules: List<CtModule>,
         completedCodes: Set<String>
     ): List<HomeChapterGroup> {
         if (modules.isEmpty()) return emptyList()

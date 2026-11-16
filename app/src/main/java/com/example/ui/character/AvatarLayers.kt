@@ -87,12 +87,12 @@ object AvatarLayerRegistry {
         currentBackgroundId: String = "bg_control_room"
     ): CharacterCustomizationState {
         return when (avatarId) {
-            "radiografer_mri" -> CharacterCustomizationState(
+            "radiografer_ct" -> CharacterCustomizationState(
                 avatarId = avatarId,
                 equippedHair = "hair_default",
                 equippedUniform = "uniform_scrub_mint",
                 equippedHeadset = "headset_radio",
-                equippedAccessory = "acc_magnet_detector",
+                equippedAccessory = "acc_dosimeter_detector",
                 backgroundId = currentBackgroundId
             )
             "radiolog" -> CharacterCustomizationState(
@@ -103,7 +103,7 @@ object AvatarLayerRegistry {
                 equippedAccessory = "acc_clipboard",
                 backgroundId = currentBackgroundId
             )
-            "ahli_neuro_mri" -> CharacterCustomizationState(
+            "ahli_neuro_ct" -> CharacterCustomizationState(
                 avatarId = avatarId,
                 equippedHair = "hair_crown_rf",
                 equippedUniform = "uniform_scrub_blue",
@@ -124,7 +124,7 @@ object AvatarLayerRegistry {
                 equippedHair = "hair_default",
                 equippedUniform = "uniform_apron_shield",
                 equippedHeadset = "headset_holo",
-                equippedAccessory = "acc_magnet_detector",
+                equippedAccessory = "acc_dosimeter_detector",
                 backgroundId = currentBackgroundId
             )
             "ahli_jantung" -> CharacterCustomizationState(
@@ -169,10 +169,10 @@ object AvatarLayerRegistry {
             )
             "mahasiswa" -> CharacterCustomizationState(
                 avatarId = avatarId,
-                equippedHair = "hair_beanie_mri",
+                equippedHair = "hair_beanie_ct",
                 equippedUniform = "uniform_mahasiswa",
                 equippedHeadset = "headset_comm_pro",
-                equippedAccessory = "acc_handbook_mri",
+                equippedAccessory = "acc_handbook_ct",
                 backgroundId = currentBackgroundId
             )
             else -> CharacterCustomizationState(
@@ -216,7 +216,7 @@ object AvatarLayerRegistry {
             "hair_cyber" -> R.drawable.nano_head_cyber to "m05"
             "hair_crown_rf" -> R.drawable.nano_head_coil64 to "m07"
             "hair_mortarboard" -> R.drawable.nano_head_mortarboard to null
-            "hair_beanie_mri" -> R.drawable.nano_head_beanie_mri to null
+            "hair_beanie_ct" -> R.drawable.nano_head_beanie_mri to null
             "hair_loupe" -> R.drawable.nano_head_loupe to null
             "hair_bandana_3t" -> R.drawable.nano_head_bandana_3t to null
             "hair_cryo_cap" -> R.drawable.nano_head_cryo_cap to null
@@ -283,17 +283,17 @@ object AvatarLayerRegistry {
 
     fun getToolLayer(toolId: String): AvatarItem {
         val (drawableRes, lockedNode) = when (toolId) {
-            "acc_magnet_detector" -> R.drawable.nano_tool_detector to null
+            "acc_dosimeter_detector" -> R.drawable.nano_tool_detector to null
             "acc_badge_zona4" -> R.drawable.nano_tool_badge to "m01"
             "acc_phantom" -> R.drawable.nano_tool_phantom to "m08"
             "acc_clipboard" -> R.drawable.nano_tool_tablet to "m02"
             "acc_oximeter" -> R.drawable.nano_tool_oximeter to "m09"
             "acc_coil_surface" -> R.drawable.nano_tool_coil to "m07"
             "acc_laser_pointer" -> R.drawable.nano_tool_pointer to null
-            "acc_handbook_mri" -> R.drawable.nano_tool_handbook to null
-            "acc_gaussmeter" -> R.drawable.nano_tool_gaussmeter to null
+            "acc_handbook_ct" -> R.drawable.nano_tool_handbook to null
+            "acc_ctdi_meter" -> R.drawable.nano_tool_gaussmeter to null
             "acc_cryo_gauge" -> R.drawable.nano_tool_cryo_gauge to null
-            "acc_mri_keycard" -> R.drawable.nano_tool_mri_keycard to null
+            "acc_ct_keycard" -> R.drawable.nano_tool_mri_keycard to null
             else -> R.drawable.nano_tool_detector to null
         }
         return AvatarItem(

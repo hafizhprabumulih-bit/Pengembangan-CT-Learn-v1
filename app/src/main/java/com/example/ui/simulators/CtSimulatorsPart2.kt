@@ -1,6 +1,8 @@
 package com.example.ui.simulators
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
+import com.example.util.CtConsoleCaseEvaluator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,11 +26,16 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import com.example.util.CtPhysicsCalculator
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,10 +65,10 @@ import kotlin.math.sqrt
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CtMsctPitchAndReconstructionSimulator() {
-    var detectorRows by remember { mutableIntStateOf(64) } // 16, 64, 128, 320
-    var pitch by remember { mutableFloatStateOf(1.0f) } // 0.5 to 1.5
-    var reconAlgo by remember { mutableIntStateOf(1) } // 0: Simple BP, 1: FBP, 2: Iterative / DLIR
-    var isSharpKernel by remember { mutableStateOf(false) } // false: Soft/Standard, true: Sharp/Bone
+    var detectorRows by rememberSaveable { mutableIntStateOf(64) } // 16, 64, 128, 320
+    var pitch by rememberSaveable { mutableFloatStateOf(1.0f) } // 0.5 to 1.5
+    var reconAlgo by rememberSaveable { mutableIntStateOf(1) } // 0: Simple BP, 1: FBP, 2: Iterative / DLIR
+    var isSharpKernel by rememberSaveable { mutableStateOf(false) } // false: Soft/Standard, true: Sharp/Bone
 
     val singleRowWidthMm = if (detectorRows == 320) 0.5f else 0.625f
     val totalCollimationMm = detectorRows * singleRowWidthMm
@@ -259,6 +266,120 @@ fun CtMsctPitchAndReconstructionSimulator() {
                 }
                 Text(
                     text = reconSummary,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                // Interactive Visual Comparison Canvas: Sinogram (Left) vs Reconstructed Image (Right)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(165.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF090D16))
+                        .padding(10.dp)
+                ) {
+                    Canvas(modifier = Modifier.fillMaxWidth().height(145.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        val sinoW = w * 0.34f
+
+                        // Left: Raw Data Sinogram
+                        drawRect(color = Color(0xFF1E293B), topLeft = Offset.Zero, size = Size(sinoW, h))
+                        for (sIdx in 0..3) {
+                            val p = Path()
+                            val amp = sinoW * (0.14f + sIdx * 0.06f)
+                            val ph = sIdx * 1.1f
+                            for (yStep in 0..60) {
+                                val yf = (yStep / 60f) * h
+                                val xf = sinoW * 0.5f + amp * sin((yStep / 60f) * 2f * PI.toFloat() + ph)
+                                if (yStep == 0) p.moveTo(xf, yf) else p.lineTo(xf, yf)
+                            }
+                            drawPath(p, color = Color(0xFF38BDF8).copy(alpha = 0.75f), style = Stroke(width = 2f))
+                        }
+
+                        // Right: Reconstructed Axial Phantom Preview
+                        val cx = w * 0.68f
+                        val cy = h * 0.50f
+                        val r = minOf(w * 0.26f, h * 0.42f)
+
+                        if (reconAlgo == 0) {
+                            // Simple Back-Projection 1/r Star-Artifact Halo
+                            for (ray in 0 until 8) {
+                                val ang = ray * (PI.toFloat() / 8f)
+                                drawLine(
+                                    color = Color(0xFF94A3B8).copy(alpha = 0.38f),
+                                    start = Offset(cx - r * 1.25f * cos(ang), cy - r * 1.25f * sin(ang)),
+                                    end = Offset(cx + r * 1.25f * cos(ang), cy + r * 1.25f * sin(ang)),
+                                    strokeWidth = 14f,
+                                    cap = StrokeCap.Round
+                                )
+                            }
+                            drawCircle(color = Color(0xFFCBD5E1).copy(alpha = 0.45f), radius = r * 1.12f, center = Offset(cx, cy))
+                        }
+
+                        // Cortical Bone Ring & Soft Tissue Brain/Abdomen
+                        drawCircle(
+                            color = if (isSharpKernel) Color.White else Color(0xFFCBD5E1),
+                            radius = r,
+                            center = Offset(cx, cy)
+                        )
+                        drawCircle(
+                            color = Color(0xFF475569),
+                            radius = if (isSharpKernel) r * 0.88f else r * 0.83f,
+                            center = Offset(cx, cy)
+                        )
+                        // Low-contrast lesion (+25 HU) & high-contrast calcification (+800 HU)
+                        drawCircle(
+                            color = if (reconAlgo == 0) Color(0xFF64748B) else Color(0xFF1E293B),
+                            radius = r * 0.24f,
+                            center = Offset(cx - r * 0.32f, cy + r * 0.10f)
+                        )
+                        drawCircle(
+                            color = Color.White,
+                            radius = if (isSharpKernel) r * 0.13f else r * 0.16f,
+                            center = Offset(cx + r * 0.34f, cy - r * 0.16f)
+                        )
+
+                        // Quantum Mottle Noise Speckles
+                        val noiseDots = when {
+                            reconAlgo == 2 -> if (isSharpKernel) 8 else 3
+                            isSharpKernel -> 34
+                            else -> 12
+                        }
+                        for (n in 0 until noiseDots) {
+                            val ang = (n * 137.5f) * (PI.toFloat() / 180f)
+                            val dist = r * 0.72f * ((n % 7 + 1) / 8f)
+                            drawCircle(
+                                color = if (n % 2 == 0) Color.White.copy(alpha = 0.55f) else Color.Black.copy(alpha = 0.65f),
+                                radius = if (isSharpKernel) 2.2f else 1.4f,
+                                center = Offset(cx + dist * cos(ang), cy + dist * sin(ang))
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "Raw Sinogram P(t,θ)",
+                        color = Color(0xFF38BDF8),
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
+                    Text(
+                        text = when (reconAlgo) {
+                            0 -> "Rekon: Simple BP (Kabur Bintang 1/r)"
+                            1 -> if (isSharpKernel) "Rekon: FBP + Sharp Kernel (Tepi Tajam, Noise Tinggi)" else "Rekon: FBP + Soft Kernel (Halus, Kontras Lunak)"
+                            else -> if (isSharpKernel) "Rekon: DLIR + Sharp (Tajam & Rendah Noise)" else "Rekon: Iterative / DLIR (Kontras Tinggi, Hemat Dosis)"
+                        },
+                        color = Color.White,
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    )
+                }
+                if (false) Text(
+                    text = reconSummary,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -269,34 +390,47 @@ fun CtMsctPitchAndReconstructionSimulator() {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CtDosimetryAndBolusTrackingSimulator() {
-    var kvp by remember { mutableIntStateOf(120) } // 80, 100, 120, 140
-    var tubeMa by remember { mutableFloatStateOf(240f) } // 50 to 500 mA
-    var rotTime by remember { mutableFloatStateOf(0.5f) } // 0.28 to 1.0 s
-    var pitch by remember { mutableFloatStateOf(1.0f) } // 0.5 to 1.5
-    var scanLengthCm by remember { mutableFloatStateOf(30f) } // 10 to 60 cm
-    var isHeadPhantom by remember { mutableStateOf(false) } // true: 16cm Head, false: 32cm Body
+fun CtDosimetryAndBolusTrackingSimulator(
+    state: CtUiState? = null,
+    viewModel: CtViewModel? = null
+) {
+    var kvp by rememberSaveable { mutableIntStateOf(state?.tubeKvp ?: 120) } // 80, 100, 120, 140
+    var tubeMa by rememberSaveable { mutableFloatStateOf(state?.tubeMa ?: 240f) } // 50 to 500 mA
+    var rotTime by rememberSaveable { mutableFloatStateOf(state?.rotationTimeSec ?: 0.5f) } // 0.28 to 1.0 s
+    var pitch by rememberSaveable { mutableFloatStateOf(state?.helicalPitch ?: 1.0f) } // 0.5 to 1.5
+    var scanLengthCm by rememberSaveable { mutableFloatStateOf(state?.scanLengthCm ?: 30f) } // 10 to 60 cm
+    var isHeadPhantom by rememberSaveable { mutableStateOf(state?.isHeadPhantom ?: false) } // true: 16cm Head, false: 32cm Body
+
+    LaunchedEffect(state?.tubeKvp, state?.tubeMa, state?.rotationTimeSec, state?.helicalPitch, state?.scanLengthCm, state?.isHeadPhantom) {
+        if (state != null) {
+            kvp = state.tubeKvp
+            tubeMa = state.tubeMa
+            rotTime = state.rotationTimeSec
+            pitch = state.helicalPitch
+            scanLengthCm = state.scanLengthCm
+            isHeadPhantom = state.isHeadPhantom
+        }
+    }
 
     // Bolus tracking controls
-    var flowRateMlSec by remember { mutableFloatStateOf(4.0f) } // 2.0 to 6.0 mL/s
-    var triggerHu by remember { mutableFloatStateOf(120f) } // 80 to 180 HU
-    var useSalineChaser by remember { mutableStateOf(true) }
+    var flowRateMlSec by rememberSaveable { mutableFloatStateOf(4.0f) } // 2.0 to 6.0 mL/s
+    var triggerHu by rememberSaveable { mutableFloatStateOf(120f) } // 80 to 180 HU
+    var useSalineChaser by rememberSaveable { mutableStateOf(true) }
+    var postProcMode by rememberSaveable { mutableIntStateOf(0) } // 0: MPR, 1: MIP (CTA), 2: MinIP (Airway), 3: 3D VRT
+    var selectedCaseId by rememberSaveable { mutableStateOf<String?>("case_stroke") }
+    var recordedCasesNote by rememberSaveable { mutableStateOf<String?>(null) }
+    val ssdeFactor = CtPhysicsCalculator.ssdeConversionFactor(isHeadPhantom = isHeadPhantom)
 
-    val mAsPerRot = tubeMa * rotTime
-    val effectiveMas = mAsPerRot / pitch
-    val kvpFactor = (kvp / 120f).pow(2.2f)
-    val phantomFactor = if (isHeadPhantom) 1.85f else 1.0f
-    val ctdiW = 11.5f * (mAsPerRot / 150f) * kvpFactor * phantomFactor
-    val ctdiVol = ctdiW / pitch
-    val dlp = ctdiVol * scanLengthCm
-    val kConversion = if (isHeadPhantom) 0.0021f else 0.015f
-    val effectiveDoseMsv = dlp * kConversion
-    val relativeNoiseSd = 12.0f / sqrt((effectiveMas / 100f) * kvpFactor).coerceAtLeast(0.15f)
+    val effectiveMas = CtPhysicsCalculator.effectiveMas(tubeMa, rotTime, pitch)
+    val ctdiVol = CtPhysicsCalculator.ctdiVolMgy(kvp, effectiveMas, isHeadPhantom)
+    val dlp = CtPhysicsCalculator.dlpMgyCm(ctdiVol, scanLengthCm)
+    val effectiveDoseMsv = CtPhysicsCalculator.effectiveDoseMsv(dlp, isHeadPhantom)
+    val relativeNoiseSd = CtPhysicsCalculator.relativeNoiseSdHu(kvp, effectiveMas, state?.isIterativeReconActive ?: false)
 
     // Bolus tracking peak calculation
-    val peakArterialHu = 160f + flowRateMlSec * 48f + (if (useSalineChaser) 35f else 0f) + (if (kvp <= 100) 45f else 0f)
-    val timeToPeakSec = (24f - flowRateMlSec * 1.6f).coerceIn(12f, 22f)
-    val triggerTimeSec = (timeToPeakSec * (triggerHu / peakArterialHu.coerceAtLeast(triggerHu + 10f)) + 5f).coerceIn(8f, 24f)
+    val peakArterialHu = CtPhysicsCalculator.bolusPeakArterialHu(kvp, flowRateMlSec, useSalineChaser)
+    val timeToPeakSec = CtPhysicsCalculator.bolusTimeToPeakSec(flowRateMlSec)
+    val triggerTimeSec = CtPhysicsCalculator.bolusTriggerTimeSec(timeToPeakSec, peakArterialHu, triggerHu)
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Card(
@@ -319,30 +453,40 @@ fun CtDosimetryAndBolusTrackingSimulator() {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Readout Dashboard
-                Row(
+                // Readout Dashboard (Grid 2x2 responsif untuk layar < 360dp)
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF0F172A))
                         .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column {
-                        Text("Eff. mAs", color = Color(0xFF94A3B8), fontSize = 10.sp)
-                        Text("${effectiveMas.roundToInt()} mAs", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Eff. mAs", color = Color(0xFF94A3B8), fontSize = 10.sp)
+                            Text("${effectiveMas.roundToInt()} mAs", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("CTDIvol / SSDE", color = Color(0xFF94A3B8), fontSize = 10.sp)
+                            Text("${String.format(Locale.US, "%.1f", ctdiVol)} / ${String.format(Locale.US, "%.1f", ctdiVol * ssdeFactor)} mGy", color = Color(0xFF38BDF8), fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, fontSize = 11.5.sp)
+                        }
                     }
-                    Column {
-                        Text("CTDIvol", color = Color(0xFF94A3B8), fontSize = 10.sp)
-                        Text("${String.format(Locale.US, "%.1f", ctdiVol)} mGy", color = Color(0xFF38BDF8), fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                    }
-                    Column {
-                        Text("DLP", color = Color(0xFF94A3B8), fontSize = 10.sp)
-                        Text("${dlp.roundToInt()} mGy·cm", color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                    }
-                    Column {
-                        Text("Dosis E / Noise", color = Color(0xFF94A3B8), fontSize = 10.sp)
-                        Text("${String.format(Locale.US, "%.1f", effectiveDoseMsv)} mSv | ±${String.format(Locale.US, "%.1f", relativeNoiseSd)} HU", color = Color(0xFF4ADE80), fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("DLP (Dose-Length)", color = Color(0xFF94A3B8), fontSize = 10.sp)
+                            Text("${dlp.roundToInt()} mGy·cm", color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Dosis E / Noise", color = Color(0xFF94A3B8), fontSize = 10.sp)
+                            Text("${String.format(Locale.US, "%.1f", effectiveDoseMsv)} mSv | ±${String.format(Locale.US, "%.1f", relativeNoiseSd)} HU", color = Color(0xFF4ADE80), fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, fontSize = 11.5.sp)
+                        }
                     }
                 }
 
@@ -357,14 +501,14 @@ fun CtDosimetryAndBolusTrackingSimulator() {
                         listOf(80, 100, 120, 140).forEach { v ->
                             FilterChip(
                                 selected = kvp == v,
-                                onClick = { kvp = v },
+                                onClick = { kvp = v; viewModel?.setTubeKvp(v) },
                                 label = { Text("$v kVp", fontSize = 11.sp) }
                             )
                         }
                     }
                     FilterChip(
                         selected = isHeadPhantom,
-                        onClick = { isHeadPhantom = !isHeadPhantom },
+                        onClick = { val next = !isHeadPhantom; isHeadPhantom = next; viewModel?.setHeadPhantom(next) },
                         label = { Text(if (isHeadPhantom) "Fantom 16cm (Kepala)" else "Fantom 32cm (Tubuh)", fontSize = 11.sp) }
                     )
                 }
@@ -375,9 +519,25 @@ fun CtDosimetryAndBolusTrackingSimulator() {
                 }
                 Slider(
                     value = tubeMa,
-                    onValueChange = { tubeMa = it },
+                    onValueChange = { tubeMa = it; viewModel?.setTubeMa(it) },
                     valueRange = 50f..500f,
                     modifier = Modifier.testTag("slider_ct_ma")
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Slider(
+                        value = rotTime,
+                        onValueChange = { rotTime = it; viewModel?.setRotationTime(it) },
+                        valueRange = 0.28f..1.0f,
+                        modifier = Modifier.weight(1f).testTag("slider_ct_rottime")
+                    )
+                    Slider(
+                        value = pitch,
+                        onValueChange = { pitch = it; viewModel?.setHelicalPitch(it) },
+                        valueRange = 0.5f..1.5f,
+                        modifier = Modifier.weight(1f).testTag("slider_ct_dosimetry_pitch")
+                    )
+                }
+                Spacer(modifier = Modifier.height(2.dp)
                 )
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -386,7 +546,7 @@ fun CtDosimetryAndBolusTrackingSimulator() {
                 }
                 Slider(
                     value = scanLengthCm,
-                    onValueChange = { scanLengthCm = it },
+                    onValueChange = { scanLengthCm = it; viewModel?.setScanLength(it) },
                     valueRange = 10f..60f,
                     modifier = Modifier.testTag("slider_ct_scan_length")
                 )
@@ -499,6 +659,120 @@ fun CtDosimetryAndBolusTrackingSimulator() {
                     )
                     Switch(checked = useSalineChaser, onCheckedChange = { useSalineChaser = it })
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Mode Rekonstruksi Post-Processing 3D:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(
+                        0 to "MPR (Koronal/Sagital)",
+                        1 to "MIP (Angiografi/Nodul)",
+                        2 to "MinIP (Jalan Napas/Emfisema)",
+                        3 to "3D VRT (Bedah/Anatomi)"
+                    ).forEach { (idx, label) ->
+                        FilterChip(
+                            selected = postProcMode == idx,
+                            onClick = { postProcMode = idx },
+                            label = { Text(label, fontSize = 11.sp) }
+                        )
+                    }
+                }
+                Text(
+                    text = when (postProcMode) {
+                        0 -> "MPR (Multiplanar Reformation): Menyusun ulang tumpukan voxel isotropik menjadi potongan Koronal, Sagital, atau Curved MPR tanpa kehilangan resolusi."
+                        1 -> "MIP (Maximum Intensity Projection): Menampilkan voxel dengan nilai HU tertinggi di sepanjang slab; ideal untuk CT Angiografi (+300 HU) dan nodul paru."
+                        2 -> "MinIP (Minimum Intensity Projection): Menampilkan voxel dengan nilai HU terendah (-900 s.d. -1000 HU); ideal untuk trakeobronkial dan air-trapping."
+                        else -> "3D VRT (Volume Rendering Technique): Memetakan rentang HU ke opasitas dan warna 3D berbayang untuk perencanaan bedah ortopedi dan aneurisma."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (selectedCaseId != null) {
+                    val activeCase = CtConsoleCaseEvaluator.clinicalCases.first { it.id == selectedCaseId }
+                    val windowTag = state?.let { "WW ${it.windowWidthHu.roundToInt()}/WL ${it.windowLevelHu.roundToInt()}" }
+                    val caseEval = CtConsoleCaseEvaluator.evaluateCase(
+                        caseId = activeCase.id,
+                        kvp = kvp,
+                        effectiveMas = effectiveMas,
+                        pitch = pitch,
+                        ctdiVol = ctdiVol,
+                        isHeadPhantom = isHeadPhantom,
+                        selectedWindowLabel = windowTag
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
+                            .border(
+                                1.dp,
+                                if (caseEval.passed) Color(0xFF059669) else Color(0xFFF59E0B),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = "Tantangan Kasus Konsol Klinis Terpadu:",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            CtConsoleCaseEvaluator.clinicalCases.forEachIndexed { cIdx, cItem ->
+                                FilterChip(
+                                    selected = selectedCaseId == cItem.id,
+                                    onClick = { selectedCaseId = cItem.id },
+                                    label = { Text("Kasus ${cIdx + 1}", fontSize = 11.sp) }
+                                )
+                            }
+                        }
+                        Text(
+                            text = activeCase.title,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = activeCase.clinicalScenario,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = caseEval.summary,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (caseEval.passed) Color(0xFF059669) else Color(0xFFD97706)
+                        )
+                        caseEval.passedChecks.forEach { okMsg ->
+                            Text("✓ $okMsg", fontSize = 11.sp, color = Color(0xFF059669))
+                        }
+                        caseEval.warnings.forEach { warnMsg ->
+                            Text("⚠ $warnMsg", fontSize = 11.sp, color = MaterialTheme.colorScheme.error)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Kunci Klinis: ${activeCase.keyTakeaway}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        if (caseEval.passed && viewModel != null) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Button(
+                                onClick = {
+                                    viewModel.recordConsoleLabCompleted(activeCase.id)
+                                    recordedCasesNote = "Praktik ${activeCase.title.substringBefore(":")} tercatat ke Shift Lab Harian!"
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669))
+                            ) {
+                                Text("Catat Lulus Praktik Kasus (+1 Shift Lab)", fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        recordedCasesNote?.let { note ->
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(text = note, fontSize = 11.sp, color = Color(0xFF059669), fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                    // close block safely
+                }
             }
         }
     }
@@ -507,11 +781,12 @@ fun CtDosimetryAndBolusTrackingSimulator() {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CtArtifactAndDailyQaSimulator() {
-    var selectedMode by remember { mutableIntStateOf(0) } // 0: Ring Artifact, 1: Beam Hardening, 2: Metal Streak, 3: Daily Water QA
-    var airCalibrated by remember { mutableStateOf(false) }
-    var tubeWarmedUp by remember { mutableStateOf(true) }
-    var bhCorrectionActive by remember { mutableStateOf(false) }
-    var marActive by remember { mutableStateOf(false) }
+    var selectedMode by rememberSaveable { mutableIntStateOf(0) } // 0: Ring Artifact, 1: Beam Hardening, 2: Metal Streak, 3: Daily Water QA
+    var airCalibrated by rememberSaveable { mutableStateOf(false) }
+    var tubeWarmedUp by rememberSaveable { mutableStateOf(true) }
+    var bhCorrectionActive by rememberSaveable { mutableStateOf(false) }
+    var marActive by rememberSaveable { mutableStateOf(false) }
+    var selectedRoiIdx by rememberSaveable { mutableIntStateOf(0) } // 0=Pusat, 1=Jam 12, 2=Jam 3, 3=Jam 6, 4=Jam 9
 
     // QA Water Phantom values depending on calibration & BHC state
     val centerHu = if (airCalibrated) 0.4f else 6.2f
@@ -712,7 +987,7 @@ fun CtArtifactAndDailyQaSimulator() {
                                         style = Stroke(width = 3f)
                                     )
                                 }
-                                val roiColor = if (qaPassed) Color(0xFF4ADE80) else Color(0xFFF59E0B)
+                                val baseRoiColor = if (qaPassed) Color(0xFF4ADE80) else Color(0xFFF59E0B)
                                 val roiPositions = listOf(
                                     Offset(imgCx, imgCy),
                                     Offset(imgCx, imgCy - r * 0.62f),
@@ -720,12 +995,13 @@ fun CtArtifactAndDailyQaSimulator() {
                                     Offset(imgCx, imgCy + r * 0.62f),
                                     Offset(imgCx - r * 0.62f, imgCy)
                                 )
-                                roiPositions.forEach { pos ->
+                                roiPositions.forEachIndexed { rIdx, pos ->
+                                    val isSelRoi = selectedRoiIdx == rIdx
                                     drawCircle(
-                                        color = roiColor,
-                                        radius = 12f,
+                                        color = if (isSelRoi) Color(0xFF38BDF8) else baseRoiColor,
+                                        radius = if (isSelRoi) 15f else 12f,
                                         center = pos,
-                                        style = Stroke(width = 2.5f)
+                                        style = Stroke(width = if (isSelRoi) 4f else 2.5f)
                                     )
                                 }
                             }
@@ -779,6 +1055,15 @@ fun CtArtifactAndDailyQaSimulator() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text("Tube Warm-Up Pagi Hari (Anoda Siap):", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                    Switch(checked = tubeWarmedUp, onCheckedChange = { tubeWarmedUp = it })
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text("Koreksi Beam Hardening & Bow-Tie Filter:", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
                     Switch(checked = bhCorrectionActive, onCheckedChange = { bhCorrectionActive = it })
                 }
@@ -808,6 +1093,33 @@ fun CtArtifactAndDailyQaSimulator() {
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+                    val roiItems = listOf(
+                        Triple(0, "ROI Pusat", centerHu),
+                        Triple(1, "Jam 12", periphHu12),
+                        Triple(2, "Jam 3", periphHu3),
+                        Triple(3, "Jam 6", periphHu6),
+                        Triple(4, "Jam 9", periphHu9)
+                    )
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        roiItems.forEach { (rIdx, rLabel, rHu) ->
+                            FilterChip(
+                                selected = selectedRoiIdx == rIdx,
+                                onClick = {
+                                    selectedMode = 3
+                                    selectedRoiIdx = rIdx
+                                },
+                                label = { Text("$rLabel (${String.format(Locale.US, "%+.1f", rHu)})", fontSize = 10.sp) }
+                            )
+                        }
+                    }
+                    val selEntry = roiItems.first { it.first == selectedRoiIdx }
+                    Text(
+                        text = "Inspektor ${selEntry.second}: Mean = ${String.format(Locale.US, "%+.1f", selEntry.third)} HU | SD = ±${String.format(Locale.US, "%.1f", noiseSd + selectedRoiIdx * 0.1f)} HU | Selisih vs Pusat = ${String.format(Locale.US, "%.1f", abs(selEntry.third - centerHu))} HU",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "• ROI Pusat (Akurasi Air, Syarat 0 ± 4 HU): ${String.format(Locale.US, "%+.1f", centerHu)} HU\n" +
                             "• Selisih Maksimal ROI Perifer vs Pusat (Uniformity, Syarat ≤ 5 HU): ${String.format(Locale.US, "%.1f", maxUniformityDiff)} HU\n" +

@@ -52,6 +52,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -89,20 +90,22 @@ import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.util.NotesPdfExporter
-import com.example.util.rememberMriHaptics
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.util.rememberCtHaptics
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 import java.time.LocalDate
 
 @Composable
 fun NotesScreen(
-    state: MriUiState,
-    viewModel: MriViewModel,
+    state: CtUiState,
+    viewModel: CtViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val haptics = rememberMriHaptics()
-    val categories = listOf("SEMUA", "Protokol Klinis", "Fisika Sekuens", "Mitigasi Artefak", "Keselamatan MR", "Catatan Bebas")
+    val haptics = rememberCtHaptics()
+    val categories = listOf("SEMUA", "Protokol Klinis", "Fisika & Atenuasi CT", "Mitigasi Artefak", "Proteksi Dosis & QA", "Catatan Bebas")
+    var showExportDialog by rememberSaveable { mutableStateOf(false) }
+    var includeCtReferenceSheet by rememberSaveable { mutableStateOf(true) }
     var showExportDialog by rememberSaveable { mutableStateOf(false) }
     var exportStatusMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -114,7 +117,7 @@ fun NotesScreen(
                 val stream = context.contentResolver.openOutputStream(uri)
                     ?: throw java.io.IOException("Aliran penyimpanan PDF tujuan tidak tersedia.")
                 stream.use { outputStream ->
-                    NotesPdfExporter.writeNotesPdf(state.notesList, state.userName, outputStream)
+                    NotesPdfExporter.writeNotesPdf(state.notesList, state.userName, outputStream, includeCtReferenceSheet)
                 }
                 exportStatusMessage = "Catatan berhasil disimpan sebagai file PDF siap cetak."
             }.onFailure { err ->
@@ -141,7 +144,7 @@ fun NotesScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Catatan Belajar MRI",
+                        text = "Catatan Belajar CT Scan",
                         style = MaterialTheme.typography.titleLarge,
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold
@@ -262,10 +265,10 @@ fun NotesScreen(
                 state.notesList.filter { note ->
                     val noteCat = note.category.trim()
                     noteCat.equals(targetCat, ignoreCase = true) ||
-                        (targetCat.equals("Fisika Sekuens", ignoreCase = true) && noteCat.equals("Fisika", ignoreCase = true)) ||
+                        (targetCat.equals("Fisika & Atenuasi CT", ignoreCase = true) && (noteCat.equals("Fisika", ignoreCase = true) || noteCat.equals("Fisika Sekuens", ignoreCase = true))) ||
                         (targetCat.equals("Protokol Klinis", ignoreCase = true) && noteCat.equals("Protokol", ignoreCase = true)) ||
                         (targetCat.equals("Mitigasi Artefak", ignoreCase = true) && noteCat.equals("Artefak", ignoreCase = true)) ||
-                        (targetCat.equals("Keselamatan MR", ignoreCase = true) && noteCat.equals("Keselamatan", ignoreCase = true))
+                        (targetCat.equals("Proteksi Dosis & QA", ignoreCase = true) && (noteCat.equals("Keselamatan", ignoreCase = true) || noteCat.equals("Keselamatan MR", ignoreCase = true)))
                 }
             }
 
@@ -438,15 +441,17 @@ fun NotesScreen(
 
         // Dialog Cetak & Export Catatan ke Format PDF
         if (showExportDialog) {
-            val pdfPreviewText = remember(state.notesList, state.userName) {
-                NotesPdfExporter.buildPlainPreviewText(state.notesList, state.userName)
+                        val pdfPreviewText = remember(state.notesList, state.userName, includeCtReferenceSheet) {
+                NotesPdfExporter.buildPlainPreviewText(state.notesList, state.userName, includeCtReferenceSheet)
             }
             ExportNotesPdfDialog(
                 notesCount = state.notesList.size,
+                includeCtReference = includeCtReferenceSheet,
+                onToggleCtReference = { includeCtReferenceSheet = it },
                 pdfPreviewText = pdfPreviewText,
                 statusMessage = exportStatusMessage,
                 onPrintPdf = {
-                    NotesPdfExporter.printNotesPdf(context, state.notesList, state.userName)
+                    NotesPdfExporter.printNotesPdf(context, state.notesList, state.userName, includeCtReferenceSheet)
                         .onSuccess {
                             exportStatusMessage = "Dialog cetak / simpan PDF sistem dibuka."
                         }
@@ -455,7 +460,7 @@ fun NotesScreen(
                         }
                 },
                 onSavePdfFile = {
-                    val fileName = "catatan_belajar_mri_${LocalDate.now()}.pdf"
+                    val fileName = "catatan_belajar_ct_${LocalDate.now()}.pdf"
                     runCatching {
                         createPdfDocumentLauncher.launch(fileName)
                     }.onFailure { err ->
@@ -463,7 +468,7 @@ fun NotesScreen(
                     }
                 },
                 onSharePdf = {
-                    NotesPdfExporter.shareNotesPdf(context, state.notesList, state.userName)
+                    NotesPdfExporter.shareNotesPdf(context, state.notesList, state.userName, includeCtReferenceSheet)
                         .onSuccess {
                             exportStatusMessage = "File PDF siap dibagikan."
                         }
@@ -550,12 +555,12 @@ fun NoteEditorDialog(
     onDismiss: () -> Unit,
     onSave: (id: String?, title: String, content: String, category: String) -> Unit
 ) {
-    val haptics = rememberMriHaptics()
+    val haptics = rememberCtHaptics()
     val normalizedInitialCat = when (initialNote?.category?.trim()?.lowercase()) {
-        "fisika", "fisika sekuens" -> "Fisika Sekuens"
+        "fisika", "fisika sekuens", "fisika & atenuasi ct" -> "Fisika & Atenuasi CT"
         "protokol", "klinis", "protokol klinis" -> "Protokol Klinis"
         "artefak", "mitigasi artefak" -> "Mitigasi Artefak"
-        "keselamatan", "safety", "keselamatan mr" -> "Keselamatan MR"
+        "keselamatan", "safety", "keselamatan mr", "proteksi dosis & qa" -> "Proteksi Dosis & QA"
         "catatan bebas" -> "Catatan Bebas"
         else -> initialNote?.category ?: "Catatan Bebas"
     }
@@ -564,7 +569,7 @@ fun NoteEditorDialog(
     var category by rememberSaveable(initialNote?.id) { mutableStateOf(normalizedInitialCat) }
     val canSave = title.isNotBlank() || content.isNotBlank()
 
-    val categories = listOf("Catatan Bebas", "Protokol Klinis", "Fisika Sekuens", "Mitigasi Artefak", "Keselamatan MR")
+    val categories = listOf("Catatan Bebas", "Protokol Klinis", "Fisika & Atenuasi CT", "Mitigasi Artefak", "Proteksi Dosis & QA")
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -629,7 +634,7 @@ fun NoteEditorDialog(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("Judul Catatan", fontSize = 11.5.sp) },
-                    placeholder = { Text("Contoh: Tips Refokusing Spin Echo 180°", fontSize = 11.5.sp, color = TextMuted) },
+                    placeholder = { Text("Contoh: Ringkasan Windowing Brain vs Stroke", fontSize = 11.5.sp, color = TextMuted) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -688,7 +693,7 @@ fun NoteEditorDialog(
                     label = { Text("Tempat Catatan Kosong", fontSize = 11.5.sp) },
                     placeholder = {
                         Text(
-                            text = "Ketik catatan Anda di sini...\n\nContoh:\n- TR pendek (<600 ms) menghasilkan kontras T1w\n- STIR menggunakan TI ~150ms untuk supresi lemak\n- Pastikan pasien bebas logam sebelum Zona IV",
+                            text = "Ketik catatan Anda di sini...\n\nContoh:\n- Brain Window: WW 80 / WL 40; Stroke Window: WW 40 / WL 40\n- Air murni = 0 HU, Udara = -1000 HU, Tulang = +1000 HU\n- Pastikan Tube Warm-Up & Air Calibration selesai sebelum scan",
                             fontSize = 12.sp,
                             color = TextMuted,
                             lineHeight = 18.sp
@@ -762,6 +767,8 @@ fun NoteEditorDialog(
 @Composable
 fun ExportNotesPdfDialog(
     notesCount: Int,
+    includeCtReference: Boolean,
+    onToggleCtReference: (Boolean) -> Unit,
     pdfPreviewText: String,
     statusMessage: String?,
     onPrintPdf: () -> Unit,
@@ -828,13 +835,33 @@ fun ExportNotesPdfDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "Cetak langsung ke printer/Save as PDF, simpan file .pdf ke penyimpanan perangkat, atau bagikan dokumen PDF catatan belajar MRI Anda.",
+                    text = "Cetak langsung ke printer/Save as PDF, simpan file .pdf ke penyimpanan perangkat, atau bagikan dokumen PDF catatan belajar CT Scan Anda.",
                     fontSize = 11.sp,
                     color = TextSecondary,
                     lineHeight = 16.sp
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Sertakan Lembar Saku Protokol & HU CT",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = CyanBright,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = includeCtReference,
+                        onCheckedChange = onToggleCtReference
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
 
                 // Pratinjau Tata Letak Dokumen PDF
                 Surface(

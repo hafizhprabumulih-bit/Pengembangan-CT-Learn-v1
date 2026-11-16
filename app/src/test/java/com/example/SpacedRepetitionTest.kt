@@ -1,7 +1,7 @@
 package com.example
 
-import com.example.data.MriModule
-import com.example.data.MriNode
+import com.example.data.CtModule
+import com.example.data.CtNode
 import com.example.data.local.QuizAttemptEntity
 import com.example.util.SpacedRepetition
 import org.junit.Assert.assertEquals
@@ -12,7 +12,7 @@ import org.junit.Test
 class SpacedRepetitionTest {
 
     private val sampleModules = listOf(
-        MriModule(
+        CtModule(
             id = "M01",
             code = "M01",
             title = "Fisika Dasar",
@@ -21,7 +21,7 @@ class SpacedRepetitionTest {
             levelBadge = "T1",
             iconName = "science",
             nodes = listOf(
-                MriNode(
+                CtNode(
                     code = "M01.T1.1",
                     title = "Spin Hidrogen",
                     level = 1,
@@ -29,9 +29,9 @@ class SpacedRepetitionTest {
                     detailFull = "Panjang",
                     analogi = "Analogi"
                 ),
-                MriNode(
+                CtNode(
                     code = "M01.T1.2",
-                    title = "Frekuensi Larmor",
+                    title = "Hukum Beer-Lambert",
                     level = 1,
                     summaryShort = "Ringkas",
                     detailFull = "Panjang",

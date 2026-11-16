@@ -106,13 +106,13 @@ import com.example.ui.theme.RoseDark
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 
 @Composable
 fun QuizScreen(
-    state: MriUiState,
-    viewModel: MriViewModel,
+    state: CtUiState,
+    viewModel: CtViewModel,
     modifier: Modifier = Modifier
 ) {
     val quizzes = state.filteredQuizzes
@@ -145,7 +145,7 @@ fun QuizScreen(
     val activeSubmitted = if (isRetryMode) retrySubmitted else state.isAnswerSubmitted
     val activeFinished = if (isRetryMode) retryFinished else state.isQuizFinished
 
-    val mriHaptics = com.example.util.rememberMriHaptics()
+    val ctHaptics = com.example.util.rememberCtHaptics()
     var hasInitializedDefaultModuleFilter by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (!hasInitializedDefaultModuleFilter) {
@@ -158,12 +158,13 @@ fun QuizScreen(
     }
 
     var showStatsDialog by rememberSaveable { mutableStateOf(false) }
+    var isTryOutMode by rememberSaveable { mutableStateOf(false) }
     var isFilterExpanded by rememberSaveable { mutableStateOf(false) }
     var showPreSubmitHint by rememberSaveable(activeIndex, state.quizModuleFilter, isRetryMode) {
         mutableStateOf(false)
     }
     var nanoInteractionMode by rememberSaveable(activeIndex, state.quizModuleFilter, isRetryMode) {
-        mutableIntStateOf(0) // 0 = Default, 1 = Petunjuk, 2 = Fakta MRI, 3 = Fokus Kunci, 4 = Semangat
+        mutableIntStateOf(0) // 0 = Default, 1 = Petunjuk, 2 = Fakta CT, 3 = Fokus Kunci, 4 = Semangat
     }
 
     val quizStats = remember(state.quizzesList, state.quizAttempts, state.quizModuleFilter) {
@@ -200,15 +201,15 @@ fun QuizScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     val headerTopic = when (state.quizModuleFilter) {
                         "SEMUA" -> "Kuis Evaluasi Mandiri"
-                        "M01" -> "Kuis · Fisika Dasar MRI"
-                        "M02" -> "Kuis · Relaksasi T1/T2"
-                        "M03", "M03A", "M03B", "M03C" -> "Kuis · Sekuens & Kontras"
-                        "M04", "M04A", "M04B", "M04C" -> "Kuis · K-space & Citra"
-                        "M05" -> "Kuis · Perangkat Magnet"
-                        "M06", "M06A", "M06B" -> "Kuis · Gradien & Koil RF"
-                        "M07", "M07A", "M07B", "M07C" -> "Kuis · Keselamatan MR"
-                        "M08", "M08A", "M08B", "M08C" -> "Kuis · Artefak & QA"
-                        "M09" -> "Kuis · Konsol Klinis"
+                        "M01" -> "Kuis · Fisika Atenuasi CT"
+                        "M02" -> "Kuis · Anatomi Gantry CT"
+                        "M03", "M03A", "M03B", "M03C" -> "Kuis · Tabung, Slip-Ring & Detektor"
+                        "M04", "M04A", "M04B", "M04C" -> "Kuis · MSCT & Helikal Pitch"
+                        "M05" -> "Kuis · Sinogram, FBP & Kernel"
+                        "M06", "M06A", "M06B" -> "Kuis · Skala HU & Windowing"
+                        "M07", "M07A", "M07B", "M07C" -> "Kuis · Dosimetri CTDIvol & AEC"
+                        "M08", "M08A", "M08B", "M08C" -> "Kuis · Kontras Iodin & 3D"
+                        "M09" -> "Kuis · Artefak, Kalibrasi & QA"
                         else -> "Kuis · ${state.quizModuleFilter}"
                     }
                     Row(
@@ -244,7 +245,7 @@ fun QuizScreen(
                 // Tombol Statistik Ringkas
                 Surface(
                     onClick = {
-                        mriHaptics.lightToggle()
+                        ctHaptics.lightToggle()
                         showStatsDialog = !showStatsDialog
                     },
                     modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 40.dp),
@@ -288,6 +289,38 @@ fun QuizScreen(
 
             Spacer(modifier = Modifier.height(5.dp))
 
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf(false to "Kuis Modul (${allQuizzes.size})", true to "Try-Out UKOM CT").forEach { (tryOutFlag, tabTitle) ->
+                    val active = isTryOutMode == tryOutFlag
+                    Surface(
+                        onClick = {
+                            ctHaptics.lightToggle()
+                            isTryOutMode = tryOutFlag
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .defaultMinSize(minHeight = 40.dp)
+                            .testTag(if (tryOutFlag) "quiz_mode_tryout" else "quiz_mode_module"),
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (active) CyanPrimary else DarkNavySlate,
+                        border = BorderStroke(1.dp, if (active) CyanBright else CardSlateBorder)
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(vertical = 8.dp)) {
+                            Text(
+                                text = tabTitle,
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (active) DeepObsidian else TextSecondary
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (!isTryOutMode) {
             // 2. RINGKASAN FILTER RINGKAS + TOGGLE PANEL FILTER LENGKAP
             val levelTitle = when (state.quizLevelFilter) {
                 1 -> "T1 Dasar"
@@ -299,7 +332,7 @@ fun QuizScreen(
 
             Surface(
                 onClick = {
-                    mriHaptics.lightToggle()
+                    ctHaptics.lightToggle()
                     isFilterExpanded = !isFilterExpanded
                 },
                 modifier = Modifier.defaultMinSize(minHeight = 38.dp),
@@ -372,28 +405,28 @@ fun QuizScreen(
                         // Default dimulai dari M01, sedangkan "SEMUA" ditempatkan di bagian paling akhir
                         val moduleFilters = listOf(
                             "M01" to "M01: Fisika (${allQuizzes.count { it.moduleId == "M01" || it.nodeCode.startsWith("M01") }})",
-                            "M02" to "M02: T1/T2 (${allQuizzes.count { it.moduleId == "M02" || it.nodeCode.startsWith("M02") }})",
-                            "M03" to "M03: Sekuens (${allQuizzes.count { it.moduleId.startsWith("M03") || it.nodeCode.startsWith("M03") }})",
-                            "M03A" to "M03A (${allQuizzes.count { it.moduleId == "M03A" || it.nodeCode.startsWith("M03A") }})",
-                            "M03B" to "M03B (${allQuizzes.count { it.moduleId == "M03B" || it.nodeCode.startsWith("M03B") }})",
-                            "M03C" to "M03C (${allQuizzes.count { it.moduleId == "M03C" || it.nodeCode.startsWith("M03C") }})",
-                            "M04" to "M04: K-space (${allQuizzes.count { it.moduleId.startsWith("M04") || it.nodeCode.startsWith("M04") }})",
-                            "M04A" to "M04A (${allQuizzes.count { it.moduleId == "M04A" || it.nodeCode.startsWith("M04A") }})",
-                            "M04B" to "M04B (${allQuizzes.count { it.moduleId == "M04B" || it.nodeCode.startsWith("M04B") }})",
-                            "M04C" to "M04C (${allQuizzes.count { it.moduleId == "M04C" || it.nodeCode.startsWith("M04C") }})",
-                            "M05" to "M05: Magnet (${allQuizzes.count { it.moduleId == "M05" || it.nodeCode.startsWith("M05") }})",
-                            "M06" to "M06: Gradien/RF (${allQuizzes.count { it.moduleId.startsWith("M06") || it.nodeCode.startsWith("M06") }})",
-                            "M06A" to "M06A (${allQuizzes.count { it.moduleId == "M06A" || it.nodeCode.startsWith("M06A") }})",
-                            "M06B" to "M06B (${allQuizzes.count { it.moduleId == "M06B" || it.nodeCode.startsWith("M06B") }})",
-                            "M07" to "M07: Safety (${allQuizzes.count { it.moduleId.startsWith("M07") || it.nodeCode.startsWith("M07") }})",
-                            "M07A" to "M07A (${allQuizzes.count { it.moduleId == "M07A" || it.nodeCode.startsWith("M07A") }})",
-                            "M07B" to "M07B (${allQuizzes.count { it.moduleId == "M07B" || it.nodeCode.startsWith("M07B") }})",
-                            "M07C" to "M07C (${allQuizzes.count { it.moduleId == "M07C" || it.nodeCode.startsWith("M07C") }})",
-                            "M08" to "M08: Artefak/QA (${allQuizzes.count { it.moduleId.startsWith("M08") || it.nodeCode.startsWith("M08") }})",
-                            "M08A" to "M08A (${allQuizzes.count { it.moduleId == "M08A" || it.nodeCode.startsWith("M08A") }})",
-                            "M08B" to "M08B (${allQuizzes.count { it.moduleId == "M08B" || it.nodeCode.startsWith("M08B") }})",
-                            "M08C" to "M08C (${allQuizzes.count { it.moduleId == "M08C" || it.nodeCode.startsWith("M08C") }})",
-                            "M09" to "M09: Konsol (${allQuizzes.count { it.moduleId == "M09" || it.nodeCode.startsWith("M09") }})",
+                            "M02" to "M02: Gantry (${allQuizzes.count { it.moduleId == "M02" || it.nodeCode.startsWith("M02") }})",
+                            "M03" to "M03: Detektor (${allQuizzes.count { it.moduleId == "M03" || it.nodeCode.startsWith("M03") }})",
+
+
+
+                            "M04" to "M04: MSCT/Pitch (${allQuizzes.count { it.moduleId.startsWith("M04") || it.nodeCode.startsWith("M04") }})",
+
+
+
+                            "M05" to "M05: Rekonstruksi (${allQuizzes.count { it.moduleId == "M05" || it.nodeCode.startsWith("M05") }})",
+                            "M06" to "M06: HU/Window (${allQuizzes.count { it.moduleId.startsWith("M06") || it.nodeCode.startsWith("M06") }})",
+
+
+                            "M07" to "M07: Dosimetri (${allQuizzes.count { it.moduleId.startsWith("M07") || it.nodeCode.startsWith("M07") }})",
+
+
+
+                            "M08" to "M08: Kontras/3D (${allQuizzes.count { it.moduleId.startsWith("M08") || it.nodeCode.startsWith("M08") }})",
+
+
+
+                            "M09" to "M09: Artefak/QA (${allQuizzes.count { it.moduleId == "M09" || it.nodeCode.startsWith("M09") }})",
                             "SEMUA" to "Semua (${allQuizzes.size})"
                         )
                         moduleFilters.forEach { (modId, label) ->
@@ -401,7 +434,7 @@ fun QuizScreen(
                             FilterChip(
                                 selected = isSelected,
                                 onClick = {
-                                    mriHaptics.lightToggle()
+                                    ctHaptics.lightToggle()
                                     viewModel.setQuizModuleFilter(modId)
                                 },
                                 modifier = Modifier
@@ -457,7 +490,7 @@ fun QuizScreen(
                             FilterChip(
                                 selected = isSelected,
                                 onClick = {
-                                    mriHaptics.lightToggle()
+                                    ctHaptics.lightToggle()
                                     viewModel.setQuizLevelFilter(lvl)
                                 },
                                 modifier = Modifier
@@ -493,6 +526,19 @@ fun QuizScreen(
             }
         }
 
+        }
+
+        if (isTryOutMode) {
+            CtPracticeExamPanel(
+                allCurriculumQuizzes = allQuizzes,
+                attemptModuleOutcomes = state.quizAttempts.map { it.moduleId to it.isCorrect },
+                examStats = state.practiceExamStats,
+                onExamCompleted = { scorePct, weakestDomain ->
+                    viewModel.recordPracticeExamCompleted(scorePct, weakestDomain)
+                },
+                modifier = Modifier.weight(1f)
+            )
+        } else {
         // 3. AREA SOAL & OPSI ABCD KOMPAK AGAR MUAT TANPA PERLU SWIPE
         Column(
             modifier = Modifier
@@ -631,8 +677,8 @@ fun QuizScreen(
                 }
 
                 val cleanExplanation = currentQuiz.explanation
-                    .replace("Ruang-k", "K-space")
-                    .replace("ruang-k", "K-space")
+
+
                 val bubbleMessage = when {
                     activeSubmitted && isAnswerCorrect ->
                         "✓ Jawaban Tepat! $cleanExplanation"
@@ -641,7 +687,7 @@ fun QuizScreen(
                     nanoInteractionMode == 1 ->
                         "💡 Petunjuk Nano: Perhatikan hubungan konsep di materi ${currentQuiz.nodeCode} (${currentQuiz.levelBadge}). Eliminasi opsi yang bertentangan dengan hukum fisika dasar!"
                     nanoInteractionMode == 2 ->
-                        "🔬 Fakta MRI: Pada modul ${currentQuiz.moduleId}, perubahan parameter sekuens berdampak langsung pada SNR, kontras jaringan, dan keselamatan pasien."
+                        "🔬 Fakta CT Scan: Pada modul ${currentQuiz.moduleId}, pengaturan kVp, mAs, Pitch, dan Kernel berdampak langsung pada noise, resolusi, dan dosis pasien."
                     nanoInteractionMode == 3 ->
                         "🎯 Fokus Kunci: Cermati kata kunci utama pada soal ini (${currentQuiz.nodeCode}) sebelum mengunci pilihan A, B, C, atau D!"
                     nanoInteractionMode == 4 ->
@@ -674,7 +720,7 @@ fun QuizScreen(
                             modifier = Modifier
                                 .size(width = 96.dp, height = 96.dp)
                                 .clickable {
-                                    mriHaptics.lightToggle()
+                                    ctHaptics.lightToggle()
                                     nanoInteractionMode = (nanoInteractionMode + 1) % 5
                                     showPreSubmitHint = !showPreSubmitHint
                                     nanoTapBounceCount++
@@ -714,7 +760,7 @@ fun QuizScreen(
                                 .weight(1f)
                                 .defaultMinSize(minHeight = 84.dp)
                                 .clickable {
-                                    mriHaptics.lightToggle()
+                                    ctHaptics.lightToggle()
                                     nanoInteractionMode = (nanoInteractionMode + 1) % 5
                                     showPreSubmitHint = !showPreSubmitHint
                                     nanoTapBounceCount++
@@ -763,8 +809,8 @@ fun QuizScreen(
                     Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp)) {
                         Text(
                             text = currentQuiz.question
-                                .replace("Ruang-k", "K-space")
-                                .replace("ruang-k", "K-space"),
+            
+            ,
                             fontSize = 14.2.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary,
@@ -775,8 +821,8 @@ fun QuizScreen(
 
                         currentQuiz.options.forEachIndexed { index, rawOption ->
                             val option = rawOption
-                                .replace("Ruang-k", "K-space")
-                                .replace("ruang-k", "K-space")
+            
+            
                             val isSelected = activeSelected == index
                             val isSubmitted = activeSubmitted
                             val isCorrectOption = index == currentQuiz.correctIndex
@@ -828,7 +874,7 @@ fun QuizScreen(
                                         .fillMaxWidth()
                                         .padding(bottom = if (isSelected) 1.dp else 3.dp)
                                         .clickable(enabled = !isSubmitted) {
-                                            mriHaptics.lightToggle()
+                                            ctHaptics.lightToggle()
                                             if (isRetryMode) {
                                                 retrySelected = index
                                                 retrySelectedMap = retrySelectedMap + (currentQuiz.id to index)
@@ -917,7 +963,7 @@ fun QuizScreen(
                 ) {
                     OutlinedButton(
                         onClick = {
-                            mriHaptics.lightToggle()
+                            ctHaptics.lightToggle()
                             if (isRetryMode) {
                                 if (retryIndex > 0) {
                                     val prevIdx = retryIndex - 1
@@ -949,7 +995,7 @@ fun QuizScreen(
                                 if (isRetryMode) {
                                     val pickedIdx = retrySelected
                                     val isCorrect = pickedIdx == currentQuiz.correctIndex
-                                    if (isCorrect) mriHaptics.mediumAction() else mriHaptics.warningBuzz()
+                                    if (isCorrect) ctHaptics.mediumAction() else ctHaptics.warningBuzz()
                                     if (pickedIdx != null) {
                                         retrySelectedMap = retrySelectedMap + (currentQuiz.id to pickedIdx)
                                     }
@@ -959,7 +1005,7 @@ fun QuizScreen(
                                     wrongStreak = if (isCorrect) 0 else wrongStreak + 1
                                 } else {
                                     val isCorrect = state.selectedOptionIndex == currentQuiz.correctIndex
-                                    if (isCorrect) mriHaptics.mediumAction() else mriHaptics.warningBuzz()
+                                    if (isCorrect) ctHaptics.mediumAction() else ctHaptics.warningBuzz()
                                     QuizSessionSnapshotHolder.record(currentQuiz.id, isCorrect)
                                     if (currentQuiz.id !in countedSessionQuizIds) {
                                         countedSessionQuizIds = countedSessionQuizIds + currentQuiz.id
@@ -982,7 +1028,7 @@ fun QuizScreen(
                     } else {
                         Button(
                             onClick = {
-                                mriHaptics.lightToggle()
+                                ctHaptics.lightToggle()
                                 if (isRetryMode) {
                                     if (retryIndex < activeQuizzes.lastIndex) {
                                         val nextIdx = retryIndex + 1
@@ -1039,6 +1085,8 @@ fun QuizScreen(
                 }
             }
         }
+    }
+
     }
 
     if (showStatsDialog) {
@@ -1129,7 +1177,7 @@ fun QuizFinishedView(
     total: Int,
     onRestart: () -> Unit
 ) {
-    val haptics = com.example.util.rememberMriHaptics()
+    val haptics = com.example.util.rememberCtHaptics()
     LaunchedEffect(score, total) {
         haptics.completionBuzz()
     }

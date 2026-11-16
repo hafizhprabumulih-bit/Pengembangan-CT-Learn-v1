@@ -68,8 +68,8 @@ import com.example.R
 import com.example.data.CharacterCustomizationState
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
-import com.example.ui.components.MriGlobalAssetImage
-import com.example.ui.components.MriGlobalAssetKey
+import com.example.ui.components.CtGlobalAssetImage
+import com.example.ui.components.CtGlobalAssetKey
 import com.example.ui.theme.AmberWarning
 import com.example.ui.theme.CardSlateBorder
 import com.example.ui.theme.CharActionOrange
@@ -81,24 +81,24 @@ import com.example.ui.theme.EmeraldSuccess
 import com.example.ui.theme.RoseDanger
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.util.MriArcadeEngine
-import com.example.util.PulseBeatKind
-import com.example.util.SpinEchoRhythmState
-import com.example.util.rememberMriHaptics
+import com.example.util.CtArcadeEngine
+import com.example.util.CtScanStageKind
+import com.example.util.GantryRhythmState
+import com.example.util.rememberCtHaptics
 import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.sin
 
 @Composable
-fun SpinEchoRhythmScreen(
+fun GantryRhythmScreen(
     characterCustomization: CharacterCustomizationState,
     bestScore: Int,
     onScoreUpdated: (score: Int, rankTitle: String) -> Unit = { _, _ -> },
     onGameFinished: (score: Int, rankTitle: String) -> Unit,
     onBack: () -> Unit
 ) {
-    val haptics = rememberMriHaptics()
-    var gameState by remember { mutableStateOf(SpinEchoRhythmState()) }
+    val haptics = rememberCtHaptics()
+    var gameState by remember { mutableStateOf(GantryRhythmState()) }
     var isPaused by remember { mutableStateOf(false) }
     var reported by remember { mutableStateOf(false) }
     var activeLaneFlash by remember { mutableStateOf<Int?>(null) }
@@ -158,7 +158,7 @@ fun SpinEchoRhythmScreen(
             val dt = ((nowNs - lastNs) / 1_000_000_000f).coerceIn(0.001f, 0.05f)
             lastNs = nowNs
             val prevLives = gameState.lives
-            gameState = MriArcadeEngine.stepSpinEchoRhythm(gameState, dt)
+            gameState = CtArcadeEngine.stepGantryRhythm(gameState, dt)
             if (gameState.lives < prevLives) {
                 haptics.warningBuzz()
             }
@@ -202,7 +202,7 @@ fun SpinEchoRhythmScreen(
                 )
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Spin Echo Rhythm", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
+                Text("Ritme Rotasi Gantry & DAS", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -217,9 +217,9 @@ fun SpinEchoRhythmScreen(
                     }
                     Text(
                         text = if (gameState.isTurboMode) {
-                            "MODE TSE 2x AKTIF! · Rekor: ${maxOf(bestScore, gameState.score)}"
+                            "MODE HELIKAL 2x AKTIF! · Rekor: ${maxOf(bestScore, gameState.score)}"
                         } else {
-                            "90° → 180° → Baca Echo · Rekor: ${maxOf(bestScore, gameState.score)}"
+                            "Eksposi kVp → Sampling DAS → Rekon FBP · Rekor: ${maxOf(bestScore, gameState.score)}"
                         },
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -272,8 +272,8 @@ fun SpinEchoRhythmScreen(
                     } else {
                         Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                             repeat(gameState.lives) {
-                                MriGlobalAssetImage(
-                                    assetKey = MriGlobalAssetKey.SPARK_BOLT,
+                                CtGlobalAssetImage(
+                                    assetKey = CtGlobalAssetKey.SPARK_BOLT,
                                     modifier = Modifier.size(18.dp),
                                     tintAccent = EmeraldSuccess
                                 )
@@ -295,7 +295,7 @@ fun SpinEchoRhythmScreen(
                     haptics.lightToggle()
                     nanoTipTap++
                     customNanoTip = when {
-                        gameState.isTurboMode -> "Nano: Turbo Spin Echo 2x menyala! Banyak gema 180° muncul berurutan!"
+                        gameState.isTurboMode -> "Nano: Mode Helikal 2x menyala! Proyeksi Sinogram DAS mengalir berurutan!"
                         else -> "Nano: Ketuk tombol atau lajur tepat saat blok menyentuh cincin target di bawah!"
                     }
                 }
@@ -346,7 +346,7 @@ fun SpinEchoRhythmScreen(
                             val t = i / steps.toFloat()
                             val x = t * size.width
                             val env = 1f - kotlin.math.abs(t - 0.5f) * 1.9f
-                            val y = size.height / 2f - sin(t * 7f * PI).toFloat() * (size.height * 0.45f) * env.coerceAtLeast(0.05f) * gameState.echoAmplitude
+                            val y = size.height / 2f - sin(t * 7f * PI).toFloat() * (size.height * 0.45f) * env.coerceAtLeast(0.05f) * gameState.signalAmplitude
                             if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
                         }
                         drawPath(path, color = EmeraldSuccess, style = Stroke(width = 3f, cap = StrokeCap.Round))
@@ -372,12 +372,12 @@ fun SpinEchoRhythmScreen(
                                 val laneIdx = ((tapOffset.x / size.width.coerceAtLeast(1)) * 3f).toInt().coerceIn(0, 2)
                                 activeLaneFlash = laneIdx
                                 val preferred = when (laneIdx) {
-                                    0 -> PulseBeatKind.RF_90
-                                    1 -> PulseBeatKind.REFOCUS_180
-                                    else -> PulseBeatKind.ECHO_READ
+                                    0 -> CtScanStageKind.TUBE_EXPOSURE_KVP
+                                    1 -> CtScanStageKind.DAS_SAMPLING
+                                    else -> CtScanStageKind.RECON_FBP
                                 }
                                 val prevScore = gameState.score
-                                val next = MriArcadeEngine.tapRhythmLane(gameState, preferred)
+                                val next = CtArcadeEngine.tapGantryRhythmLane(gameState, preferred)
                                 if (next.combo > gameState.combo) {
                                     haptics.mediumAction()
                                     val delta = next.score - prevScore
@@ -473,9 +473,9 @@ fun SpinEchoRhythmScreen(
                 gameState.notes.forEach { note ->
                     val y = note.progress * targetY
                     val (laneIdx, color) = when (note.kind) {
-                        PulseBeatKind.RF_90 -> 0 to CyanBright
-                        PulseBeatKind.REFOCUS_180 -> 1 to CharActionOrange
-                        PulseBeatKind.ECHO_READ -> 2 to EmeraldSuccess
+                        CtScanStageKind.TUBE_EXPOSURE_KVP -> 0 to CyanBright
+                        CtScanStageKind.DAS_SAMPLING -> 1 to CharActionOrange
+                        CtScanStageKind.RECON_FBP -> 2 to EmeraldSuccess
                     }
                     val noteLeft = laneW * laneIdx + 12.dp.toPx()
                     val noteW = laneW - 24.dp.toPx()
@@ -578,8 +578,8 @@ fun SpinEchoRhythmScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            MriGlobalAssetImage(
-                                assetKey = MriGlobalAssetKey.TROPHY_MEDAL,
+                            CtGlobalAssetImage(
+                                assetKey = CtGlobalAssetKey.TROPHY_MEDAL,
                                 modifier = Modifier.size(44.dp),
                                 tintAccent = AmberWarning
                             )
@@ -596,7 +596,7 @@ fun SpinEchoRhythmScreen(
                                 Button(
                                     onClick = {
                                         haptics.lightToggle()
-                                        gameState = SpinEchoRhythmState()
+                                        gameState = GantryRhythmState()
                                         reported = false
                                         isPaused = false
                                     },
@@ -619,16 +619,16 @@ fun SpinEchoRhythmScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             listOf(
-                Triple(PulseBeatKind.RF_90, "90° RF", CyanPrimary),
-                Triple(PulseBeatKind.REFOCUS_180, "180° Refocus", CharActionOrange),
-                Triple(PulseBeatKind.ECHO_READ, "Baca Echo", EmeraldSuccess)
+                Triple(CtScanStageKind.TUBE_EXPOSURE_KVP, "Eksposi kVp", CyanPrimary),
+                Triple(CtScanStageKind.DAS_SAMPLING, "Sampling DAS", CharActionOrange),
+                Triple(CtScanStageKind.RECON_FBP, "Rekon FBP", EmeraldSuccess)
             ).forEachIndexed { idx, (kind, label, btnColor) ->
                 Button(
                     onClick = {
                         if (!isPaused && !gameState.isGameOver) {
                             activeLaneFlash = idx
                             val prevScore = gameState.score
-                            val next = MriArcadeEngine.tapRhythmLane(gameState, kind)
+                            val next = CtArcadeEngine.tapGantryRhythmLane(gameState, kind)
                             if (next.combo > gameState.combo) {
                                 haptics.mediumAction()
                                 val delta = next.score - prevScore

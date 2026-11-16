@@ -8,13 +8,13 @@ import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.random.Random
 
-enum class DefenseItemCategory { MR_UNSAFE, MR_SAFE }
+enum class DefenseArtifactCategory { CT_METAL_ARTIFACT, CT_RADIOLUCENT_SAFE }
 
 data class DefenseProjectile(
     val id: Int,
     val label: String,
-    val emoji: String,
-    val category: DefenseItemCategory,
+    val codeTag: String,
+    val category: DefenseArtifactCategory,
     val x: Float,
     val y: Float,
     val vx: Float,
@@ -22,7 +22,7 @@ data class DefenseProjectile(
     val assetKey: String = ""
 )
 
-data class MagnetDefenseState(
+data class MetalDefenseState(
     val items: List<DefenseProjectile> = emptyList(),
     val score: Int = 0,
     val combo: Int = 0,
@@ -32,35 +32,35 @@ data class MagnetDefenseState(
     val spawnCooldownSec: Float = 0.25f,
     val nextId: Int = 1,
     val deflectedCount: Int = 0,
-    val lastEventMessage: String = "Ketuk benda feromagnetik (merah) sebelum menembus garis 5 Gauss!",
+    val lastEventMessage: String = "Ketuk benda logam pemicu Metal Streak Artifact (merah) sebelum masuk ke FOV Gantry CT!",
     val lastEventGood: Boolean = true,
     val isGameOver: Boolean = false
 ) {
-    val fieldLabel: String
+    val kvpLabel: String
         get() = when {
-            wave >= 3 -> "3,0 Tesla"
-            wave == 2 -> "1,5 Tesla"
-            else -> "0,5 Tesla"
+            wave >= 3 -> "140 kVp"
+            wave == 2 -> "120 kVp"
+            else -> "80 kVp"
         }
 
     val rankTitle: String
-        get() = MriArcadeEngine.rankForDefenseScore(score)
+        get() = CtArcadeEngine.rankForMetalDefenseScore(score)
 }
 
-enum class PulseBeatKind(val label: String) {
-    RF_90("90° RF"),
-    REFOCUS_180("180° Refocus"),
-    ECHO_READ("Baca Echo")
+enum class CtScanStageKind(val label: String) {
+    TUBE_EXPOSURE_KVP("Eksposi kVp"),
+    DAS_SAMPLING("Sampling DAS"),
+    RECON_FBP("Rekon FBP")
 }
 
-data class RhythmBeatNote(
+data class GantryBeatNote(
     val id: Int,
-    val kind: PulseBeatKind,
+    val kind: CtScanStageKind,
     val progress: Float // 0f = atas, 1f = garis target ketuk
 )
 
-data class SpinEchoRhythmState(
-    val notes: List<RhythmBeatNote> = emptyList(),
+data class GantryRhythmState(
+    val notes: List<GantryBeatNote> = emptyList(),
     val score: Int = 0,
     val combo: Int = 0,
     val lives: Int = 3,
@@ -68,24 +68,24 @@ data class SpinEchoRhythmState(
     val spawnTimerSec: Float = 0.25f,
     val nextId: Int = 1,
     val stepIndex: Int = 0,
-    val echoAmplitude: Float = 0.5f,
-    val lastJudgment: String = "Ketuk tombol pulsa saat indikator tiba di garis target!",
+    val signalAmplitude: Float = 0.5f,
+    val lastJudgment: String = "Ketuk tombol sinkronisasi gantry saat indikator tiba di garis target!",
     val isGameOver: Boolean = false
 ) {
     val isTurboMode: Boolean get() = combo >= 6
-    val rankTitle: String get() = MriArcadeEngine.rankForRhythmScore(score)
+    val rankTitle: String get() = CtArcadeEngine.rankForGantryRhythmScore(score)
 }
 
 /**
- * Mesin simulasi murni (teroptimasi) untuk dua game arcade MRI:
- * 1) Nano Magnet Defense (spawning anti-tumpang-tindih & prioritas target MR_UNSAFE)
- * 2) Spin Echo Rhythm (spasi catatan adil per lajur & penilaian berbasis lajur presisi)
+ * Mesin simulasi murni untuk dua game arcade CT-Learn:
+ * 1) Metal Streak Defense (spawning anti-tumpang-tindih & prioritas target CT_METAL_ARTIFACT)
+ * 2) Gantry Sync Rhythm (spasi catatan adil per lajur akuisisi kVp - DAS - Rekon FBP)
  */
-object MriArcadeEngine {
+object CtArcadeEngine {
 
-    const val BORE_CENTER_X = 0.5f
-    const val BORE_CENTER_Y = 0.5f
-    const val FIVE_GAUSS_RADIUS = 0.16f
+    const val GANTRY_ISOCENTER_X = 0.5f
+    const val GANTRY_ISOCENTER_Y = 0.5f
+    const val SFOV_TARGET_RADIUS = 0.16f
 
     private data class DefenseTemplate(
         val label: String,
@@ -98,14 +98,14 @@ object MriArcadeEngine {
         DefenseTemplate("Tabung O₂", "O2", "TABUNG_O2"),
         DefenseTemplate("Kunci Pas", "KUNCI", "KUNCI_PAS"),
         DefenseTemplate("Klip Logam", "KLIP", "KLIP_LOGAM"),
-        DefenseTemplate("Kursi Roda Besi", "KURSI", "KURSI_RODA_BESI"),
-        DefenseTemplate("Stetoskop Baja", "STETO", "STETOSKOP"),
+        DefenseTemplate("Besi Asing Bore", "BORE", "KURSI_RODA_BESI"),
+        DefenseTemplate("Lead Kabel Logam", "LEAD", "STETOSKOP"),
         DefenseTemplate("Jam Mekanik", "JAM", "JAM_MEKANIK"),
-        DefenseTemplate("Pinset Feromagnetik", "PINSET", "PINSET"),
+        DefenseTemplate("Pinset Logam", "PINSET", "PINSET"),
         DefenseTemplate("Ponsel Logam", "PONSEL", "PONSEL_LOGAM"),
-        DefenseTemplate("Tabung APAR", "APAR", "TABUNG_PEMADAM"),
+        DefenseTemplate("Tabung Berat", "TABUNG", "TABUNG_PEMADAM"),
         DefenseTemplate("Kacamata Logam", "KACAMATA", "KACA_MATA_LOGAM"),
-        DefenseTemplate("Pompa Non-MR", "POMPA", "POMPA_INFUS_BIASA"),
+        DefenseTemplate("Pompa Tanpa Jalur", "POMPA", "POMPA_INFUS_BIASA"),
         DefenseTemplate("Botol Baja", "BOTOL", "BOTOL_MINUM_LOGAM"),
         DefenseTemplate("Skalpel Baja", "SKALPEL", "PISAU_BEDAH_BAJA"),
         DefenseTemplate("Palu Refleks", "PALU", "PALU_REFLEKS_BESI"),
@@ -115,22 +115,22 @@ object MriArcadeEngine {
 
     private val safeTemplates = listOf(
         DefenseTemplate("Bantal Busa", "BANTAL", "BANTAL_BUSA"),
-        DefenseTemplate("Vial Kontras", "VIAL", "VIAL_KONTRAS"),
+        DefenseTemplate("Vial Kontras Iodin", "VIAL", "VIAL_KONTRAS"),
         DefenseTemplate("Gaun Katun", "GAUN", "GAUN_KATUN"),
-        DefenseTemplate("Earplug Busa", "EARPLUG", "EARPLUG"),
-        DefenseTemplate("Phantom ACR", "PHANTOM", "PHANTOM_ACR"),
-        DefenseTemplate("Sandbag Non-Mag", "SANDBAG", "SANDBAG_NONMAG"),
+        DefenseTemplate("Spons Fiksasi", "SPONS", "EARPLUG"),
+        DefenseTemplate("Fantom Air QA", "PHANTOM", "PHANTOM_ACR"),
+        DefenseTemplate("Sabuk Velcro", "VELCRO", "SANDBAG_NONMAG"),
         DefenseTemplate("Selimut Katun", "SELIMUT", "SELIMUT_KATUN"),
-        DefenseTemplate("Headset Udara", "HEADSET", "HEADSET_PNEUMATIK"),
-        DefenseTemplate("Masker Polimer", "MASKER", "MASKER_OKSIGEN_PLASTIK")
+        DefenseTemplate("Shield Luar FOV", "SHIELD", "HEADSET_PNEUMATIK"),
+        DefenseTemplate("Kanul Polimer", "MASKER", "MASKER_OKSIGEN_PLASTIK")
     )
 
-    // Variasi pola sekuens agar ritme Spin Echo & TSE dinamis & musikal
+    // Variasi pola akuisisi gantry helikal: Eksposi Tabung -> Sampling DAS -> Rekon FBP/IR
     private val rhythmSequencePatterns = listOf(
-        PulseBeatKind.RF_90, PulseBeatKind.REFOCUS_180, PulseBeatKind.ECHO_READ,
-        PulseBeatKind.RF_90, PulseBeatKind.REFOCUS_180, PulseBeatKind.ECHO_READ,
-        PulseBeatKind.REFOCUS_180, PulseBeatKind.ECHO_READ,
-        PulseBeatKind.REFOCUS_180, PulseBeatKind.RF_90, PulseBeatKind.REFOCUS_180, PulseBeatKind.ECHO_READ
+        CtScanStageKind.TUBE_EXPOSURE_KVP, CtScanStageKind.DAS_SAMPLING, CtScanStageKind.RECON_FBP,
+        CtScanStageKind.TUBE_EXPOSURE_KVP, CtScanStageKind.DAS_SAMPLING, CtScanStageKind.RECON_FBP,
+        CtScanStageKind.DAS_SAMPLING, CtScanStageKind.RECON_FBP,
+        CtScanStageKind.DAS_SAMPLING, CtScanStageKind.TUBE_EXPOSURE_KVP, CtScanStageKind.DAS_SAMPLING, CtScanStageKind.RECON_FBP
     )
 
     fun resolveAssetKey(projectile: DefenseProjectile): String {
@@ -141,42 +141,42 @@ object MriArcadeEngine {
             "tabung" in labelLower || "o₂" in labelLower || "o2" in labelLower -> "TABUNG_O2"
             "kunci" in labelLower -> "KUNCI_PAS"
             "klip" in labelLower -> "KLIP_LOGAM"
-            "kursi" in labelLower -> "KURSI_RODA_BESI"
-            "stetoskop" in labelLower -> "STETOSKOP"
+            "kursi" in labelLower || "bore" in labelLower -> "KURSI_RODA_BESI"
+            "stetoskop" in labelLower || "lead" in labelLower -> "STETOSKOP"
             "jam" in labelLower -> "JAM_MEKANIK"
             "pinset" in labelLower -> "PINSET"
             "bantal" in labelLower -> "BANTAL_BUSA"
             "vial" in labelLower || "kontras" in labelLower -> "VIAL_KONTRAS"
             "gaun" in labelLower -> "GAUN_KATUN"
-            "earplug" in labelLower -> "EARPLUG"
-            "phantom" in labelLower -> "PHANTOM_ACR"
+            "spons" in labelLower || "earplug" in labelLower -> "EARPLUG"
+            "fantom" in labelLower || "phantom" in labelLower -> "PHANTOM_ACR"
             "ponsel" in labelLower || "hp" in labelLower -> "PONSEL_LOGAM"
             "apar" in labelLower || "pemadam" in labelLower -> "TABUNG_PEMADAM"
             "kacamata" in labelLower -> "KACA_MATA_LOGAM"
             "pompa" in labelLower || "infus" in labelLower -> "POMPA_INFUS_BIASA"
             "botol" in labelLower || "termos" in labelLower -> "BOTOL_MINUM_LOGAM"
-            "sandbag" in labelLower || "pasir" in labelLower -> "SANDBAG_NONMAG"
+            "velcro" in labelLower || "sandbag" in labelLower -> "SANDBAG_NONMAG"
             "selimut" in labelLower -> "SELIMUT_KATUN"
-            "aluminium" in labelLower || "alu" in labelLower -> "TABUNG_O2_ALU"
+            "saline" in labelLower || "alu" in labelLower -> "TABUNG_O2_ALU"
             "titanium" in labelLower || "implan" in labelLower -> "IMPLAN_TITANIUM"
-            "headset" in labelLower || "pneumatik" in labelLower -> "HEADSET_PNEUMATIK"
-            "masker" in labelLower -> "MASKER_OKSIGEN_PLASTIK"
+            "shield" in labelLower || "headset" in labelLower -> "HEADSET_PNEUMATIK"
+            "kanul" in labelLower || "masker" in labelLower -> "MASKER_OKSIGEN_PLASTIK"
             "skalpel" in labelLower || "pisau" in labelLower -> "PISAU_BEDAH_BAJA"
             "palu" in labelLower || "refleks" in labelLower -> "PALU_REFLEKS_BESI"
             "cincin" in labelLower -> "CINCIN_FEROMAGNETIK"
             "lanyard" in labelLower || "akses" in labelLower -> "KARTU_AKSES_MAGNET"
-            else -> "FALLBACK_MRI"
+            else -> "FALLBACK_CT"
         }
     }
 
     /**
      * Memilih sudut spawn optimal yang memaksimalkan jarak sudut minimum terhadap
-     * proyektil aktif sehingga item tidak bertumpukan di lintasan yang sama.
+     * proyektil aktif sehingga item tidak bertumpukan di lintasan berkas yang sama.
      */
     fun pickOptimalSpawnAngle(existingItems: List<DefenseProjectile>, random: Random): Float {
         if (existingItems.isEmpty()) return random.nextFloat() * (2f * PI.toFloat())
         val existingAngles = existingItems.map { item ->
-            atan2(item.y - BORE_CENTER_Y, item.x - BORE_CENTER_X)
+            atan2(item.y - GANTRY_ISOCENTER_Y, item.x - GANTRY_ISOCENTER_X)
         }
         val baseOffset = random.nextFloat() * (2f * PI.toFloat())
         var bestAngle = baseOffset
@@ -196,11 +196,11 @@ object MriArcadeEngine {
         return bestAngle
     }
 
-    fun stepMagnetDefense(
-        state: MagnetDefenseState,
+    fun stepMetalDefense(
+        state: MetalDefenseState,
         deltaSec: Float,
         random: Random = Random.Default
-    ): MagnetDefenseState {
+    ): MetalDefenseState {
         if (state.isGameOver || deltaSec <= 0f) return state
         val dt = deltaSec.coerceAtMost(0.05f)
         val newElapsed = state.elapsedSec + dt
@@ -216,12 +216,12 @@ object MriArcadeEngine {
 
         val surviving = mutableListOf<DefenseProjectile>()
         for (item in state.items) {
-            val dxCenter = BORE_CENTER_X - item.x
-            val dyCenter = BORE_CENTER_Y - item.y
+            val dxCenter = GANTRY_ISOCENTER_X - item.x
+            val dyCenter = GANTRY_ISOCENTER_Y - item.y
             val distNow = hypot(dxCenter, dyCenter).coerceAtLeast(0.001f)
-            // Tarikan medan gradien semakin kuat mendekati bore B0 + gerak spiral halus pada wave tinggi
+            // Laju tarikan konveyor ke arah pusat gantry + efek rotasi pada gelombang tinggi
             val pullBoost = 1f + ((0.44f - distNow).coerceAtLeast(0f) * 0.82f)
-            val swirl = if (newWave >= 3 && item.category == DefenseItemCategory.MR_UNSAFE) {
+            val swirl = if (newWave >= 3 && item.category == DefenseArtifactCategory.CT_METAL_ARTIFACT) {
                 0.036f * if (item.id % 2 == 0) 1f else -1f
             } else 0f
             val tx = -dyCenter / distNow
@@ -229,16 +229,16 @@ object MriArcadeEngine {
 
             val nx = item.x + (item.vx * pullBoost + tx * swirl) * dt
             val ny = item.y + (item.vy * pullBoost + ty * swirl) * dt
-            val dist = hypot(nx - BORE_CENTER_X, ny - BORE_CENTER_Y)
-            if (dist <= FIVE_GAUSS_RADIUS) {
-                if (item.category == DefenseItemCategory.MR_UNSAFE) {
+            val dist = hypot(nx - GANTRY_ISOCENTER_X, ny - GANTRY_ISOCENTER_Y)
+            if (dist <= SFOV_TARGET_RADIUS) {
+                if (item.category == DefenseArtifactCategory.CT_METAL_ARTIFACT) {
                     lives = (lives - 1).coerceAtLeast(0)
                     combo = 0
-                    lastMsg = "Bahaya proyektil! ${item.label} menembus garis 5 Gauss!"
+                    lastMsg = "Metal Streak Artifact! ${item.label} masuk ke FOV berkas sinar-X!"
                     lastGood = false
                 } else {
                     score += 45
-                    lastMsg = "${item.label} (MR Safe) masuk aman ke K-space scan (+45)"
+                    lastMsg = "${item.label} (Radiolusen Aman) lolos ke bore CT (+45)"
                     lastGood = true
                 }
             } else {
@@ -253,13 +253,13 @@ object MriArcadeEngine {
             val spawnCount = if (wantDouble) 2 else 1
             repeat(spawnCount) {
                 val angle = pickOptimalSpawnAngle(surviving, random)
-                val startX = BORE_CENTER_X + cos(angle) * 0.44f
-                val startY = BORE_CENTER_Y + sin(angle) * 0.44f
-                val dx = BORE_CENTER_X - startX
-                val dy = BORE_CENTER_Y - startY
+                val startX = GANTRY_ISOCENTER_X + cos(angle) * 0.44f
+                val startY = GANTRY_ISOCENTER_Y + sin(angle) * 0.44f
+                val dx = GANTRY_ISOCENTER_X - startX
+                val dy = GANTRY_ISOCENTER_Y - startY
                 val len = hypot(dx, dy).coerceAtLeast(0.001f)
 
-                val activeUnsafe = surviving.count { it.category == DefenseItemCategory.MR_UNSAFE }
+                val activeUnsafe = surviving.count { it.category == DefenseArtifactCategory.CT_METAL_ARTIFACT }
                 val unsafeChance = if (activeUnsafe == 0) 0.90f else 0.75f
                 val isUnsafe = random.nextFloat() < unsafeChance
                 val template = if (isUnsafe) {
@@ -272,8 +272,8 @@ object MriArcadeEngine {
                     DefenseProjectile(
                         id = nextId++,
                         label = template.label,
-                        emoji = template.codeTag,
-                        category = if (isUnsafe) DefenseItemCategory.MR_UNSAFE else DefenseItemCategory.MR_SAFE,
+                        codeTag = template.codeTag,
+                        category = if (isUnsafe) DefenseArtifactCategory.CT_METAL_ARTIFACT else DefenseArtifactCategory.CT_RADIOLUCENT_SAFE,
                         x = startX,
                         y = startY,
                         vx = (dx / len) * speedVar,
@@ -300,15 +300,15 @@ object MriArcadeEngine {
         )
     }
 
-    fun tapDefenseProjectile(state: MagnetDefenseState, itemId: Int): MagnetDefenseState {
+    fun tapDefenseProjectile(state: MetalDefenseState, itemId: Int): MetalDefenseState {
         if (state.isGameOver) return state
         val target = state.items.firstOrNull { it.id == itemId } ?: return state
         val remaining = state.items.filterNot { it.id == itemId }
 
-        return if (target.category == DefenseItemCategory.MR_UNSAFE) {
+        return if (target.category == DefenseArtifactCategory.CT_METAL_ARTIFACT) {
             val newCombo = state.combo + 1
-            val distFromBore = hypot(target.x - BORE_CENTER_X, target.y - BORE_CENTER_Y)
-            val closeCallBonus = if (distFromBore <= FIVE_GAUSS_RADIUS + 0.08f) 35 else 0
+            val distFromBore = hypot(target.x - GANTRY_ISOCENTER_X, target.y - GANTRY_ISOCENTER_Y)
+            val closeCallBonus = if (distFromBore <= SFOV_TARGET_RADIUS + 0.08f) 35 else 0
             val points = 100 + (newCombo * 20).coerceAtMost(140) + closeCallBonus
             val closeTag = if (closeCallBonus > 0) " [Tangkisan Kritis +35!]" else ""
             state.copy(
@@ -316,7 +316,7 @@ object MriArcadeEngine {
                 score = state.score + points,
                 combo = newCombo,
                 deflectedCount = state.deflectedCount + 1,
-                lastEventMessage = "Tangkis ${target.label}! +$points (Combo x$newCombo)$closeTag",
+                lastEventMessage = "Singkirkan ${target.label}! +$points (Combo x$newCombo)$closeTag",
                 lastEventGood = true
             )
         } else {
@@ -324,34 +324,34 @@ object MriArcadeEngine {
                 items = remaining,
                 combo = 0,
                 score = (state.score - 30).coerceAtLeast(0),
-                lastEventMessage = "${target.label} itu MR Safe, biarkan masuk! (-30)",
+                lastEventMessage = "${target.label} itu Radiolusen Aman, biarkan masuk! (-30)",
                 lastEventGood = false
             )
         }
     }
 
     /**
-     * Memprioritaskan target MR_UNSAFE di dalam radius ketuk agar pemain tidak
-     * terkena penalti tidak adil saat item aman berdekatan dengan proyektil bahaya.
+     * Memprioritaskan target CT_METAL_ARTIFACT di dalam radius ketuk agar pemain tidak
+     * terkena penalti tidak adil saat item aman berdekatan dengan proyektil logam bahaya.
      */
     fun tapDefenseAtNormalized(
-        state: MagnetDefenseState,
+        state: MetalDefenseState,
         normX: Float,
         normY: Float,
         hitRadius: Float = 0.14f
-    ): MagnetDefenseState {
+    ): MetalDefenseState {
         if (state.isGameOver || state.items.isEmpty()) return state
         val candidates = state.items.filter { hypot(it.x - normX, it.y - normY) <= hitRadius }
         if (candidates.isEmpty()) return state
         val preferredTarget = candidates
-            .filter { it.category == DefenseItemCategory.MR_UNSAFE }
+            .filter { it.category == DefenseArtifactCategory.CT_METAL_ARTIFACT }
             .minByOrNull { hypot(it.x - normX, it.y - normY) }
             ?: candidates.minByOrNull { hypot(it.x - normX, it.y - normY) }
             ?: return state
         return tapDefenseProjectile(state, preferredTarget.id)
     }
 
-    fun stepSpinEchoRhythm(state: SpinEchoRhythmState, deltaSec: Float): SpinEchoRhythmState {
+    fun stepGantryRhythm(state: GantryRhythmState, deltaSec: Float): GantryRhythmState {
         if (state.isGameOver || deltaSec <= 0f) return state
         val dt = deltaSec.coerceAtMost(0.05f)
         val newElapsed = state.elapsedSec + dt
@@ -361,16 +361,16 @@ object MriArcadeEngine {
         var lives = state.lives
         var combo = state.combo
         var judgment = state.lastJudgment
-        var amp = (state.echoAmplitude - dt * 0.15f).coerceAtLeast(0.2f)
+        var amp = (state.signalAmplitude - dt * 0.15f).coerceAtLeast(0.2f)
 
-        val kept = mutableListOf<RhythmBeatNote>()
+        val kept = mutableListOf<GantryBeatNote>()
         for (note in state.notes) {
             val nextProg = note.progress + speed * dt
             if (nextProg > 1.22f) {
                 lives = (lives - 1).coerceAtLeast(0)
                 combo = 0
                 amp = 0.2f
-                judgment = "Terlewat ${note.kind.label}! Koherensi spin K-space meluruh"
+                judgment = "Terlewat ${note.kind.label}! Proyeksi Sinogram DAS kehilangan sinkronisasi"
             } else {
                 kept.add(note.copy(progress = nextProg))
             }
@@ -384,13 +384,13 @@ object MriArcadeEngine {
             val kind = rhythmSequencePatterns[stepIdx % rhythmSequencePatterns.size]
             val sameLaneTooClose = kept.any { it.kind == kind && it.progress < 0.30f }
             if (!sameLaneTooClose) {
-                kept.add(RhythmBeatNote(id = nextId++, kind = kind, progress = 0f))
+                kept.add(GantryBeatNote(id = nextId++, kind = kind, progress = 0f))
                 stepIdx++
                 val baseInterval = if (state.isTurboMode) 0.78f else 1.00f
                 spawnTimer = when (kind) {
-                    PulseBeatKind.REFOCUS_180 -> baseInterval * 0.86f
-                    PulseBeatKind.ECHO_READ -> baseInterval * 1.06f
-                    PulseBeatKind.RF_90 -> baseInterval
+                    CtScanStageKind.DAS_SAMPLING -> baseInterval * 0.86f
+                    CtScanStageKind.RECON_FBP -> baseInterval * 1.06f
+                    CtScanStageKind.TUBE_EXPOSURE_KVP -> baseInterval
                 }
             }
         }
@@ -403,16 +403,16 @@ object MriArcadeEngine {
             spawnTimerSec = spawnTimer,
             nextId = nextId,
             stepIndex = stepIdx,
-            echoAmplitude = amp,
+            signalAmplitude = amp,
             lastJudgment = judgment,
             isGameOver = lives <= 0
         )
     }
 
-    fun tapRhythmLane(
-        state: SpinEchoRhythmState,
-        preferredKind: PulseBeatKind? = null
-    ): SpinEchoRhythmState {
+    fun tapGantryRhythmLane(
+        state: GantryRhythmState,
+        preferredKind: CtScanStageKind? = null
+    ): GantryRhythmState {
         if (state.isGameOver || state.notes.isEmpty()) return state
 
         if (preferredKind != null) {
@@ -427,8 +427,8 @@ object MriArcadeEngine {
                 } else {
                     state.copy(
                         combo = 0,
-                        echoAmplitude = 0.30f,
-                        lastJudgment = "Tunggu pulsa ${preferredKind.label} menyentuh garis target!"
+                        signalAmplitude = 0.30f,
+                        lastJudgment = "Tunggu sinyal ${preferredKind.label} menyentuh garis target!"
                     )
                 }
             } else {
@@ -441,7 +441,7 @@ object MriArcadeEngine {
                 }
                 return state.copy(
                     combo = 0,
-                    echoAmplitude = 0.25f,
+                    signalAmplitude = 0.25f,
                     lastJudgment = hint
                 )
             }
@@ -454,17 +454,17 @@ object MriArcadeEngine {
         } else {
             state.copy(
                 combo = 0,
-                echoAmplitude = 0.30f,
-                lastJudgment = "Tunggu hingga pulsa menyentuh garis target!"
+                signalAmplitude = 0.30f,
+                lastJudgment = "Tunggu hingga sinyal menyentuh garis target!"
             )
         }
     }
 
     private fun awardRhythmHit(
-        state: SpinEchoRhythmState,
-        candidate: RhythmBeatNote,
+        state: GantryRhythmState,
+        candidate: GantryBeatNote,
         dist: Float
-    ): SpinEchoRhythmState {
+    ): GantryRhythmState {
         val isPerfect = dist <= 0.11f
         val newCombo = state.combo + 1
         val mult = if (newCombo >= 6) 2 else 1
@@ -474,26 +474,26 @@ object MriArcadeEngine {
             notes = state.notes.filterNot { it.id == candidate.id },
             score = state.score + gained,
             combo = newCombo,
-            echoAmplitude = if (isPerfect) 1.0f else 0.82f,
+            signalAmplitude = if (isPerfect) 1.0f else 0.82f,
             lastJudgment = buildString {
                 append(if (isPerfect) "PERFECT" else "GOOD")
                 append(" ${candidate.kind.label} +$gained")
-                if (newCombo >= 6) append(" (TSE 2x!)")
+                if (newCombo >= 6) append(" (Helikal 2x!)")
             }
         )
     }
 
-    fun rankForDefenseScore(score: Int): String = when {
-        score >= 2200 -> "Master Superkonduktor"
-        score >= 1200 -> "Radiografer Kilat"
-        score >= 500 -> "Penjaga 5 Gauss"
-        else -> "Magang Zona II"
+    fun rankForMetalDefenseScore(score: Int): String = when {
+        score >= 2200 -> "Master Konsol CT"
+        score >= 1200 -> "Radiografer CT Senior"
+        score >= 500 -> "Operator Siaga ALARA"
+        else -> "Magang Konsol CT"
     }
 
-    fun rankForRhythmScore(score: Int): String = when {
-        score >= 2400 -> "Master Superkonduktor"
-        score >= 1300 -> "Radiografer Kilat"
-        score >= 550 -> "Penjaga 5 Gauss"
-        else -> "Magang Zona II"
+    fun rankForGantryRhythmScore(score: Int): String = when {
+        score >= 2400 -> "Master Konsol CT"
+        score >= 1300 -> "Radiografer CT Senior"
+        score >= 550 -> "Operator Siaga ALARA"
+        else -> "Magang Konsol CT"
     }
 }

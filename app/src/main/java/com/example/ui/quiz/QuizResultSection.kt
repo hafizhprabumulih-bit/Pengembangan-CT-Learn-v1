@@ -88,7 +88,7 @@ fun QuizResultSection(
     onPrimaryNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptics = com.example.util.rememberMriHaptics()
+    val haptics = com.example.util.rememberCtHaptics()
     LaunchedEffect(summary) {
         haptics.completionBuzz()
     }

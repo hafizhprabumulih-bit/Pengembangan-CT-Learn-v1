@@ -2,7 +2,7 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Medical Dark Theme Palette for Belajar MRI (MRI Edu)
+// Medical Dark Theme Palette for CT-Learn (CT Scan Edu)
 val DeepObsidian = Color(0xFF090D16)
 val DarkNavySlate = Color(0xFF0F172A)
 val CardSlate = Color(0xFF1E293B)
@@ -28,7 +28,7 @@ val TextPrimary = Color(0xFFF8FAFC)
 val TextSecondary = Color(0xFF94A3B8)
 val TextMuted = Color(0xFF64748B)
 
-// Palet Terpusat Ruang Karakter MRI (#071A2B - #FF8A1F)
+// Palet Terpusat Ruang Karakter CT (#071A2B - #FF8A1F)
 val CharRoomBg = Color(0xFF071A2B)
 val CharCardSurface = Color(0xFF0F2A45)
 val CharCardSelected = Color(0xFF13385C)

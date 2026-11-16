@@ -1,10 +1,10 @@
 package com.example
 
-import com.example.data.MriModule
-import com.example.data.MriNode
-import com.example.data.MriRepository
+import com.example.data.CtModule
+import com.example.data.CtNode
+import com.example.data.CtRepository
 import com.example.util.ResumeNodeResolver
-import com.example.viewmodel.MriUiState
+import com.example.viewmodel.CtUiState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -14,7 +14,7 @@ import org.junit.Test
 
 class ResumeNodeResolverTest {
 
-    private val testNodeLevel0 = MriNode(
+    private val testNodeLevel0 = CtNode(
         code = "M01.T0",
         level = 0,
         title = "Tujuan Belajar",
@@ -23,16 +23,16 @@ class ResumeNodeResolverTest {
         analogi = ""
     )
 
-    private val testNodeLevel1 = MriNode(
+    private val testNodeLevel1 = CtNode(
         code = "M01.T1.1",
         level = 1,
-        title = "T1.1 Peran MRI",
+        title = "T1.1 Peran CT Scan",
         summaryShort = "",
         detailFull = "",
         analogi = ""
     )
 
-    private val testNodeLevel2 = MriNode(
+    private val testNodeLevel2 = CtNode(
         code = "M01.T2.1",
         level = 2,
         title = "T2.1 Presesi",
@@ -41,10 +41,10 @@ class ResumeNodeResolverTest {
         analogi = ""
     )
 
-    private val testModule1 = MriModule(
+    private val testModule1 = CtModule(
         id = "M01",
         code = "M01",
-        title = "Fisika Dasar MRI",
+        title = "Fisika Dasar CT Scan",
         subtitle = "",
         description = "",
         levelBadge = "",
@@ -52,7 +52,7 @@ class ResumeNodeResolverTest {
         nodes = listOf(testNodeLevel0, testNodeLevel1, testNodeLevel2)
     )
 
-    private val testModule2Node1 = MriNode(
+    private val testModule2Node1 = CtNode(
         code = "M04A.T1.1",
         level = 1,
         title = "T1.1 Gradien",
@@ -61,7 +61,7 @@ class ResumeNodeResolverTest {
         analogi = ""
     )
 
-    private val testModule2 = MriModule(
+    private val testModule2 = CtModule(
         id = "M04A",
         code = "M04A",
         title = "Pengodean Spasial",
@@ -127,22 +127,22 @@ class ResumeNodeResolverTest {
     }
 
     @Test
-    fun `test MriUiState lastVisitedNode derived property`() {
+    fun `test CtUiState lastVisitedNode derived property`() {
         // Valid lastVisitedNodeCode
-        val stateValid = MriUiState(modulesList = modules, lastVisitedNodeCode = "M04A.T1.1")
+        val stateValid = CtUiState(modulesList = modules, lastVisitedNodeCode = "M04A.T1.1")
         assertEquals("M04A.T1.1", stateValid.lastVisitedNode.code)
 
         // Invalid lastVisitedNodeCode -> fallback to level >= 1
-        val stateInvalid = MriUiState(modulesList = modules, lastVisitedNodeCode = "INVALID_CODE")
+        val stateInvalid = CtUiState(modulesList = modules, lastVisitedNodeCode = "INVALID_CODE")
         assertEquals("M01.T1.1", stateInvalid.lastVisitedNode.code)
 
         // Null lastVisitedNodeCode -> fallback to level >= 1
-        val stateNull = MriUiState(modulesList = modules, lastVisitedNodeCode = null)
+        val stateNull = CtUiState(modulesList = modules, lastVisitedNodeCode = null)
         assertEquals("M01.T1.1", stateNull.lastVisitedNode.code)
 
-        // Empty modules list -> fallback to default MriRepository node without exception
-        val stateEmptyModules = MriUiState(modulesList = emptyList(), lastVisitedNodeCode = null)
+        // Empty modules list -> fallback to default CtRepository node without exception
+        val stateEmptyModules = CtUiState(modulesList = emptyList(), lastVisitedNodeCode = null)
         assertNotNull(stateEmptyModules.lastVisitedNode)
-        assertEquals(MriRepository.modules[0].nodes[1].code, stateEmptyModules.lastVisitedNode.code)
+        assertEquals(CtRepository.modules[0].nodes[1].code, stateEmptyModules.lastVisitedNode.code)
     }
 }

@@ -68,8 +68,8 @@ import com.example.data.ArcadeStats
 import com.example.data.CharacterCustomizationState
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
-import com.example.ui.components.MriGlobalAssetImage
-import com.example.ui.components.MriGlobalAssetKey
+import com.example.ui.components.CtGlobalAssetImage
+import com.example.ui.components.CtGlobalAssetKey
 import com.example.ui.path.rememberModulePathStateHolder
 import com.example.ui.theme.AmberWarning
 import com.example.ui.theme.CardSlateBorder
@@ -83,8 +83,8 @@ import com.example.ui.theme.EmeraldSuccess
 import com.example.ui.theme.RoseDanger
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.util.MinigameKind
-import com.example.util.rememberMriHaptics
+import com.example.util.CtMinigameKind
+import com.example.util.rememberCtHaptics
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -92,10 +92,10 @@ import kotlin.math.sin
 private enum class ArcadeRoute {
     HUB,
     MINIGAME_SCREENING,
-    MINIGAME_LARMOR,
+    MINIGAME_BOLUS_TRIGGER,
     MINIGAME_ARTIFACT,
-    ARCADE_MAGNET_DEFENSE,
-    ARCADE_SPIN_ECHO_RHYTHM
+    ARCADE_METAL_DEFENSE,
+    ARCADE_GANTRY_RHYTHM
 }
 
 @Composable
@@ -127,73 +127,73 @@ fun ArcadeHubScreen(
         )
 
         ArcadeRoute.MINIGAME_SCREENING -> MinigamePlayHost(
-            kind = MinigameKind.ZONE_SCREENING,
+            kind = CtMinigameKind.BORE_SCREENING,
             bestScore = stats.bestScreening,
             characterCustomization = characterCustomization,
             onScoreUpdated = { liveScore ->
                 if (liveScore > stats.bestScreening) {
-                    pathHolder.recordMinigameResultAsync(MinigameKind.ZONE_SCREENING.key, liveScore)
+                    pathHolder.recordMinigameResultAsync(CtMinigameKind.BORE_SCREENING.key, liveScore)
                 }
             },
             onRoundFinished = { finalScore ->
-                pathHolder.recordMinigameResultAsync(MinigameKind.ZONE_SCREENING.key, finalScore)
+                pathHolder.recordMinigameResultAsync(CtMinigameKind.BORE_SCREENING.key, finalScore)
                 pathHolder.recordDailyShiftAsync(todayKey, labsDelta = 1)
             },
             onBack = { route = ArcadeRoute.HUB }
         )
 
-        ArcadeRoute.MINIGAME_LARMOR -> MinigamePlayHost(
-            kind = MinigameKind.LARMOR_TAP,
-            bestScore = stats.bestLarmor,
+        ArcadeRoute.MINIGAME_BOLUS_TRIGGER -> MinigamePlayHost(
+            kind = CtMinigameKind.BOLUS_TRIGGER_TAP,
+            bestScore = stats.bestBolusTrigger,
             characterCustomization = characterCustomization,
             onScoreUpdated = { liveScore ->
-                if (liveScore > stats.bestLarmor) {
-                    pathHolder.recordMinigameResultAsync(MinigameKind.LARMOR_TAP.key, liveScore)
+                if (liveScore > stats.bestBolusTrigger) {
+                    pathHolder.recordMinigameResultAsync(CtMinigameKind.BOLUS_TRIGGER_TAP.key, liveScore)
                 }
             },
             onRoundFinished = { finalScore ->
-                pathHolder.recordMinigameResultAsync(MinigameKind.LARMOR_TAP.key, finalScore)
+                pathHolder.recordMinigameResultAsync(CtMinigameKind.BOLUS_TRIGGER_TAP.key, finalScore)
                 pathHolder.recordDailyShiftAsync(todayKey, labsDelta = 1)
             },
             onBack = { route = ArcadeRoute.HUB }
         )
 
         ArcadeRoute.MINIGAME_ARTIFACT -> MinigamePlayHost(
-            kind = MinigameKind.CONTRAST_ARTIFACT_FIX,
-            bestScore = stats.bestArtifact,
+            kind = CtMinigameKind.WINDOW_ARTIFACT_FIX,
+            bestScore = stats.bestWindowArtifact,
             characterCustomization = characterCustomization,
             onScoreUpdated = { liveScore ->
-                if (liveScore > stats.bestArtifact) {
-                    pathHolder.recordMinigameResultAsync(MinigameKind.CONTRAST_ARTIFACT_FIX.key, liveScore)
+                if (liveScore > stats.bestWindowArtifact) {
+                    pathHolder.recordMinigameResultAsync(CtMinigameKind.WINDOW_ARTIFACT_FIX.key, liveScore)
                 }
             },
             onRoundFinished = { finalScore ->
-                pathHolder.recordMinigameResultAsync(MinigameKind.CONTRAST_ARTIFACT_FIX.key, finalScore)
+                pathHolder.recordMinigameResultAsync(CtMinigameKind.WINDOW_ARTIFACT_FIX.key, finalScore)
                 pathHolder.recordDailyShiftAsync(todayKey, labsDelta = 1)
             },
             onBack = { route = ArcadeRoute.HUB }
         )
 
-        ArcadeRoute.ARCADE_MAGNET_DEFENSE -> MagnetDefenseScreen(
+        ArcadeRoute.ARCADE_METAL_DEFENSE -> MetalDefenseScreen(
             characterCustomization = characterCustomization,
-            bestScore = stats.bestDefense,
+            bestScore = stats.bestMetalDefense,
             onScoreUpdated = { liveScore, rankTitle ->
-                if (liveScore > stats.bestDefense) {
-                    pathHolder.recordArcadeResultAsync("MAGNET_DEFENSE", liveScore, rankTitle)
+                if (liveScore > stats.bestMetalDefense) {
+                    pathHolder.recordArcadeResultAsync("METAL_DEFENSE", liveScore, rankTitle)
                 }
             },
             onGameFinished = { finalScore, rankTitle ->
-                pathHolder.recordArcadeResultAsync("MAGNET_DEFENSE", finalScore, rankTitle)
+                pathHolder.recordArcadeResultAsync("METAL_DEFENSE", finalScore, rankTitle)
                 pathHolder.recordDailyShiftAsync(todayKey, labsDelta = 1)
             },
             onBack = { route = ArcadeRoute.HUB }
         )
 
-        ArcadeRoute.ARCADE_SPIN_ECHO_RHYTHM -> SpinEchoRhythmScreen(
+        ArcadeRoute.ARCADE_GANTRY_RHYTHM -> GantryRhythmScreen(
             characterCustomization = characterCustomization,
-            bestScore = stats.bestRhythm,
+            bestScore = stats.bestGantryRhythm,
             onScoreUpdated = { liveScore, rankTitle ->
-                if (liveScore > stats.bestRhythm) {
+                if (liveScore > stats.bestGantryRhythm) {
                     pathHolder.recordArcadeResultAsync("SPIN_ECHO_RHYTHM", liveScore, rankTitle)
                 }
             },
@@ -213,16 +213,16 @@ private fun ArcadeHubMenu(
     onSelectRoute: (ArcadeRoute) -> Unit,
     onBackToHome: () -> Unit
 ) {
-    val haptics = rememberMriHaptics()
+    val haptics = rememberCtHaptics()
     var nanoTapCount by remember { mutableIntStateOf(0) }
     var showNanoTip by remember { mutableStateOf(false) }
 
     val nanoTips = remember(stats.highestRank, stats.minigameRounds) {
         listOf(
             "Ketuk aku kapan saja! Selesaikan ronde Arcade & Minigame untuk mengisi misi Shift Nano harianmu.",
-            "Di Tembak Frekuensi Larmor, perhatikan monitor osiloskop: ω₀ = γ · B₀ (42,58 MHz/T untuk ¹H).",
-            "Di Magnet Defense, benda MR Safe aman masuk bore B₀ — fokus tangkis benda feromagnetik merah!",
-            "Di Spin Echo Rhythm, capai Combo x6 untuk mengaktifkan Mode TSE 2x dan menggandakan skor!"
+            "Di Pemicu ROI Bolus Tracking, perhatikan kurva atenuasi dan tekan Trigger tepat saat mencapai +100 s.d. +150 HU!",
+            "Di Sterilisasi Logam Bore CT, benda radiolusen aman masuk bore — fokus singkirkan benda logam merah pemicu Metal Streak!",
+            "Di Ritme Gantry & DAS, capai Combo x6 untuk mengaktifkan Mode Helikal 2x dan menggandakan skor!"
         )
     }
     val nanoExpression = when {
@@ -313,8 +313,8 @@ private fun ArcadeHubMenu(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    MriGlobalAssetImage(
-                                        assetKey = MriGlobalAssetKey.TROPHY_MEDAL,
+                                    CtGlobalAssetImage(
+                                        assetKey = CtGlobalAssetKey.TROPHY_MEDAL,
                                         modifier = Modifier.size(18.dp),
                                         tintAccent = AmberWarning
                                     )
@@ -336,8 +336,8 @@ private fun ArcadeHubMenu(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
-                                            MriGlobalAssetImage(
-                                                assetKey = MriGlobalAssetKey.GAME_CONTROLLER,
+                                            CtGlobalAssetImage(
+                                                assetKey = CtGlobalAssetKey.GAME_CONTROLLER,
                                                 modifier = Modifier.size(13.dp)
                                             )
                                             Text(
@@ -358,8 +358,8 @@ private fun ArcadeHubMenu(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
-                                            MriGlobalAssetImage(
-                                                assetKey = MriGlobalAssetKey.SPARK_BOLT,
+                                            CtGlobalAssetImage(
+                                                assetKey = CtGlobalAssetKey.SPARK_BOLT,
                                                 modifier = Modifier.size(13.dp),
                                                 tintAccent = EmeraldSuccess
                                             )
@@ -405,8 +405,8 @@ private fun ArcadeHubMenu(
 
             item {
                 ArcadeGameCard(
-                    title = MinigameKind.ZONE_SCREENING.title,
-                    subtitle = "Zona IV · Feromagnetik vs MR Safe",
+                    title = CtMinigameKind.BORE_SCREENING.title,
+                    subtitle = "Persiapan Bore CT · Logam Streak vs Radiolusen Aman",
                     bestLabel = "Rekor: ${stats.bestScreening}",
                     accent = RoseDanger,
                     artKind = 0,
@@ -415,19 +415,19 @@ private fun ArcadeHubMenu(
             }
             item {
                 ArcadeGameCard(
-                    title = MinigameKind.LARMOR_TAP.title,
-                    subtitle = "Presesi ¹H · Ketuk Tepat Frekuensi Monitor RF",
-                    bestLabel = "Rekor: ${stats.bestLarmor}",
+                    title = CtMinigameKind.BOLUS_TRIGGER_TAP.title,
+                    subtitle = "Bolus Tracking · Ketuk Tepat Ambang +HU ROI Arteri",
+                    bestLabel = "Rekor: ${stats.bestBolusTrigger}",
                     accent = CharActionOrange,
                     artKind = 1,
-                    onClick = { onSelectRoute(ArcadeRoute.MINIGAME_LARMOR) }
+                    onClick = { onSelectRoute(ArcadeRoute.MINIGAME_BOLUS_TRIGGER) }
                 )
             }
             item {
                 ArcadeGameCard(
-                    title = MinigameKind.CONTRAST_ARTIFACT_FIX.title,
-                    subtitle = "T1/T2/FLAIR & Solusi Cepat Artefak",
-                    bestLabel = "Rekor: ${stats.bestArtifact}",
+                    title = CtMinigameKind.WINDOW_ARTIFACT_FIX.title,
+                    subtitle = "Brain/Stroke/Lung/Bone Window & Solusi Artefak CT",
+                    bestLabel = "Rekor: ${stats.bestWindowArtifact}",
                     accent = CharAccentMint,
                     artKind = 2,
                     onClick = { onSelectRoute(ArcadeRoute.MINIGAME_ARTIFACT) }
@@ -441,22 +441,22 @@ private fun ArcadeHubMenu(
 
             item {
                 ArcadeGameCard(
-                    title = "Nano Magnet Defense",
-                    subtitle = "Arena 5 Gauss · Tangkis Proyektil + EMP Burst",
-                    bestLabel = "High Score: ${stats.bestDefense}",
+                    title = "Sterilisasi Logam Bore CT",
+                    subtitle = "FOV Gantry CT · Cegah Metal Streak + Sapuan MAR",
+                    bestLabel = "High Score: ${stats.bestMetalDefense}",
                     accent = CyanBright,
                     artKind = 3,
-                    onClick = { onSelectRoute(ArcadeRoute.ARCADE_MAGNET_DEFENSE) }
+                    onClick = { onSelectRoute(ArcadeRoute.ARCADE_METAL_DEFENSE) }
                 )
             }
             item {
                 ArcadeGameCard(
-                    title = "Spin Echo Rhythm",
-                    subtitle = "3 Lajur Pulsa · 90° → 180° → Echo + Mode TSE 2x",
-                    bestLabel = "High Score: ${stats.bestRhythm}",
+                    title = "Ritme Rotasi Gantry & DAS",
+                    subtitle = "3 Lajur Sinyal · Eksposi kVp → Sampling DAS → Rekon FBP",
+                    bestLabel = "High Score: ${stats.bestGantryRhythm}",
                     accent = EmeraldSuccess,
                     artKind = 4,
-                    onClick = { onSelectRoute(ArcadeRoute.ARCADE_SPIN_ECHO_RHYTHM) }
+                    onClick = { onSelectRoute(ArcadeRoute.ARCADE_GANTRY_RHYTHM) }
                 )
             }
         }
@@ -472,7 +472,7 @@ private fun ArcadeGameCard(
     artKind: Int,
     onClick: () -> Unit
 ) {
-    val haptics = rememberMriHaptics()
+    val haptics = rememberCtHaptics()
     val anim = rememberInfiniteTransition(label = "arcade_card_art_$artKind")
     val phase by anim.animateFloat(
         initialValue = 0f,
@@ -624,8 +624,8 @@ private fun ArcadeGameCard(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                MriGlobalAssetImage(
-                                    assetKey = MriGlobalAssetKey.TROPHY_MEDAL,
+                                CtGlobalAssetImage(
+                                    assetKey = CtGlobalAssetKey.TROPHY_MEDAL,
                                     modifier = Modifier.size(12.dp),
                                     tintAccent = accent
                                 )

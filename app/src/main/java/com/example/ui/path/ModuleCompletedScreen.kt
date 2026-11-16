@@ -38,7 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.data.MriModule
+import com.example.data.CtModule
 import com.example.ui.theme.AmberWarning
 import com.example.ui.theme.CardSlateBorder
 import com.example.ui.theme.CyanBright
@@ -52,19 +52,19 @@ import com.example.ui.theme.TextSecondary
 
 @Composable
 fun ModuleCompletedScreen(
-    module: MriModule,
+    module: CtModule,
     doneNodes: Int,
     totalNodes: Int,
     quizMasteryPercent: Int,
     moduleBonusXp: Int,
     unlockedItemName: String?,
-    nextRecommendedModule: MriModule?,
+    nextRecommendedModule: CtModule?,
     onEquipItem: () -> Unit,
-    onContinueNextModule: (MriModule) -> Unit,
+    onContinueNextModule: (CtModule) -> Unit,
     onReturnToPath: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptics = com.example.util.rememberMriHaptics()
+    val haptics = com.example.util.rememberCtHaptics()
     LaunchedEffect(module.id) {
         haptics.completionBuzz()
     }
@@ -243,7 +243,7 @@ fun ModuleCompletedScreen(
                             )
                         } else {
                             Text(
-                                text = "Selamat! Seluruh modul kurikulum MRI telah tuntas.",
+                                text = "Selamat! Seluruh modul kurikulum CT Scan telah tuntas.",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = EmeraldSuccess

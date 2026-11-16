@@ -84,9 +84,9 @@ import com.example.R
 import com.example.data.CharacterCustomizationState
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
-import com.example.ui.components.MriGlobalAssetCatalog
-import com.example.ui.components.MriGlobalAssetImage
-import com.example.ui.components.MriGlobalAssetKey
+import com.example.ui.components.CtGlobalAssetCatalog
+import com.example.ui.components.CtGlobalAssetImage
+import com.example.ui.components.CtGlobalAssetKey
 import com.example.ui.theme.AmberWarning
 import com.example.ui.theme.CardSlate
 import com.example.ui.theme.CardSlateBorder
@@ -99,10 +99,10 @@ import com.example.ui.theme.EmeraldSuccess
 import com.example.ui.theme.RoseDanger
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.util.MinigameKind
-import com.example.util.MriMinigameEngine
+import com.example.util.CtMinigameKind
+import com.example.util.CtMinigameEngine
 import com.example.util.TapAccuracy
-import com.example.util.rememberMriHaptics
+import com.example.util.rememberCtHaptics
 import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.abs
@@ -111,14 +111,14 @@ import kotlin.math.sin
 
 @Composable
 internal fun MinigamePlayHost(
-    kind: MinigameKind,
+    kind: CtMinigameKind,
     bestScore: Int,
     characterCustomization: CharacterCustomizationState,
     onScoreUpdated: (Int) -> Unit = {},
     onRoundFinished: (Int) -> Unit,
     onBack: () -> Unit
 ) {
-    val haptics = rememberMriHaptics()
+    val haptics = rememberCtHaptics()
     var roundSeed by remember(kind) { mutableIntStateOf(1) }
     var timeLeft by remember(kind) { mutableIntStateOf(kind.durationSec) }
     var score by remember(kind) { mutableIntStateOf(0) }
@@ -137,13 +137,13 @@ internal fun MinigamePlayHost(
     var nanoOverrideExpression by remember(kind) { mutableStateOf<Expression?>(null) }
 
     val shuffledScreening = remember(kind, roundSeed) {
-        MriMinigameEngine.buildNonRepeatingDeck(MriMinigameEngine.screeningBank)
+        CtMinigameEngine.buildNonRepeatingDeck(CtMinigameEngine.screeningBank)
     }
-    val shuffledLarmor = remember(kind, roundSeed) {
-        MriMinigameEngine.buildNonRepeatingDeck(MriMinigameEngine.larmorChallenges)
+    val shuffledBolus = remember(kind, roundSeed) {
+        CtMinigameEngine.buildNonRepeatingDeck(CtMinigameEngine.bolusTriggerChallenges)
     }
     val shuffledArtifacts = remember(kind, roundSeed) {
-        MriMinigameEngine.buildNonRepeatingDeck(MriMinigameEngine.contrastArtifactBank)
+        CtMinigameEngine.buildNonRepeatingDeck(CtMinigameEngine.windowArtifactBank)
     }
 
     val waveAnim = rememberInfiniteTransition(label = "minigame_visual_wave")
@@ -179,20 +179,20 @@ internal fun MinigamePlayHost(
         }
     }
 
-    // Fase jarum Larmor kontinu berbasis frame-delta agar bebas loncatan saat combo naik
-    var larmorPhase by remember(kind) { mutableFloatStateOf(0f) }
-    val currentLarmorChallenge = shuffledLarmor[itemIdx % shuffledLarmor.size]
-    if (kind == MinigameKind.LARMOR_TAP && !roundDone) {
-        LaunchedEffect(kind, roundDone, currentLarmorChallenge.id, combo) {
+    // Fase jarum Bolus Tracking kontinu berbasis frame-delta agar bebas loncatan saat combo naik
+    var bolusPhase by remember(kind) { mutableFloatStateOf(0f) }
+    val currentBolusChallenge = shuffledBolus[itemIdx % shuffledBolus.size]
+    if (kind == CtMinigameKind.BOLUS_TRIGGER_TAP && !roundDone) {
+        LaunchedEffect(kind, roundDone, currentBolusChallenge.id, combo) {
             var lastNs = 0L
             while (!roundDone) {
                 withFrameNanos { frameNs ->
                     if (lastNs != 0L) {
                         val dt = (frameNs - lastNs) / 1_000_000_000f
-                        larmorPhase = MriMinigameEngine.advanceLarmorPhase(
-                            currentPhase = larmorPhase,
+                        bolusPhase = CtMinigameEngine.advanceBolusPhase(
+                            currentPhase = bolusPhase,
                             deltaSec = dt,
-                            speedMultiplier = currentLarmorChallenge.speedMultiplier,
+                            speedMultiplier = currentBolusChallenge.speedMultiplier,
                             combo = combo
                         )
                     }
@@ -201,7 +201,7 @@ internal fun MinigamePlayHost(
             }
         }
     }
-    val needle = MriMinigameEngine.needleFromPhase(larmorPhase)
+    val needle = CtMinigameEngine.needleFromPhase(bolusPhase)
 
     val nanoBounce by animateFloatAsState(
         targetValue = if (nanoTipTap % 2 == 1) 1.12f else 1f,
@@ -237,7 +237,7 @@ internal fun MinigamePlayHost(
         onRoundFinished(score)
     }
 
-    val scrollModifier = if (kind == MinigameKind.CONTRAST_ARTIFACT_FIX || roundDone) {
+    val scrollModifier = if (kind == CtMinigameKind.WINDOW_ARTIFACT_FIX || roundDone) {
         Modifier.verticalScroll(rememberScrollState())
     } else {
         Modifier
@@ -324,8 +324,8 @@ internal fun MinigamePlayHost(
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                MriGlobalAssetImage(
-                    assetKey = MriGlobalAssetKey.TROPHY_MEDAL,
+                CtGlobalAssetImage(
+                    assetKey = CtGlobalAssetKey.TROPHY_MEDAL,
                     modifier = Modifier.size(14.dp),
                     tintAccent = EmeraldSuccess
                 )
@@ -346,9 +346,9 @@ internal fun MinigamePlayHost(
                     nanoOverrideExpression = if (nanoTipTap % 2 == 0) Expression.BANGGA else Expression.BERPIKIR
                     feedbackGood = true
                     feedbackMsg = when (kind) {
-                        MinigameKind.ZONE_SCREENING -> "Tips Nano: Benda MR Safe/Conditional terverifikasi boleh lolos; feromagnetik WAJIB ditolak di pintu Zona IV!"
-                        MinigameKind.LARMOR_TAP -> "Tips Nano: Amati laju jarum di monitor osiloskop lalu tekan tembak saat berada di zona hijau!"
-                        MinigameKind.CONTRAST_ARTIFACT_FIX -> "Tips Nano: Perhatikan warna CSF & arah phase-encoding untuk mengenali T1w, T2w, FLAIR, atau artefak!"
+                        CtMinigameKind.BORE_SCREENING -> "Tips Nano: Benda radiolusen aman boleh lolos; logam pemicu Streak Artifact WAJIB dilepas sebelum scan CT!"
+                        CtMinigameKind.BOLUS_TRIGGER_TAP -> "Tips Nano: Amati kurva Bolus Tracking di monitor lalu tekan Trigger saat jarum berada di zona hijau ambang +HU!"
+                        CtMinigameKind.WINDOW_ARTIFACT_FIX -> "Tips Nano: Perhatikan nilai HU & pola artefak (cincin vs pita gelap) untuk memilih Windowing atau solusi yang tepat!"
                     }
                 }
                 .semantics { contentDescription = "Nano pendamping minigame, ketuk untuk petunjuk" },
@@ -402,7 +402,7 @@ internal fun MinigamePlayHost(
 
         if (roundDone) {
             val acc = if (totalAnswered > 0) (totalCorrect * 100) / totalAnswered else 0
-            val rank = MriMinigameEngine.evaluateRank(score, acc)
+            val rank = CtMinigameEngine.evaluateRank(score, acc)
             val displayBest = maxOf(bestScore, score)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -415,8 +415,8 @@ internal fun MinigamePlayHost(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    MriGlobalAssetImage(
-                        assetKey = MriGlobalAssetKey.TROPHY_MEDAL,
+                    CtGlobalAssetImage(
+                        assetKey = CtGlobalAssetKey.TROPHY_MEDAL,
                         modifier = Modifier.size(48.dp),
                         tintAccent = AmberWarning
                     )
@@ -437,7 +437,7 @@ internal fun MinigamePlayHost(
                                 totalAnswered = 0
                                 totalCorrect = 0
                                 itemIdx = 0
-                                larmorPhase = 0f
+                                bolusPhase = 0f
                                 feedbackGood = true
                                 feedbackMsg = "Ronde baru dimulai dengan urutan & variasi acak!"
                                 roundDone = false
@@ -452,7 +452,7 @@ internal fun MinigamePlayHost(
             }
         } else {
             when (kind) {
-                MinigameKind.ZONE_SCREENING -> {
+                CtMinigameKind.BORE_SCREENING -> {
                     val item = shuffledScreening[itemIdx % shuffledScreening.size]
                     val itemPulse by animateFloatAsState(
                         targetValue = if (itemIdx % 2 == 1) 1.04f else 1f,
@@ -460,14 +460,14 @@ internal fun MinigamePlayHost(
                         label = "screening_item_pulse"
                     )
                     val resolveScreening: (Boolean) -> Unit = { allowChoice ->
-                        val ok = (allowChoice == item.allowIntoZone4)
+                        val ok = (allowChoice == item.allowIntoGantry)
                         if (ok) haptics.mediumAction() else haptics.warningBuzz()
                         totalAnswered++
                         val earned = if (ok) {
                             totalCorrect++
                             combo++
                             val mult = if (combo >= 3) 20 else 0
-                            val pts = MriMinigameEngine.computePoints(100 + mult, combo)
+                            val pts = CtMinigameEngine.computePoints(100 + mult, combo)
                             score += pts
                             if (timeLeft < kind.durationSec && combo % 4 == 0) timeLeft += 2
                             pts
@@ -480,7 +480,7 @@ internal fun MinigamePlayHost(
                         actionBannerText = if (ok) {
                             (if (allowChoice) "LOLOS!" else "DITOLAK!") + " +$earned"
                         } else {
-                            if (item.allowIntoZone4) "SEHARUSNYA LOLOS!" else "BAHAYA PROYEKTIL!"
+                            if (item.allowIntoGantry) "SEHARUSNYA LOLOS!" else "PEMICU STREAK LOGAM!"
                         }
                         feedbackMsg = (if (ok) "Tepat! " else "Kurang tepat! ") + item.reason
                         itemIdx++
@@ -527,7 +527,7 @@ internal fun MinigamePlayHost(
                                 ) {
                                     Image(
                                         painter = painterResource(id = R.drawable.img_arcade_screening_gate),
-                                        contentDescription = "Portal Detektor Zona IV",
+                                        contentDescription = "Portal Skrining Persiapan Bore CT",
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .graphicsLayer {
@@ -626,8 +626,8 @@ internal fun MinigamePlayHost(
                                                 scaleY = itemPulse
                                             }
                                     ) {
-                                        MriGlobalAssetImage(
-                                            assetKey = MriGlobalAssetCatalog.resolveKey(item.assetKey.ifBlank { item.name }),
+                                        CtGlobalAssetImage(
+                                            assetKey = CtGlobalAssetCatalog.resolveKey(item.assetKey.ifBlank { item.name }),
                                             modifier = Modifier
                                                 .fillMaxSize()
                                                 .padding(14.dp),
@@ -666,7 +666,7 @@ internal fun MinigamePlayHost(
                                     color = CyanPrimary.copy(alpha = 0.14f)
                                 ) {
                                     Text(
-                                        text = "Portal Detektor Feromagnetik · Pintu Zona II → IV (5 Gauss)",
+                                        text = "Skrining Persiapan Pasien · Bebas Logam di FOV Bore CT",
                                         fontSize = 10.5.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = CyanBright,
@@ -708,17 +708,17 @@ internal fun MinigamePlayHost(
                     }
                 }
 
-                MinigameKind.LARMOR_TAP -> {
-                    val challenge = currentLarmorChallenge
-                    val shootLarmor: () -> Unit = {
-                        val acc = MriMinigameEngine.evaluateLarmorTap(needle, challenge.targetNormalized)
+                CtMinigameKind.BOLUS_TRIGGER_TAP -> {
+                    val challenge = currentBolusChallenge
+                    val triggerBolusScan: () -> Unit = {
+                        val acc = CtMinigameEngine.evaluateBolusTriggerTap(needle, challenge.targetNormalized)
                         if (acc != TapAccuracy.MISS) haptics.mediumAction() else haptics.warningBuzz()
                         totalAnswered++
                         lastTapNormX = needle
                         val pts = if (acc != TapAccuracy.MISS) {
                             totalCorrect++
                             combo++
-                            val p = MriMinigameEngine.computePoints(acc.basePoints, combo)
+                            val p = CtMinigameEngine.computePoints(acc.basePoints, combo)
                             score += p
                             feedbackGood = true
                             actionBannerGood = true
@@ -731,8 +731,8 @@ internal fun MinigamePlayHost(
                             actionBannerText = "MELESET!"
                             0
                         }
-                        feedbackMsg = "${acc.label} pada ${challenge.targetMhz} (${challenge.fieldStrengthTesla})" +
-                            if (pts > 0) " · +$pts poin!" else " · Bidik zona hijau resonansi!"
+                        feedbackMsg = "${acc.label} pada ${challenge.targetHuLabel} (${challenge.protocolLabel})" +
+                            if (pts > 0) " · +$pts poin!" else " · Bidik zona trigger +HU Bolus Tracking!"
                         itemIdx++
                     }
 
@@ -780,7 +780,7 @@ internal fun MinigamePlayHost(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Medan B₀: ${challenge.fieldStrengthTesla}",
+                                        text = "Protokol: ${challenge.protocolLabel}",
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = CyanBright,
@@ -794,7 +794,7 @@ internal fun MinigamePlayHost(
                                         border = BorderStroke(1.2.dp, EmeraldSuccess)
                                     ) {
                                         Text(
-                                            text = "ω₀ = ${challenge.targetMhz}",
+                                            text = "ROI = ${challenge.targetHuLabel}",
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.ExtraBold,
                                             color = EmeraldSuccess,
@@ -811,7 +811,7 @@ internal fun MinigamePlayHost(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Formula: ω₀ = γ · B₀ (γ = 42,58 MHz/T untuk ¹H)",
+                                        text = "Rumus: HU = 1000 × (μ − μ_air) / μ_air · Trigger Bolus Tracking",
                                         fontSize = 10.sp,
                                         color = TextSecondary,
                                         maxLines = 1,
@@ -844,7 +844,7 @@ internal fun MinigamePlayHost(
                                     .clip(RoundedCornerShape(14.dp))
                                     .background(Color(0xFF071322))
                                     .border(1.5.dp, CyanPrimary.copy(alpha = 0.55f), RoundedCornerShape(16.dp))
-                                    .semantics { contentDescription = "Layar monitor osiloskop frekuensi Larmor" },
+                                    .semantics { contentDescription = "Layar monitor kurva Time-Attenuation Bolus Tracking HU CT" },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Image(
@@ -1031,7 +1031,7 @@ internal fun MinigamePlayHost(
                                 }
                             }
 
-                            // Panel Visualisasi Komputer Konsol MRI & Trade-off Parameter RF
+                            // Panel Visualisasi Komputer Konsol Bolus Tracking CT
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
@@ -1051,13 +1051,13 @@ internal fun MinigamePlayHost(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                                         ) {
-                                            MriGlobalAssetImage(
-                                                assetKey = MriGlobalAssetKey.PULSE_WAVE,
+                                            CtGlobalAssetImage(
+                                                assetKey = CtGlobalAssetKey.PULSE_WAVE,
                                                 modifier = Modifier.size(16.dp),
                                                 tintAccent = CyanBright
                                             )
                                             Text(
-                                                text = "KONSOL RF · KOMPUTER MRI",
+                                                text = "KONSOL BOLUS TRACKING · KOMPUTER CT",
                                                 fontSize = 10.sp,
                                                 fontFamily = FontFamily.Monospace,
                                                 fontWeight = FontWeight.Bold,
@@ -1079,30 +1079,30 @@ internal fun MinigamePlayHost(
                                         }
                                     }
 
-                                    val b0Compact = challenge.fieldStrengthTesla.substringBefore(" ").let { "$it T" }
+                                    val b0Compact = challenge.targetHuLabel
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                                     ) {
-                                        LarmorConsoleMetricChip(
-                                            label = "B₀ MEDAN",
+                                        BolusConsoleMetricChip(
+                                            label = "AMBANG ROI",
                                             value = b0Compact,
                                             accent = CyanBright,
                                             modifier = Modifier.weight(1f)
                                         )
-                                        LarmorConsoleMetricChip(
-                                            label = "PULSA RF",
-                                            value = "90° B₁",
+                                        BolusConsoleMetricChip(
+                                            label = "TEGANGAN",
+                                            value = "100 kVp",
                                             accent = EmeraldSuccess,
                                             modifier = Modifier.weight(1f)
                                         )
-                                        LarmorConsoleMetricChip(
-                                            label = "RECEIVE BW",
-                                            value = "±$rbwKhz kHz",
+                                        BolusConsoleMetricChip(
+                                            label = "FLOW RATE",
+                                            value = "4,5 mL/s",
                                             accent = AmberWarning,
                                             modifier = Modifier.weight(1f)
                                         )
-                                        LarmorConsoleMetricChip(
+                                        BolusConsoleMetricChip(
                                             label = "LAJU SAPU",
                                             value = "${(challenge.speedMultiplier * (1f + combo.coerceIn(0, 8) * 0.10f)).let { (it * 10f).toInt() / 10f }}x",
                                             accent = CyanBright,
@@ -1111,19 +1111,19 @@ internal fun MinigamePlayHost(
                                     }
 
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        LarmorTradeoffBar(
+                                        BolusTradeoffBar(
                                             label = "Sapuan & Presisi Waktu",
                                             progress = sweepFactor,
                                             color = AmberWarning
                                         )
-                                        LarmorTradeoffBar(
-                                            label = "Margin SNR (FID)",
+                                        BolusTradeoffBar(
+                                            label = "Kepadatan Bolus Kontras Iodin (CNR)",
                                             progress = snrMarginFactor,
                                             color = EmeraldSuccess
                                         )
                                     }
                                     Text(
-                                        text = "Fisika: B₀ naik → SNR naik linear (~B₀), SAR naik kuadratik (~B₀²)",
+                                        text = "Fisika: Iodin (Z=53, K-edge 33,2 keV) meningkatkan efek fotolistrik & HU arteri",
                                         fontSize = 9.sp,
                                         color = TextSecondary,
                                         maxLines = 1,
@@ -1137,7 +1137,7 @@ internal fun MinigamePlayHost(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Button(
-                        onClick = shootLarmor,
+                        onClick = triggerBolusScan,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -1147,11 +1147,11 @@ internal fun MinigamePlayHost(
                     ) {
                         Icon(Icons.Default.Bolt, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.size(6.dp))
-                        Text("TEMBAK PULSA RF 90°!", fontSize = 14.5.sp, fontWeight = FontWeight.ExtraBold)
+                        Text("PICU SCAN HELIKAL SEKARANG!", fontSize = 14.5.sp, fontWeight = FontWeight.ExtraBold)
                     }
                 }
 
-                MinigameKind.CONTRAST_ARTIFACT_FIX -> {
+                CtMinigameKind.WINDOW_ARTIFACT_FIX -> {
                     val q = shuffledArtifacts[itemIdx % shuffledArtifacts.size]
                     val shuffledOptions = remember(q, itemIdx, roundSeed) {
                         val correctText = q.options[q.correctIndex]
@@ -1187,7 +1187,7 @@ internal fun MinigamePlayHost(
                                         .background(Color.Black)
                                         .border(1.dp, CyanPrimary.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
                                 ) {
-                                    drawContrastArtifactThumbnail(q.id, wavePhase)
+                                    drawWindowArtifactThumbnail(q.id, wavePhase)
                                 }
 
                                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -1237,7 +1237,7 @@ internal fun MinigamePlayHost(
                                         val pts = if (ok) {
                                             totalCorrect++
                                             combo++
-                                            val p = MriMinigameEngine.computePoints(110, combo)
+                                            val p = CtMinigameEngine.computePoints(110, combo)
                                             score += p
                                             p
                                         } else {
@@ -1268,7 +1268,7 @@ internal fun MinigamePlayHost(
 }
 
 @Composable
-private fun LarmorConsoleMetricChip(
+private fun BolusConsoleMetricChip(
     label: String,
     value: String,
     accent: Color,
@@ -1306,7 +1306,7 @@ private fun LarmorConsoleMetricChip(
 }
 
 @Composable
-private fun LarmorTradeoffBar(
+private fun BolusTradeoffBar(
     label: String,
     progress: Float,
     color: Color
@@ -1336,7 +1336,7 @@ private fun LarmorTradeoffBar(
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifactThumbnail(
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawWindowArtifactThumbnail(
     questionId: String,
     phase: Float
 ) {
@@ -1344,7 +1344,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifac
     val h = size.height
     val brainRectPos = Offset(w * 0.14f, h * 0.11f)
     val brainRectSize = Size(w * 0.72f, h * 0.78f)
-    // Palet grayscale autentik MRI klinis (hitam-abu-putih)
+    // Palet grayscale autentik CT klinis (hitam-abu-putih)
     val bgBlack = Color.Black
     val voidBlack = Color(0xFF06080B)
     val darkGray = Color(0xFF3E4550)
@@ -1356,8 +1356,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifac
     drawRect(bgBlack)
 
     when (questionId) {
-        "ca_11" -> {
-            // Spektrum K-Space 2D grayscale: pusat sangat terang (kontras & kecerahan), tepi gelap (detail halus)
+        "wa_11" -> {
+            // Visualisasi Matriks Rekonstruksi CT grayscale: pusat sangat terang (kontras & kecerahan), tepi gelap (detail halus)
             val grid = 7
             val cell = w / grid.toFloat()
             val center = (grid - 1) / 2f
@@ -1380,7 +1380,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifac
                 }
             }
         }
-        "ca_5" -> {
+        "wa_5" -> {
             // DWI (kiri gelap + infark putih terang) vs Peta ADC (kanan abu terang + infark hitam gelap)
             drawRect(Color(0xFF0A0C10), Offset(0f, 0f), Size(w * 0.485f, h))
             drawRect(Color(0xFF222730), Offset(w * 0.515f, 0f), Size(w * 0.485f, h))
@@ -1392,7 +1392,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifac
             drawOval(lightGray, Offset(w * 0.58f, h * 0.22f), Size(w * 0.36f, h * 0.56f))
             drawCircle(voidBlack, radius = w * 0.085f, center = Offset(w * 0.81f, h * 0.46f))
         }
-        "ca_4" -> {
+        "wa_4" -> {
             // Artefak Zipper: garis putus-putus RF bocor monokrom membelah citra otak
             drawOval(midGray, brainRectPos, brainRectSize)
             drawOval(softWhite, brainRectPos, brainRectSize, style = Stroke(2.4f))
@@ -1413,7 +1413,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifac
                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f), phase * 20f + 6f)
             )
         }
-        "ca_3" -> {
+        "wa_3" -> {
             // Artefak Aliasing / Wrap-around grayscale: potongan kepala terlipat ke tepi berlawanan
             drawOval(midGray, Offset(w * 0.24f, h * 0.14f), Size(w * 0.60f, h * 0.72f))
             drawOval(softWhite, Offset(w * 0.24f, h * 0.14f), Size(w * 0.60f, h * 0.72f), style = Stroke(2.2f))
@@ -1438,7 +1438,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifac
                 style = Stroke(2.2f)
             )
         }
-        "ca_6" -> {
+        "wa_6" -> {
             // Artefak Gerak (Motion Ghosting): replika kontur abu-abu berulang di sumbu phase-encoding
             for (i in -2..2) {
                 val alpha = when (abs(i)) {
@@ -1459,13 +1459,13 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifac
                 )
             }
         }
-        "ca_8" -> {
+        "wa_8" -> {
             // Chemical Shift Artifact: pita putih bersih di satu tepi dan pita hitam kosong di tepi berlawanan
             drawOval(midGray, brainRectPos, brainRectSize)
             drawArc(pureWhite, 100f, 160f, false, brainRectPos, brainRectSize, style = Stroke(5.5f))
             drawArc(voidBlack, -80f, 160f, false, brainRectPos, brainRectSize, style = Stroke(5.5f))
         }
-        "ca_12" -> {
+        "wa_12" -> {
             // Susceptibility Artifact: signal void hitam pekat + pile-up rim putih terdistorsi
             drawOval(midGray, brainRectPos, brainRectSize)
             drawOval(softWhite, brainRectPos, brainRectSize, style = Stroke(2.2f))
@@ -1482,11 +1482,11 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawContrastArtifac
         }
         else -> {
             // Kontras pembobotan jaringan asli hitam-putih (T1w, FLAIR, PDw, T2w, STIR)
-            val isT1 = questionId == "ca_1"
-            val isFlair = questionId == "ca_2"
-            val isPdw = questionId == "ca_7"
-            val isT2 = questionId == "ca_9"
-            val isStir = questionId == "ca_10"
+            val isT1 = questionId == "wa_1"
+            val isFlair = questionId == "wa_2"
+            val isPdw = questionId == "wa_7"
+            val isT2 = questionId == "wa_9"
+            val isStir = questionId == "wa_10"
 
             val scalpFatRim = when {
                 isT1 -> pureWhite         // Lemak sangat terang di T1w

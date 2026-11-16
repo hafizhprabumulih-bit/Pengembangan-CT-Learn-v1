@@ -1,8 +1,8 @@
 package com.example.util
 
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
-import com.example.data.MriNode
+import com.example.data.CtModule
+import com.example.data.CtNode
 
 enum class NodeStatus {
     DONE,
@@ -23,7 +23,7 @@ enum class NodeStatus {
 const val PATH_STRICT_LOCKS: Boolean = false
 
 data class PathNodeState(
-    val node: MriNode,
+    val node: CtNode,
     val status: NodeStatus,
     val softPrerequisiteHint: String?
 )
@@ -38,7 +38,7 @@ data class ModuleProgress(
 }
 
 data class ModulePathState(
-    val module: MriModule,
+    val module: CtModule,
     val nodes: List<PathNodeState>,
     val progress: ModuleProgress
 )
@@ -52,8 +52,8 @@ object PathStateResolver {
     private const val RECOMMENDED_THRESHOLD_DENOMINATOR = 5 // 3/5 = 60%
 
     fun resolveModule(
-        module: MriModule,
-        allModules: List<MriModule>,
+        module: CtModule,
+        allModules: List<CtModule>,
         completedCodes: Set<String>,
         strictLocks: Boolean = true,
         skippedCodes: Set<String> = emptySet()
@@ -76,7 +76,7 @@ object PathStateResolver {
     }
 
     fun resolveAll(
-        modules: List<MriModule>,
+        modules: List<CtModule>,
         completedCodes: Set<String>,
         strictLocks: Boolean = true,
         skippedCodes: Set<String> = emptySet()
@@ -101,7 +101,7 @@ object PathStateResolver {
         }
     }
 
-    fun orderNodesPublic(nodes: List<MriNode>): List<MriNode> =
+    fun orderNodesPublic(nodes: List<CtNode>): List<CtNode> =
         orderNodesWithEffectiveSort(nodes).map { it.node }
 
     fun currentNodeOf(state: ModulePathState): PathNodeState? =
@@ -126,7 +126,7 @@ object PathStateResolver {
     }
 
     fun isModuleRecommended(
-        modules: List<MriModule>,
+        modules: List<CtModule>,
         completedCodes: Set<String>,
         moduleId: String
     ): Boolean {
@@ -141,8 +141,8 @@ object PathStateResolver {
     }
 
     private fun resolveSingleModule(
-        module: MriModule,
-        modulesById: Map<String, MriModule>,
+        module: CtModule,
+        modulesById: Map<String, CtModule>,
         nodeToModuleId: Map<String, String>,
         normalizedCompleted: Set<String>,
         normalizedSkipped: Set<String>,
@@ -232,9 +232,9 @@ object PathStateResolver {
     }
 
     private fun resolveSoftPrerequisiteHint(
-        module: MriModule,
-        node: MriNode,
-        modulesById: Map<String, MriModule>,
+        module: CtModule,
+        node: CtNode,
+        modulesById: Map<String, CtModule>,
         nodeToModuleId: Map<String, String>,
         ownNodeCodes: Set<String>,
         normalizedCompleted: Set<String>,
@@ -285,7 +285,7 @@ object PathStateResolver {
     }
 
     private fun isModuleAtLeast60Percent(
-        module: MriModule,
+        module: CtModule,
         normalizedCompleted: Set<String>
     ): Boolean {
         val total = module.nodes.size
@@ -294,7 +294,7 @@ object PathStateResolver {
         return done * RECOMMENDED_THRESHOLD_DENOMINATOR >= total * RECOMMENDED_THRESHOLD_NUMERATOR
     }
 
-    private fun orderModules(modules: List<MriModule>): List<MriModule> =
+    private fun orderModules(modules: List<CtModule>): List<CtModule> =
         modules.withIndex()
             .sortedWith(
                 compareBy(
@@ -304,7 +304,7 @@ object PathStateResolver {
             )
             .map { it.value }
 
-    private fun orderNodesWithEffectiveSort(nodes: List<MriNode>): List<OrderedNode> =
+    private fun orderNodesWithEffectiveSort(nodes: List<CtNode>): List<OrderedNode> =
         nodes.withIndex()
             .map { (idx, node) ->
                 OrderedNode(
@@ -315,7 +315,7 @@ object PathStateResolver {
             }
             .sortedWith(compareBy({ it.effectiveOrder }, { it.originalIndex }))
 
-    private fun buildNodeToModuleMap(modules: List<MriModule>): Map<String, String> {
+    private fun buildNodeToModuleMap(modules: List<CtModule>): Map<String, String> {
         val map = HashMap<String, String>()
         for (mod in modules) {
             for (node in mod.nodes) {
@@ -326,7 +326,7 @@ object PathStateResolver {
     }
 
     private data class OrderedNode(
-        val node: MriNode,
+        val node: CtNode,
         val effectiveOrder: Int,
         val originalIndex: Int
     )

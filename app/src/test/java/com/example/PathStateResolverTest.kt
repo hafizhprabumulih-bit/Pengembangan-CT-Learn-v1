@@ -1,8 +1,8 @@
 package com.example
 
-import com.example.data.MriModule
-import com.example.data.MriNode
-import com.example.data.MriRepository
+import com.example.data.CtModule
+import com.example.data.CtNode
+import com.example.data.CtRepository
 import com.example.util.ModuleProgress
 import com.example.util.NodeStatus
 import com.example.util.PathStateResolver
@@ -20,7 +20,7 @@ class PathStateResolverTest {
         sortOrder: Int = 0,
         level: Int = 1,
         prerequisite: String? = null
-    ) = MriNode(
+    ) = CtNode(
         code = code,
         level = level,
         title = "Judul $code",
@@ -33,9 +33,9 @@ class PathStateResolverTest {
 
     private fun testModule(
         id: String,
-        nodes: List<MriNode>,
+        nodes: List<CtNode>,
         sortOrder: Int = 0
-    ) = MriModule(
+    ) = CtModule(
         id = id,
         code = id,
         title = "Modul $id",
@@ -141,10 +141,10 @@ class PathStateResolverTest {
     @Test
     fun legacyNodeCodesAreNormalizedBeforeResolving() {
         // Legacy "M03A.T1.1" -> "M03.T1.1", "M03B.T1.1" -> "M03.T2.1"
-        val m03 = MriRepository.modules.first { it.id == "M03" }
+        val m03 = CtRepository.modules.first { it.id == "M03" }
         val resolved = PathStateResolver.resolveModule(
             module = m03,
-            allModules = MriRepository.modules,
+            allModules = CtRepository.modules,
             completedCodes = setOf("M03A.T1.1", "M03B.T1.1")
         )
 
@@ -261,8 +261,8 @@ class PathStateResolverTest {
 
     @Test
     fun realRepositoryM01SmokeTest() {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
-        val resolvedEmpty = PathStateResolver.resolveModule(m01, MriRepository.modules, emptySet())
+        val m01 = CtRepository.modules.first { it.id == "M01" }
+        val resolvedEmpty = PathStateResolver.resolveModule(m01, CtRepository.modules, emptySet())
 
         assertEquals(6, resolvedEmpty.nodes.size)
         assertEquals(6, resolvedEmpty.progress.total)
@@ -270,10 +270,10 @@ class PathStateResolverTest {
         assertEquals(NodeStatus.CURRENT, resolvedEmpty.nodes.first().status)
         assertEquals("M01.T0", resolvedEmpty.nodes.first().node.code)
         assertTrue(resolvedEmpty.nodes.drop(1).all { it.status == NodeStatus.LOCKED })
-        assertTrue(PathStateResolver.isModuleRecommended(MriRepository.modules, emptySet(), "M01"))
-        assertFalse(PathStateResolver.isModuleRecommended(MriRepository.modules, emptySet(), "M02"))
+        assertTrue(PathStateResolver.isModuleRecommended(CtRepository.modules, emptySet(), "M01"))
+        assertFalse(PathStateResolver.isModuleRecommended(CtRepository.modules, emptySet(), "M02"))
 
-        val allResolved = PathStateResolver.resolveAll(MriRepository.modules, emptySet())
+        val allResolved = PathStateResolver.resolveAll(CtRepository.modules, emptySet())
         assertEquals(9, allResolved.size)
         assertEquals(50, allResolved.sumOf { it.progress.total })
     }

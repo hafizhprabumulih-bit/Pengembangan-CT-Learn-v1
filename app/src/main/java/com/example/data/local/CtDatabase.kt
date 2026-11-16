@@ -13,37 +13,37 @@ import com.example.data.CurriculumSnapshot
         StudyNoteEntity::class,
         QuizAttemptEntity::class,
         StudyDayEntity::class,
-        MriModuleEntity::class,
+        CtModuleEntity::class,
         CurriculumNodeEntity::class,
         CurriculumQuizEntity::class
     ],
     version = DB_VERSION,
     exportSchema = true
 )
-abstract class MriDatabase : RoomDatabase() {
+abstract class CtDatabase : RoomDatabase() {
     abstract fun nodeProgressDao(): NodeProgressDao
     abstract fun studyNoteDao(): StudyNoteDao
     abstract fun quizAttemptDao(): QuizAttemptDao
     abstract fun studyDayDao(): StudyDayDao
-    abstract fun mriCurriculumDao(): MriCurriculumDao
+    abstract fun ctCurriculumDao(): CtCurriculumDao
     abstract fun curriculumDao(): CurriculumDao
 
     suspend fun replaceCurriculum(snapshot: CurriculumSnapshot) {
         if (!snapshot.isComplete) return
-        val mriDao = mriCurriculumDao()
+        val ctDao = ctCurriculumDao()
         val currDao = curriculumDao()
         withTransaction {
-            mriDao.clearModules()
+            ctDao.clearModules()
             currDao.clearNodes()
             currDao.clearQuizzes()
-            mriDao.insertModules(snapshot.modules)
+            ctDao.insertModules(snapshot.modules)
             currDao.insertNodes(snapshot.curriculumNodes)
             currDao.insertQuizzes(snapshot.curriculumQuizzes)
         }
     }
 
     suspend fun isCurriculumPresent(snapshot: CurriculumSnapshot): Boolean =
-        mriCurriculumDao().getModulesCount() == snapshot.modules.size &&
+        ctCurriculumDao().getModulesCount() == snapshot.modules.size &&
         curriculumDao().getNodesCount() == snapshot.curriculumNodes.size &&
         curriculumDao().getQuizzesCount() == snapshot.curriculumQuizzes.size
 
@@ -51,7 +51,7 @@ abstract class MriDatabase : RoomDatabase() {
 
     companion object {
         @Volatile
-        private var INSTANCE: MriDatabase? = null
+        private var INSTANCE: CtDatabase? = null
 
         @Suppress("DEPRECATION")
         /**
@@ -61,12 +61,12 @@ abstract class MriDatabase : RoomDatabase() {
          * Perubahan skema HARUS lewat Migration yang nyata. Downgrade dibiarkan gagal keras
          * agar data tidak hilang.
          */
-        fun getDatabase(context: Context): MriDatabase {
+        fun getDatabase(context: Context): CtDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    MriDatabase::class.java,
-                    "mri_edu.db"
+                    CtDatabase::class.java,
+                    "ct_learn.db"
                 )
                     .addMigrations(*ALL_MIGRATIONS)
                     .build()

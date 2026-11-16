@@ -1,20 +1,20 @@
 package com.example
 
 import com.example.util.CircularProgressMotion
-import com.example.util.MriHapticPattern
-import com.example.util.MriHaptics
+import com.example.util.CtHapticPattern
+import com.example.util.CtHaptics
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class MriHapticsAndMotionTest {
+class CtHapticsAndMotionTest {
 
     @Test
     fun `completion buzz is noticeably stronger and longer than light toggle`() {
-        val light = MriHaptics.specFor(MriHapticPattern.LIGHT_TOGGLE)
-        val medium = MriHaptics.specFor(MriHapticPattern.MEDIUM_ACTION)
-        val warning = MriHaptics.specFor(MriHapticPattern.WARNING_BUZZ)
-        val completion = MriHaptics.specFor(MriHapticPattern.COMPLETION_BUZZ)
+        val light = CtHaptics.specFor(CtHapticPattern.LIGHT_TOGGLE)
+        val medium = CtHaptics.specFor(CtHapticPattern.MEDIUM_ACTION)
+        val warning = CtHaptics.specFor(CtHapticPattern.WARNING_BUZZ)
+        val completion = CtHaptics.specFor(CtHapticPattern.COMPLETION_BUZZ)
 
         assertTrue(light.totalDurationMs in 10L..25L)
         assertTrue(medium.totalDurationMs > light.totalDurationMs)

@@ -93,8 +93,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
-import com.example.data.MriModule
-import com.example.data.MriRepository
+import com.example.data.CtModule
+import com.example.data.CtRepository
 import com.example.ui.path.FloatingNanoCompanion
 import com.example.ui.path.NodeKind
 import com.example.ui.path.PathAlignedSlot
@@ -133,13 +133,13 @@ import com.example.util.NodeStatus
 import com.example.util.SpacedRepetition
 import com.example.util.XpCalculator
 import com.example.viewmodel.MainTab
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 
 @Composable
 fun HomeScreen(
-    state: MriUiState,
-    viewModel: MriViewModel,
+    state: CtUiState,
+    viewModel: CtViewModel,
     modifier: Modifier = Modifier
 ) {
     val pathHolder = rememberModulePathStateHolder()
@@ -153,7 +153,7 @@ fun HomeScreen(
     val manualReviewNodes by pathHolder.manualReviewNodesFlow.collectAsState(initial = emptySet())
     val excludedReviewNodes by pathHolder.excludedReviewNodesFlow.collectAsState(initial = emptySet())
     val scope = rememberCoroutineScope()
-    val haptics = com.example.util.rememberMriHaptics()
+    val haptics = com.example.util.rememberCtHaptics()
     val screenWidthDp = LocalConfiguration.current.screenWidthDp
 
     var homeRootTopInRoot by remember { mutableStateOf(0f) }
@@ -165,7 +165,7 @@ fun HomeScreen(
     var firstModuleBounds by remember { mutableStateOf<Rect?>(null) }
     var guideStep by remember { mutableStateOf(MapGuideStep.NONE) }
     var showLegendFromInfo by remember { mutableStateOf(false) }
-    var selectedModuleForSheet by remember { mutableStateOf<MriModule?>(null) }
+    var selectedModuleForSheet by remember { mutableStateOf<CtModule?>(null) }
 
     LaunchedEffect(hasSeenMapGuide, state.isResumeRestored, state.completedCount, state.modulesList.isNotEmpty(), firstModuleBounds != null) {
         if (!PathNavigationHints.hasShownMapGuideThisSession &&
@@ -225,7 +225,7 @@ fun HomeScreen(
                         .clickable { viewModel.setAvatarDialogVisible(true) },
                     contentAlignment = Alignment.Center
                 ) {
-                    val avatarRes = MriRepository.getAvatarDrawableRes(state.userAvatarId)
+                    val avatarRes = CtRepository.getAvatarDrawableRes(state.userAvatarId)
                     Image(
                         painter = painterResource(id = avatarRes),
                         contentDescription = "Avatar Pengguna",
@@ -248,7 +248,7 @@ fun HomeScreen(
                             color = TextMuted
                         )
                         Text(
-                            text = "MRI EDU v${com.example.BuildConfig.VERSION_NAME}",
+                            text = "CT-Learn v${com.example.BuildConfig.VERSION_NAME}",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = TextMuted,
@@ -256,7 +256,7 @@ fun HomeScreen(
                         )
                     }
                     Text(
-                        text = "Belajar MRI",
+                        text = "CT-Learn",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = TextPrimary
@@ -706,7 +706,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Peta Belajar Kurikulum MRI",
+                        text = "Peta Belajar Kurikulum CT Scan",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
@@ -741,7 +741,7 @@ fun HomeScreen(
                 }
 
                 val chapterIllType = when (chapter.chapterKey) {
-                    "M01" -> NanoIllustrationType.MRI_SCANNER
+                    "M01" -> NanoIllustrationType.CT_GANTRY_SCANNER
                     "M02" -> NanoIllustrationType.T1_T2_RELAX
                     "M03" -> NanoIllustrationType.SPIN_ECHO
                     "M04" -> NanoIllustrationType.K_SPACE
@@ -841,8 +841,8 @@ fun HomeScreen(
     FloatingNanoCompanion(
         characterCustomization = state.characterCustomization,
         hints = listOf(
-            "Halo! Aku Nano. Ketuk kotak M01–M09 untuk membuka materi MRI!",
-            "Ketuk ilustrasi MRI di samping kotak untuk fakta fisika singkat!",
+            "Halo! Aku Nano. Ketuk kotak M01–M09 untuk membuka materi CT Scan!",
+            "Ketuk ilustrasi CT Scan di samping kotak untuk fakta fisika singkat!",
             "Selesaikan Shift Nano harianmu untuk bonus XP tambahan."
         ),
         openBubbleUpward = true,
@@ -908,7 +908,7 @@ fun HomeScreen(
             Triple(it, "4 DARI 6", "Shift Nano Hari Ini" to "Selesaikan misi harian membaca materi, kuis, dan minigame untuk meraih bonus XP serta menjaga konsistensi belajar!")
         }
         MapGuideStep.SPOTLIGHT -> (firstModuleBounds ?: curriculumBounds)?.let {
-            Triple(it, "5 DARI 6", "Peta Kurikulum MRI" to "Jelajahi simpul 3D terstruktur dari Bab 1 hingga Bab 9 yang mencakup seluruh topik fisika dan klinis MRI.")
+            Triple(it, "5 DARI 6", "Peta Kurikulum CT Scan" to "Jelajahi simpul 3D terstruktur dari Bab 1 hingga Bab 9 yang mencakup seluruh topik fisika dan klinis CT Scan.")
         }
         MapGuideStep.BOTTOM_NAV -> {
             val density = LocalDensity.current
@@ -977,7 +977,7 @@ fun HeroProgressCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Background Image MRI Scanner Hero
+            // Background Image CT Scanner Hero
             Image(
                 painter = painterResource(id = R.drawable.mri_scanner_hero),
                 contentDescription = null,
@@ -1243,7 +1243,7 @@ fun SimInteractiveCard(
 
 @Composable
 fun ModuleCard(
-    module: MriModule,
+    module: CtModule,
     completedCount: Int,
     bookmarkedCount: Int = 0,
     onClick: () -> Unit

@@ -1,230 +1,8 @@
 package com.example.data
 
+import com.example.data.local.CtModuleEntity
 import com.example.data.local.CurriculumNodeEntity
 import com.example.data.local.CurriculumQuizEntity
-import com.example.data.local.MriModuleEntity
-import org.json.JSONArray
-
-/**
- * Kontrak data class entitas CT Scan yang selaras dengan arsitektur [MriCurriculumData.kt],
- * berfokus pada spesifikasi instrumentasi pesawat CT (X-Ray Tube, HV Generator, Slip-Ring,
- * Kolimator, Bow-Tie Filter, Detektor Solid-State, dan DAS).
- */
-data class CtFlashcard(
-    val id: String,
-    val moduleId: String = id.substringBefore("_").uppercase().ifBlank { "M03" },
-    val nodeCode: String = "${id.substringBefore("_").uppercase().ifBlank { "M03" }}.T1.1",
-    val category: String = "Instrumentasi CT",
-    val frontTitle: String,
-    val frontSubtitle: String = "Ketuk kartu untuk melihat spesifikasi & prinsip kerja",
-    val backContent: String,
-    val clinicalAnalogyOrTip: String = backContent,
-    val isGlossaryCard: Boolean = false,
-    val glossaryTermKey: String = frontTitle
-) {
-    val front: String get() = frontTitle
-    val back: String get() = backContent
-
-    fun toMriFlashcard(): MriFlashcard = MriFlashcard(
-        id = id,
-        moduleId = moduleId,
-        nodeCode = nodeCode,
-        category = category,
-        frontTitle = frontTitle,
-        frontSubtitle = frontSubtitle,
-        backContent = backContent,
-        clinicalAnalogyOrTip = clinicalAnalogyOrTip,
-        isGlossaryCard = isGlossaryCard,
-        glossaryTermKey = glossaryTermKey
-    )
-}
-
-data class CtTissueProperties(
-    val id: String,
-    val name: String,
-    val huMin: Int,
-    val huMax: Int,
-    val huTypical: Float,
-    val muPerCmAt120kVp: Float,
-    val recommendedWindow: String,
-    val description: String = "",
-    val clinicalNote: String = description
-) {
-    fun toTissueProperties(t1PlaceholderMs: Float = 800f, t2PlaceholderMs: Float = 80f, relDensity: Float = 0.85f): TissueProperties =
-        TissueProperties(
-            id = id,
-            name = name,
-            t1Ms = t1PlaceholderMs,
-            t2Ms = t2PlaceholderMs,
-            protonDensity = relDensity,
-            description = description,
-            clinicalNote = clinicalNote
-        )
-}
-
-data class CtNode(
-    val id: String = "",
-    val code: String,
-    val title: String,
-    val level: Int, // 0: Tujuan, 1: Dasar, 2: Menengah, 3: Lanjut
-    val sortOrder: Int = 0,
-    val prerequisite: String? = null,
-    val learningGoal: String? = null,
-    val summaryShort: String,
-    val detailFull: String,
-    val analogi: String,
-    val crossLinks: String? = null,
-    val labType: String? = null
-) {
-    val resolvedId: String get() = id.ifBlank { code.lowercase().replace(".", "_") }
-
-    val prerequisites: List<String>
-        get() = prerequisite
-            ?.split(",")
-            ?.map { it.trim() }
-            ?.filter { it.isNotEmpty() }
-            ?: emptyList()
-
-    fun toMriNode(): MriNode = MriNode(
-        id = resolvedId,
-        code = code,
-        title = title,
-        level = level,
-        sortOrder = sortOrder,
-        prerequisite = prerequisite,
-        learningGoal = learningGoal,
-        summaryShort = summaryShort,
-        detailFull = detailFull,
-        analogi = analogi,
-        crossLinks = crossLinks,
-        labType = labType
-    )
-
-    fun toEntity(moduleId: String, fallbackOrder: Int = 1): CurriculumNodeEntity = CurriculumNodeEntity(
-        code = code,
-        moduleId = moduleId,
-        level = level,
-        title = title,
-        summaryShort = summaryShort,
-        detailFull = detailFull,
-        analogi = analogi,
-        prerequisite = prerequisite,
-        learningGoal = learningGoal,
-        crossLinks = crossLinks,
-        labType = labType,
-        sortOrder = if (sortOrder != 0) sortOrder else fallbackOrder
-    )
-}
-
-data class CtModule(
-    val id: String,
-    val code: String = id.uppercase(),
-    val title: String,
-    val subtitle: String,
-    val description: String = subtitle,
-    val levelBadge: String = "Tingkat 1–3 • Instrumentasi Pesawat CT",
-    val iconName: String = "sensors",
-    val sortOrder: Int = 0,
-    val prerequisites: List<String> = emptyList(),
-    val estimatedMinutes: Int = 45,
-    val totalQuizzes: Int = 6,
-    val nodes: List<CtNode>,
-    val flashcards: List<CtFlashcard> = emptyList(),
-    val badgeName: String = "Spesialis Instrumentasi CT",
-    val unlockMessage: String = "Selamat! Kamu telah menguasai modul instrumentasi pesawat CT ini."
-) {
-    fun toMriModule(): MriModule = MriModule(
-        id = id,
-        code = code,
-        title = title,
-        subtitle = subtitle,
-        description = description,
-        levelBadge = levelBadge,
-        iconName = iconName,
-        sortOrder = sortOrder,
-        prerequisites = prerequisites,
-        estimatedMinutes = estimatedMinutes,
-        totalQuizzes = totalQuizzes,
-        nodes = nodes.map { it.toMriNode() },
-        flashcards = flashcards.map { it.toMriFlashcard() },
-        badgeName = badgeName,
-        unlockMessage = unlockMessage
-    )
-
-    fun toEntity(fallbackOrder: Int = 1): MriModuleEntity = MriModuleEntity(
-        id = id,
-        code = code,
-        title = title,
-        subtitle = subtitle,
-        description = description,
-        levelBadge = levelBadge,
-        iconName = iconName,
-        sortOrder = if (sortOrder != 0) sortOrder else fallbackOrder
-    )
-}
-
-data class CtGlossaryItem(
-    val term: String,
-    val symbolOrAbbr: String = "",
-    val definition: String,
-    val moduleId: String = "M03",
-    val nodeCode: String = "$moduleId.T1.1",
-    val relatedModules: List<String> = listOf(moduleId)
-) {
-    fun toGlossaryItem(): GlossaryItem = GlossaryItem(
-        term = term,
-        symbolOrAbbr = symbolOrAbbr,
-        definition = definition,
-        moduleId = moduleId,
-        nodeCode = nodeCode,
-        relatedModules = relatedModules
-    )
-}
-
-data class CtQuiz(
-    val id: String,
-    val moduleId: String,
-    val nodeCode: String,
-    val level: Int = 1,
-    val levelBadge: String = when (level) {
-        1 -> "Tingkat 1 • Dasar"
-        2 -> "Tingkat 2 • Menengah"
-        else -> "Tingkat 3 • Lanjut"
-    },
-    val question: String,
-    val options: List<String>,
-    val correctIndex: Int,
-    val explanation: String
-) {
-    val moduleCode: String get() = moduleId
-
-    fun toQuizQuestion(): QuizQuestion = QuizQuestion(
-        id = id,
-        moduleId = moduleId,
-        nodeCode = nodeCode,
-        level = level,
-        levelBadge = levelBadge,
-        question = question,
-        options = options,
-        correctIndex = correctIndex,
-        explanation = explanation
-    )
-
-    fun toEntity(): CurriculumQuizEntity {
-        val arr = JSONArray()
-        options.forEach { arr.put(it) }
-        return CurriculumQuizEntity(
-            id = id,
-            moduleId = moduleId,
-            nodeCode = nodeCode,
-            level = level,
-            question = question,
-            optionsJson = arr.toString(),
-            correctIndex = correctIndex,
-            explanation = explanation
-        )
-    }
-}
 
 data class CtInstrumentSpec(
     val id: String,
@@ -235,7 +13,6 @@ data class CtInstrumentSpec(
 )
 
 object CtCurriculumData {
-
     val instrumentSpecs: List<CtInstrumentSpec> = listOf(
         CtInstrumentSpec(
             id = "spec_tube",
@@ -274,15 +51,15 @@ object CtCurriculumData {
         )
     )
 
-    val tissues: List<CtTissueProperties> = listOf(
-        CtTissueProperties("air", "Udara Bebas (-1000 HU)", -1000, -980, -1000f, 0.0002f, "Lung (WW 1500, WL -600)", "Referensi batas bawah skala Hounsfield Unit (-1000 HU) untuk kalibrasi udara pagi."),
-        CtTissueProperties("lung", "Parenkim Paru (-800 HU)", -900, -700, -800f, 0.038f, "Lung (WW 1500, WL -600)", "Alveoli berisi udara dengan vaskularisasi halus; optimal pada Lung Window."),
-        CtTissueProperties("fat", "Jaringan Adiposa (-80 HU)", -100, -50, -80f, 0.175f, "Abdomen (WW 350, WL 40)", "Jaringan lemak subkutan & retroperitoneal ber-HU negatif sebagai pemisah kontras alami organ."),
-        CtTissueProperties("water", "Air Murni / Fantom QA (0 HU)", -4, 4, 0f, 0.190f, "Standard QA (WW 100, WL 0)", "Patokan titik nol skala HU (0 ± 4 HU pada uji QA harian fantom air)."),
-        CtTissueProperties("wm", "Substansia Alba (+28 HU)", 20, 30, 28f, 0.195f, "Brain (WW 80, WL 40)", "Serabut bermielin otak; tampak lebih gelap dibanding korteks grisea pada Brain Window."),
-        CtTissueProperties("gm", "Substansia Grisea (+40 HU)", 35, 45, 40f, 0.198f, "Brain (WW 80, WL 40)", "Korteks serebri dan ganglia basalis; dibedakan dari substansia alba dengan WW sempit 80 HU."),
-        CtTissueProperties("blood", "Darah Beku Akut (+75 HU)", 60, 85, 75f, 0.205f, "Stroke/Brain (WW 80, WL 40)", "Hematoma intrakranial hiperdens pada CT non-kontras akibat konsentrasi hemoglobin tinggi."),
-        CtTissueProperties("bone", "Tulang Kortikal (+1500 HU)", 1000, 3000, 1500f, 0.475f, "Bone (WW 2000, WL 500)", "Matriks kalsium-hidroksiapatit ber-Z efektif tinggi yang memicu efek fotolistrik dan beam hardening.")
+    val tissues: List<CtTissueAttenuation> = listOf(
+        CtTissueAttenuation("air", "Udara Bebas (-1000 HU)", -1000, -980, -1000f, 0.0002f, "Lung (WW 1500, WL -600)", "Referensi batas bawah skala Hounsfield Unit (-1000 HU) untuk kalibrasi udara pagi."),
+        CtTissueAttenuation("lung", "Parenkim Paru (-800 HU)", -900, -700, -800f, 0.038f, "Lung (WW 1500, WL -600)", "Alveoli berisi udara dengan vaskularisasi halus; optimal pada Lung Window."),
+        CtTissueAttenuation("fat", "Jaringan Adiposa (-80 HU)", -100, -50, -80f, 0.175f, "Abdomen (WW 350, WL 40)", "Jaringan lemak subkutan & retroperitoneal ber-HU negatif sebagai pemisah kontras alami organ."),
+        CtTissueAttenuation("water", "Air Murni / Fantom QA (0 HU)", -4, 4, 0f, 0.200f, "Standard QA (WW 100, WL 0)", "Patokan titik nol skala HU (0 ± 4 HU pada uji QA harian fantom air; mu_air ≈ 0,200 cm⁻¹ pada energi efektif ~65 keV)."),
+        CtTissueAttenuation("wm", "Substansia Alba (+28 HU)", 20, 30, 28f, 0.195f, "Brain (WW 80, WL 40)", "Serabut bermielin otak; tampak lebih gelap dibanding korteks grisea pada Brain Window."),
+        CtTissueAttenuation("gm", "Substansia Grisea (+40 HU)", 35, 45, 40f, 0.198f, "Brain (WW 80, WL 40)", "Korteks serebri dan ganglia basalis; dibedakan dari substansia alba dengan WW sempit 80 HU."),
+        CtTissueAttenuation("blood", "Darah Beku Akut (+75 HU)", 60, 85, 75f, 0.205f, "Stroke/Brain (WW 80, WL 40)", "Hematoma intrakranial hiperdens pada CT non-kontras akibat konsentrasi hemoglobin tinggi."),
+        CtTissueAttenuation("bone", "Tulang Kortikal (+1500 HU)", 1000, 3000, 1500f, 0.475f, "Bone (WW 2000, WL 500)", "Matriks kalsium-hidroksiapatit ber-Z efektif tinggi yang memicu efek fotolistrik dan beam hardening.")
     )
 
     val modules: List<CtModule> = listOf(
@@ -403,8 +180,8 @@ object CtCurriculumData {
         )
     )
 
-    val quizzes: List<CtQuiz> = listOf(
-        CtQuiz(
+    val quizzes: List<CtQuizQuestion> = listOf(
+        CtQuizQuestion(
             id = "ct_q_m02_t0",
             moduleId = "M02",
             nodeCode = "M02.T0",
@@ -419,7 +196,7 @@ object CtCurriculumData {
             correctIndex = 0,
             explanation = "Arsitektur pesawat CT terdiri atas Gantry (sumber sinar-X, detektor, DAS), Meja Pasien Carbon Fiber, dan Konsol Operator/IRS."
         ),
-        CtQuiz(
+        CtQuizQuestion(
             id = "ct_q_m02_t1_1",
             moduleId = "M02",
             nodeCode = "M02.T1.1",
@@ -434,7 +211,7 @@ object CtCurriculumData {
             correctIndex = 0,
             explanation = "Bow-Tie Filter lebih tipis di tengah dan tebal di tepi sehingga mencegah saturasi detektor perifer, menekan beam hardening, dan menghemat dosis permukaan."
         ),
-        CtQuiz(
+        CtQuizQuestion(
             id = "ct_q_m02_t2_1",
             moduleId = "M02",
             nodeCode = "M02.T2.1",
@@ -449,7 +226,7 @@ object CtCurriculumData {
             correctIndex = 0,
             explanation = "AEC dan profil Bow-Tie Filter dirancang dengan asumsi pusat objek berada tepat di Isocenter; off-centering memicu peningkatan noise atau overdosis 20–40%."
         ),
-        CtQuiz(
+        CtQuizQuestion(
             id = "ct_q_m03_t0",
             moduleId = "M03",
             nodeCode = "M03.T0",
@@ -464,7 +241,7 @@ object CtCurriculumData {
             correctIndex = 0,
             explanation = "Listrik melewati Slip-Ring ke HV Generator untuk memicu Tabung Sinar-X; foton yang lolos diubah oleh Sintilator menjadi cahaya tampak, ke Photodiode menjadi arus, dan didigitalkan di DAS."
         ),
-        CtQuiz(
+        CtQuizQuestion(
             id = "ct_q_m03_t1_1",
             moduleId = "M03",
             nodeCode = "M03.T1.1",
@@ -479,7 +256,7 @@ object CtCurriculumData {
             correctIndex = 0,
             explanation = "Liquid Metal Bearing mendukung putaran anoda 8.000–10.000 RPM secara senyap tanpa aus mekanis sekaligus menjadi jalur konduksi termal cepat."
         ),
-        CtQuiz(
+        CtQuizQuestion(
             id = "ct_q_m03_t2_1",
             moduleId = "M03",
             nodeCode = "M03.T2.1",
@@ -494,7 +271,7 @@ object CtCurriculumData {
             correctIndex = 0,
             explanation = "Kombinasi HF HV Generator kompak di atas Rotating Frame, Low-Voltage Slip-Ring, dan transmisi optik memungkinkan rotasi kontinu bebas artefak percikan."
         ),
-        CtQuiz(
+        CtQuizQuestion(
             id = "ct_q_m03_t3_1",
             moduleId = "M03",
             nodeCode = "M03.T3.1",
@@ -528,14 +305,14 @@ object CtCurriculumData {
 
     val scannerInstruments: List<CTScannerInstrument> = CTScannerInstrumentCatalog.presets
 
-    // Adapter helpers mengikuti kontrak MriCurriculumData.kt
-    fun toMriModules(): List<MriModule> = modules.map { it.toMriModule() }
-    fun toQuizQuestions(): List<QuizQuestion> = quizzes.map { it.toQuizQuestion() }
-    fun toMriFlashcards(): List<MriFlashcard> = flashcards.map { it.toMriFlashcard() }
-    fun toTissuePropertiesList(): List<TissueProperties> = tissues.map { it.toTissueProperties() }
-    fun toGlossaryItems(): List<GlossaryItem> = glossary.map { it.toGlossaryItem() }
 
-    fun toMriModuleEntities(): List<MriModuleEntity> = modules.mapIndexed { idx, mod ->
+    fun toCtModules(): List<CtModule> = modules
+    fun toQuizQuestions(): List<CtQuizQuestion> = quizzes
+    fun toCtFlashcards(): List<CtFlashcard> = flashcards
+    fun toTissueAttenuationList(): List<CtTissueAttenuation> = tissues
+    fun toGlossaryItems(): List<CtGlossaryItem> = glossary
+
+    fun toCtModuleEntities(): List<CtModuleEntity> = modules.mapIndexed { idx, mod ->
         mod.toEntity(fallbackOrder = idx + 1)
     }
 

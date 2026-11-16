@@ -73,7 +73,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.data.CharacterCustomizationState
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
-import com.example.util.rememberMriHaptics
+import com.example.util.rememberCtHaptics
 import kotlinx.coroutines.delay
 import com.example.ui.theme.AmberAccent
 import com.example.ui.theme.AmberWarning
@@ -104,121 +104,121 @@ enum class NanoIllustrationType(
     val badgeColor: Color,
     val responses: List<String>
 ) {
-    MRI_SCANNER(
-        label = "Alat MRI Nano",
+    CT_GANTRY_SCANNER(
+        label = "Gantry Pesawat CT",
         badgeColor = CyanBright,
         responses = listOf(
-            "Gantry superkonduktor ini menjaga medan magnet B0 tetap stabil sepanjang pemindaian!",
-            "Di dalam terowongan bore, koil gradien dan RF bekerja serempak membaca sinyal proton tubuh.",
-            "Tip Nano: Lepas semua benda feromagnetik sebelum pasien masuk ke ruang magnet!"
+            "Gantry CT memutar Tabung Sinar-X dan Busur Detektor 180° berhadapan pada kecepatan 0,25–0,5 detik!",
+            "Di dalam bore Gantry, Laser 3-Sumbu memandu penempatan organ tepat di titik Isocenter.",
+            "Tip Nano: Lepas semua benda logam di area pemindaian untuk mencegah Metal Streak Artifact!"
         )
     ),
-    MRI_BRAIN_PHOTO(
-        label = "Citra MRI Otak",
+    CT_BRAIN_SLICE(
+        label = "Citra CT Otak (HU)",
         badgeColor = CharAccentTeal,
         responses = listOf(
-            "Foto MRI otak gaya Nano! Cairan CSF tampak gelap di T1W dan terang di T2W.",
-            "Perbedaan kontras jaringan lunak tanpa radiasi pengion adalah kekuatan utama MRI.",
+            "Citra CT Kepala dengan Brain Window (WW 80, WL 40)! CSF tampak gelap (0 HU) dan tulang putih (+1500 HU).",
+            "Perdarahan intrakranial akut tampak hiperdens terang (+60 s.d. +85 HU) pada CT Kepala Non-Kontras.",
             "Cek simetri hemisfer dan batas korteks-medula untuk menilai kualitas irisan aksial!"
         )
     ),
     HYDROGEN_ATOM(
-        label = "Atom Hidrogen ¹H",
+        label = "Anoda Tungsten (Z=74)",
         badgeColor = CharAccentMint,
         responses = listOf(
-            "Inti hidrogen (¹H) berputar seperti gasing mini dan berpresesi pada frekuensi Larmor!",
-            "Tubuh manusia kaya akan air & lemak, sehingga sinyal ¹H sangat melimpah untuk MRI.",
-            "Pada 1,5 Tesla, frekuensi presesi Larmor proton hidrogen sekitar 63,87 MHz."
+            "Elektron cepat menumbuk anoda Tungsten (Z=74) menghasilkan sinar-X Bremsstrahlung & Karakteristik!",
+            "Sekitar 99% energi elektron menjadi panas sehingga tabung CT memerlukan kapasitas 5–8+ MHU.",
+            "Liquid Metal Bearing memungkinkan anoda berputar 10.000 RPM secara hening dan membuang panas cepat."
         )
     ),
     RF_PULSE(
-        label = "Pulsa RF 90°/180°",
+        label = "Berkas Sinar-X & Bow-Tie",
         badgeColor = CharActionOrange,
         responses = listOf(
-            "Pulsa RF 90° merebahkan magnetisasi longitudinal Mz ke bidang transversal Mxy!",
-            "Pulsa 180° membalik fase spin agar defasing akibat inhomogenitas B0 kembali bertemu.",
-            "Semakin tinggi SAR, semakin hati-hati kita memantau batas pemanasan jaringan pasien."
+            "Bow-Tie Filter tipis di tengah dan tebal di tepi untuk menyeragamkan fluks foton ke detektor!",
+            "Pre-Patient Collimator membatasi lebar berkas z-axis, sedangkan Post-Patient Septa menolak scatter Compton.",
+            "Selalu tempatkan pasien tepat di Laser Isocenter agar kompensasi Bow-Tie Filter dan AEC optimal."
         )
     ),
     T1_T2_RELAX(
-        label = "Relaksasi T1 & T2",
+        label = "Atenuasi Beer-Lambert",
         badgeColor = AmberAccent,
         responses = listOf(
-            "T1 adalah pemulihan magnetisasi longitudinal (spin-lattice), sedangkan T2 peluruhan transversal.",
-            "Lemak punya T1 pendek sehingga tampak terang di T1W; cairan punya T2 panjang dan terang di T2W.",
-            "Atur TR dan TE dengan cermat: TR pendek menonjolkan T1, TE panjang menonjolkan T2!"
+            "Hukum Beer-Lambert: I = I0 * exp(-mu * x), dan setiap 1 HVL mengurangi intensitas foton 50%.",
+            "Efek Fotolistrik sebanding Z^3/E^3, membuat tulang kortikal dan kontras Iodin tampak sangat terang.",
+            "Skala Hounsfield Unit: HU = 1000 * (mu - mu_air) / mu_air, di mana Air = 0 HU dan Udara = -1000 HU!"
         )
     ),
     SPIN_ECHO(
-        label = "Sekuens Spin Echo",
+        label = "Akuisisi Spiral Helikal",
         badgeColor = CyanPrimary,
         responses = listOf(
-            "Spin Echo memakai pulsa 90° diikuti 180° untuk menghasilkan gema yang tahan inhomogenitas B0.",
-            "Pada Fast Spin Echo (FSE/TSE), banyak echo dikumpulkan per TR sehingga waktu scan jauh lebih singkat!",
-            "FLAIR menekan sinyal cairan CSF dengan TI khusus agar lesi periventrikel terlihat jelas."
+            "Slip-Ring memungkinkan Gantry berputar kontinu sambil meja bergerak maju membentuk lintasan Helikal!",
+            "Rumus Beam Pitch = Pergeseran meja per rotasi (d) dibagi lebar total kolimasi berkas (N x T)!",
+            "Pitch < 1 memberi resolusi tinggi (CT Koroner), sedangkan Pitch > 1 mempercepat waktu scan trauma."
         )
     ),
     K_SPACE(
-        label = "Matriks K-space",
+        label = "Matriks Sinogram",
         badgeColor = CharAccentCyan,
         responses = listOf(
-            "Pusat K-space menyimpan informasi kontras citra, sedangkan tepinya menyimpan detail & tepi tajam!",
-            "Setiap baris K-space diisi dengan langkah phase-encoding yang berbeda tiap TR.",
-            "Zero-filling memperhalus tampilan piksel, tapi resolusi spasial sejati tetap ditentukan batas K-space."
+            "Sinogram memetakan profil proyeksi logaritmik ln(I0/I) sepanjang detektor terhadap sudut 0°–360°!",
+            "Objek di luar Isocenter membentuk kurva gelombang sinus mulus pada Sinogram.",
+            "Jika satu kanal detektor rusak, muncul garis vertikal di Sinogram yang menjadi Ring Artifact."
         )
     ),
     GRADIENT_COIL(
-        label = "Koil Gradien X/Y/Z",
+        label = "Laser Isocenter X/Y/Z",
         badgeColor = EmeraldSuccess,
         responses = listOf(
-            "Gradien Z memilih irisan (slice selection), Y mengatur fase, dan X membaca frekuensi!",
-            "Suara ketukan keras saat scan berasal dari gaya Lorentz pada koil gradien.",
-            "Slew rate tinggi memungkinkan TE dan TR sangat singkat pada sekuens cepat seperti EPI."
+            "Laser Aksial menentukan batas irisan, Sagital garis tengah, dan Koronal ketinggian vertikal Isocenter!",
+            "Off-centering vertikal mengacaukan Bow-Tie Filter dan magnifikasi Topogram Scout pada AEC.",
+            "Meja Carbon Fiber (Z=6) bergerak presisi ±0,25 mm tanpa menyerap berkas sinar-X."
         )
     ),
     CRYO_HELIUM(
-        label = "Helium Kriogenik",
+        label = "Pendingin Tabung MHU",
         badgeColor = CharAccentTeal,
         responses = listOf(
-            "Magnet superkonduktor direndam helium cair bersuhu sekitar 4,2 Kelvin (-269 °C).",
-            "Pada suhu kriogenik, hambatan listrik kawat koil menjadi nol sehingga B0 bertahan terus!",
-            "Jika terjadi quench darurat, pipa ventilasi menyalurkan gas helium keluar gedung dengan aman."
+            "Tabung CT berkapasitas 5–8+ MHU didinginkan oleh sirkulasi oli Heat Exchanger 1.500 kHU/menit.",
+            "Jalankan Tube Warm-Up setiap pagi agar anoda dingin tidak mengalami thermal shock!",
+            "Liquid Metal Bearing menjaga putaran anoda 10.000 RPM tetap hening dan konduktif termal."
         )
     ),
     SAFETY_ZONES(
-        label = "Zona Keselamatan I–IV",
+        label = "Proteksi Radiasi & AEC",
         badgeColor = RoseDanger,
         responses = listOf(
-            "Zona I terbuka untuk umum, sedangkan Zona IV adalah ruang magnet dengan garis 5 Gauss!",
-            "Skrining ketat di Zona II wajib dilakukan sebelum pasien melangkah ke Zona III.",
-            "Jangan pernah membawa tabung oksigen biasa atau kursi roda besi masuk ke Zona IV!"
+            "Ruang Gantry dilapisi timbal Pb 2 mm dan diawasi dari ruang konsol lewat kaca timbal!",
+            "AEC memodulasi arus mA secara otomatis mengikuti ketebalan tubuh pada sumbu x-y dan z.",
+            "Batasi panjang rentang scan (L) seperlunya untuk menekan DLP (mGy·cm) sesuai prinsip ALARA!"
         )
     ),
     ARTEFAK_ALIAS(
         label = "Artefak & Koreksi",
         badgeColor = CharActionYellow,
         responses = listOf(
-            "Aliasing (wrap-around) muncul saat anatomi melampaui batas FOV pada arah phase-encoding.",
-            "Solusi cepat: aktifkan oversampling fase, perbesar FOV, atau tukar arah fase dan frekuensi.",
-            "Artefak gerak dapat dikurangi dengan respiratory gating, PROPELLER, atau instruksi napas."
+            "Ring Artifact muncul sebagai lingkaran konsentris akibat drift kalibrasi satu kanal detektor Gen-3.",
+            "Solusi cepat Ring Artifact: kosongkan bore Gantry dan jalankan Fast Air Calibration!",
+            "Metal Streak Artifact dapat ditekan dengan kVp tinggi (120–140 kV), irisan tipis, dan algoritma MAR."
         )
     ),
     QA_PHANTOM(
-        label = "Phantom QA ACR",
+        label = "Fantom Air QA 5-ROI",
         badgeColor = CharAccentMint,
         responses = listOf(
-            "Phantom QA ACR memeriksa keseragaman intensitas, akurasi ketebalan irisan, dan resolusi tinggi.",
-            "Pengukuran SNR rutin memastikan koil penerima dan sistem RF bekerja sesuai standar klinis.",
-            "Distorsi geometris pada phantom menandakan perlunya kalibrasi shimming atau gradien."
+            "Uji QA Fantom Air 5-ROI harian memverifikasi akurasi HU air di pusat (0 ± 4 HU) dan Uniformity (≤ 5 HU).",
+            "Pengukuran standar deviasi (SD) ROI pusat memantau konsistensi Quantum Noise harian.",
+            "Selisih HU tepi vs pusat > 5 HU menandakan cupping artifact yang butuh kalibrasi ulang."
         )
     ),
     CLINICAL_CONSOLE(
         label = "Konsol Operator",
         badgeColor = CyanBright,
         responses = listOf(
-            "Di konsol operator, parameter Geometry, Contrast, dan Sequence diselaraskan untuk tiap pasien.",
-            "Selalu periksa perkiraan waktu scan dan nilai SAR sebelum menekan tombol Start Scan!",
-            "Gunakan lokalisator 3-bidang untuk merencanakan sudut irisan anatomi secara presisi."
+            "Di konsol operator CT, parameter kVp, mAs efektif, Pitch, Kernel, dan WW/WL diselaraskan.",
+            "Selalu periksa estimasi CTDIvol (mGy) dan DLP (mGy·cm) sebelum menekan tombol Start Scan!",
+            "Gunakan Topogram Scout AP & Lateral untuk merencanakan rentang irisan dan modulasi mA AEC."
         )
     )
 }
@@ -235,7 +235,7 @@ fun InteractiveNanoIllustration(
     alignRight: Boolean = false,
     characterCustomization: CharacterCustomizationState = CharacterCustomizationState()
 ) {
-    val haptics = rememberMriHaptics()
+    val haptics = rememberCtHaptics()
     var tapCount by remember(type) { mutableIntStateOf(0) }
     var isStageDialogMounted by remember(type) { mutableStateOf(false) }
     var isOnStage by remember(type) { mutableStateOf(false) }
@@ -770,7 +770,7 @@ fun FloatingNanoCompanion(
     val moodTitles = listOf("Nano Pemandu", "Fakta Fisika Nano", "Tips Klinis Nano", "Tantangan Nano")
     val activeTitle = moodTitles[tapIndex % moodTitles.size]
     val activeHint = hints.getOrElse(tapIndex % hints.size.coerceAtLeast(1)) {
-        "Halo! Aku Nano. Ketuk kotak materi atau ilustrasi di peta untuk belajar fisika MRI!"
+        "Halo! Aku Nano. Ketuk kotak materi atau ilustrasi di peta untuk belajar fisika & instrumentasi CT Scan!"
     }
 
     Box(
@@ -914,7 +914,7 @@ fun NanoVectorCanvas(
         )
 
         when (type) {
-            NanoIllustrationType.MRI_SCANNER -> {
+            NanoIllustrationType.CT_GANTRY_SCANNER -> {
                 // Dudukan 3D bawah gantry
                 drawRoundRect(
                     color = Color(0xFF081B30),
@@ -938,7 +938,7 @@ fun NanoVectorCanvas(
                     cornerRadius = CornerRadius(r * 0.45f, r * 0.45f),
                     style = Stroke(width = 3.5f)
                 )
-                // Cincin magnet dalam & terowongan bore dengan garis medan B0 dinamis
+                // Cincin detektor gantry & lubang bore CT dengan berkas kipas sinar-X
                 drawCircle(
                     color = Color(0xFF051120),
                     radius = r * 0.60f,
@@ -972,7 +972,7 @@ fun NanoVectorCanvas(
                 drawCircle(AmberAccent, radius = 2.8f, center = Offset(cx + r * 0.62f, cy - r * 0.56f))
             }
 
-            NanoIllustrationType.MRI_BRAIN_PHOTO -> {
+            NanoIllustrationType.CT_BRAIN_SLICE -> {
                 drawRoundRect(
                     color = Color(0xFF071320),
                     topLeft = Offset(cx - r * 0.96f, cy - r * 0.96f),
@@ -1029,7 +1029,7 @@ fun NanoVectorCanvas(
                     size = Size(r * 0.80f, r * 1.92f),
                     style = Stroke(width = 2.6f)
                 )
-                // Kerucut presesi Larmor
+                // Kerucut berkas kolimasi sinar-X
                 drawOval(
                     color = AmberAccent.copy(alpha = 0.65f),
                     topLeft = Offset(cx - r * 0.44f, cy - r * 0.82f),
@@ -1222,7 +1222,7 @@ fun NanoVectorCanvas(
             }
 
             NanoIllustrationType.ARTEFAK_ALIAS -> {
-                // Berganti-ganti 4 gambar artefak MRI (Aliasing -> Motion Ghosting -> Zipper RF -> Susceptibility Void)
+                // Berganti-ganti 4 gambar artefak CT (Ring Artifact -> Beam Hardening -> Motion -> Metal Streak)
                 val mode = (cyclePhase.toInt().coerceIn(0, 3))
                 drawRoundRect(Color(0xFF142E48), Offset(cx - r * 0.90f, cy - r * 0.74f), Size(r * 1.80f, r * 1.48f), CornerRadius(12f, 12f))
                 drawRoundRect(CharActionYellow.copy(alpha = 0.72f), Offset(cx - r * 0.90f, cy - r * 0.74f), Size(r * 1.80f, r * 1.48f), CornerRadius(12f, 12f), style = Stroke(2.4f))

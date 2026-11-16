@@ -97,7 +97,7 @@ fun StreakDialog(
                     color = AmberAccent
                 )
                 Text(
-                    text = "Konsistensi telaah klinis harian adalah kunci penguasaan fisika MRI & keselamatan pasien",
+                    text = "Konsistensi telaah klinis harian adalah kunci penguasaan fisika CT Scan & proteksi radiasi pasien",
                     fontSize = 11.sp,
                     color = TextSecondary,
                     modifier = Modifier.padding(top = 4.dp, bottom = 16.dp),

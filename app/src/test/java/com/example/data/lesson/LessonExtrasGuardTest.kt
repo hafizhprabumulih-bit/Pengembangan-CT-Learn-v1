@@ -1,7 +1,7 @@
 package com.example.data.lesson
 
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -35,7 +35,7 @@ class LessonExtrasGuardTest {
         val jsonText = assetFile!!.readText()
         val extras = LessonExtrasLoader.parseJson(jsonText)
 
-        val validCurriculumCodes = MriRepository.modules
+        val validCurriculumCodes = CtRepository.modules
             .flatMap { it.nodes }
             .mapTo(HashSet()) { LegacyNodeCodes.normalize(it.code) }
 

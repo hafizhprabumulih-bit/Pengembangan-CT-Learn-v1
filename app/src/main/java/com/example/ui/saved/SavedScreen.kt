@@ -56,9 +56,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.CharacterCustomizationState
-import com.example.data.MriModule
-import com.example.data.MriNode
-import com.example.data.MriRepository
+import com.example.data.CtModule
+import com.example.data.CtNode
+import com.example.data.CtRepository
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
 import com.example.ui.glossary.GlossaryCard
@@ -79,13 +79,13 @@ import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.viewmodel.MainTab
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 
 @Composable
 fun SavedScreen(
-    state: MriUiState,
-    viewModel: MriViewModel,
+    state: CtUiState,
+    viewModel: CtViewModel,
     modifier: Modifier = Modifier
 ) {
     // 0 = Semua, 1 = Materi Kurikulum, 2 = Istilah Glosarium
@@ -93,9 +93,9 @@ fun SavedScreen(
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var selectedTermForDetail by rememberSaveable { mutableStateOf<String?>(null) }
 
-    val modulesSource = state.modulesList.ifEmpty { MriRepository.modules }
+    val modulesSource = state.modulesList.ifEmpty { CtRepository.modules }
 
-    val bookmarkedNodesWithModule: List<Pair<MriModule, MriNode>> = remember(
+    val bookmarkedNodesWithModule: List<Pair<CtModule, CtNode>> = remember(
         modulesSource,
         state.bookmarkedNodeCodes
     ) {
@@ -111,7 +111,7 @@ fun SavedScreen(
     }
 
     val bookmarkedGlossaryItems = remember(state.bookmarkedGlossaryTerms) {
-        MriRepository.glossary.filter { state.bookmarkedGlossaryTerms.contains(it.term) }
+        CtRepository.glossary.filter { state.bookmarkedGlossaryTerms.contains(it.term) }
     }
 
     val query = searchQuery.trim().lowercase()
@@ -145,7 +145,7 @@ fun SavedScreen(
     }
 
     val selectedItemForDetail = remember(selectedTermForDetail) {
-        selectedTermForDetail?.let { term -> MriRepository.glossary.find { it.term == term } }
+        selectedTermForDetail?.let { term -> CtRepository.glossary.find { it.term == term } }
     }
 
     val totalSavedCount = bookmarkedNodesWithModule.size + bookmarkedGlossaryItems.size

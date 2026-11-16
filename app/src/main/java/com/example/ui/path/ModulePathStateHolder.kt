@@ -11,8 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
-import com.example.data.MriNode
+import com.example.data.CtModule
+import com.example.data.CtNode
 import com.example.data.UserDataRepository
 import com.example.util.ModulePathState
 import com.example.util.PATH_STRICT_LOCKS
@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Penanda navigasi ringan agar layar Tersimpan / Glosarium dapat membuka pembaca materi
- * langsung pada simpul tertentu tanpa menambah state baru ke MriViewModel.
+ * langsung pada simpul tertentu tanpa menambah state baru ke CtViewModel.
  */
 object PathNavigationHints {
     @Volatile
@@ -94,7 +94,7 @@ data class IndexedPathNode(
 )
 
 /**
- * State holder khusus Peta Belajar di lapisan UI agar logika peta tidak menumpuk di MriViewModel.
+ * State holder khusus Peta Belajar di lapisan UI agar logika peta tidak menumpuk di CtViewModel.
  */
 @Stable
 class ModulePathStateHolder(context: Context) {
@@ -254,8 +254,8 @@ class ModulePathStateHolder(context: Context) {
     suspend fun getSkippedNodeCodes(): Set<String> = repository.getSkippedNodeCodes()
 
     fun resolveModulePath(
-        module: MriModule,
-        allModules: List<MriModule>,
+        module: CtModule,
+        allModules: List<CtModule>,
         completedCodes: Set<String>,
         skippedCodes: Set<String>,
         strictLocks: Boolean = PATH_STRICT_LOCKS
@@ -355,7 +355,7 @@ class ModulePathStateHolder(context: Context) {
             }
         }
 
-        fun resolveNodeKind(node: MriNode): NodeKind {
+        fun resolveNodeKind(node: CtNode): NodeKind {
             val codeUpper = node.code.uppercase()
             val titleLower = node.title.lowercase()
             return when {
@@ -369,7 +369,7 @@ class ModulePathStateHolder(context: Context) {
             }
         }
 
-        private fun sectionKeyFor(node: MriNode): Int = when (node.level) {
+        private fun sectionKeyFor(node: CtNode): Int = when (node.level) {
             0 -> 0
             1 -> 1
             2 -> 2

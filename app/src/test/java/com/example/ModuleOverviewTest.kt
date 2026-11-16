@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.util.ModuleOverview
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -12,12 +12,12 @@ class ModuleOverviewTest {
 
     @Test
     fun m01OverviewHas23NodesAndLevelQuizzes10_8_5() {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         val summary = ModuleOverview.compute(
             module = m01,
-            allModules = MriRepository.modules,
+            allModules = CtRepository.modules,
             completedCodes = emptySet(),
-            quizzes = MriRepository.quizzes,
+            quizzes = CtRepository.quizzes,
             enforceCurriculumLocks = false
         )
 
@@ -34,12 +34,12 @@ class ModuleOverviewTest {
 
     @Test
     fun m04bOverviewHandlesModuleWithoutLevel1() {
-        val m04 = MriRepository.modules.first { it.id == "M04" }
+        val m04 = CtRepository.modules.first { it.id == "M04" }
         val summary = ModuleOverview.compute(
             module = m04,
-            allModules = MriRepository.modules,
+            allModules = CtRepository.modules,
             completedCodes = emptySet(),
-            quizzes = MriRepository.quizzes,
+            quizzes = CtRepository.quizzes,
             enforceCurriculumLocks = false
         )
 
@@ -50,20 +50,20 @@ class ModuleOverviewTest {
 
     @Test
     fun fullCompletionMarksCompleteAndNormalizesCrossModulePrereqs() {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         val allM01Codes = m01.nodes.map { it.code }.toSet()
         val summary = ModuleOverview.compute(
             module = m01,
-            allModules = MriRepository.modules,
+            allModules = CtRepository.modules,
             completedCodes = allM01Codes,
-            quizzes = MriRepository.quizzes,
+            quizzes = CtRepository.quizzes,
             enforceCurriculumLocks = false
         )
 
         assertTrue(summary.isComplete)
         assertEquals(6, summary.completedNodes)
 
-        val known = MriRepository.modules.map { it.code.uppercase() }.toSet()
+        val known = CtRepository.modules.map { it.code.uppercase() }.toSet()
         assertEquals("M01", ModuleOverview.extractCrossModuleCode("M01", "M02", known))
         assertEquals("M05", ModuleOverview.extractCrossModuleCode("M05.T1.1", "M06", known))
         assertNull(ModuleOverview.extractCrossModuleCode("T2.2", "M06", known))

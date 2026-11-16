@@ -29,7 +29,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun BelajarMriTheme(
+fun CtLearnTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = DarkColorScheme

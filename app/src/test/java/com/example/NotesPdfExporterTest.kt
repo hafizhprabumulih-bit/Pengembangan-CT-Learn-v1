@@ -10,12 +10,12 @@ class NotesPdfExporterTest {
 
     @Test
     fun `wrapTextLines wraps long paragraphs within limit without dropping words`() {
-        val longText = "Frekuensi presesi Larmor proton hidrogen berbanding lurus dengan kuat medan magnet utama B0."
+        val longText = "Hukum atenuasi linier Beer-Lambert berbanding terbalik terhadap jarak lintasan berkas sinar-X pada jaringan."
         val lines = NotesPdfExporter.wrapTextLines(longText, maxCharsPerLine = 32)
         assertTrue(lines.size >= 3)
         assertTrue(lines.all { it.length <= 32 })
-        assertTrue(lines.joinToString(" ").contains("Larmor"))
-        assertTrue(lines.joinToString(" ").contains("B0."))
+        assertTrue(lines.joinToString(" ").contains("Beer-Lambert"))
+        assertTrue(lines.joinToString(" ").contains("jaringan."))
     }
 
     @Test
@@ -23,15 +23,26 @@ class NotesPdfExporterTest {
         val notes = listOf(
             StudyNote(
                 id = "n1",
-                title = "Ringkasan TR dan TE",
-                content = "T1w memakai TR pendek dan TE pendek.",
-                category = "Fisika Sekuens",
-                dateString = "2026-11-14"
+                title = "Ringkasan Window Width dan Window Level",
+                content = "Brain window memakai WW 80 dan WL 40.",
+                category = "Protokol Klinis",
+                dateString = "2026-11-16"
             )
         )
         val preview = NotesPdfExporter.buildPlainPreviewText(notes, "Radiografer")
         assertTrue(preview.contains("PDF"))
-        assertTrue(preview.contains("Ringkasan TR dan TE"))
+        assertTrue(preview.contains("Ringkasan Window Width dan Window Level"))
         assertFalse(preview.trimStart().startsWith("{"))
+    }
+
+    @Test
+    fun `buildPlainPreviewText appends CT protocol reference when includeCtReferenceSheet is true`() {
+        val preview = NotesPdfExporter.buildPlainPreviewText(
+            notes = emptyList(),
+            userName = "Radiografer CT",
+            includeCtReferenceSheet = true
+        )
+        assertTrue(preview.contains("Hounsfield Unit"))
+        assertTrue(preview.contains("CTDIvol"))
     }
 }

@@ -106,7 +106,7 @@ fun InteractiveCharacterStage(
     studyStreakDays: Int,
     shiftMood: Int,
     forcedExpression: Expression?,
-    larmorSpinTrigger: Int,
+    gantrySpinTrigger: Int,
     heartBurstTrigger: Int,
     onOpenSnapshotStudio: () -> Unit,
     onToggleWave: () -> Unit,
@@ -114,7 +114,7 @@ fun InteractiveCharacterStage(
     onSave: () -> Unit,
     onAvatarTap: () -> Unit,
     onBodyZoneTap: (NanoBodyZone) -> Unit,
-    onDoubleTapLarmorSpin: () -> Unit,
+    onDoubleTapGantrySpin: () -> Unit,
     onLongPressShiftCard: () -> Unit,
     onRubHead: () -> Unit,
     onPrevAvatar: () -> Unit,
@@ -166,10 +166,10 @@ fun InteractiveCharacterStage(
         ),
         label = "jump_y"
     )
-    val larmorSpinAngle by animateFloatAsState(
-        targetValue = larmorSpinTrigger * 360f,
+    val gantrySpinAngle by animateFloatAsState(
+        targetValue = gantrySpinTrigger * 360f,
         animationSpec = tween(durationMillis = 680, easing = FastOutSlowInEasing),
-        label = "larmor_spin_y"
+        label = "gantry_spin_y"
     )
     val tiltAngle by animateFloatAsState(
         targetValue = if (isJumping) (if (interactionCount % 2 == 0) 4f else -4f) else 0f,
@@ -188,7 +188,7 @@ fun InteractiveCharacterStage(
 
     val bgItem = CharacterCatalog.getItem(workingState.backgroundId)
 
-    // Deteksi bahaya keselamatan MRI secara deterministik
+    // Deteksi bahaya keselamatan radiasi CT secara deterministik
     val isNoiseHazard = workingState.backgroundId == "bg_scanner_suite" &&
         workingState.equippedHeadset == "headset_none"
     val isCryoHazard = workingState.backgroundId == "bg_chiller_room" &&
@@ -464,7 +464,7 @@ fun InteractiveCharacterStage(
                     }
                 }
 
-                // Avatar Berlapis "Nano" Diperbesar + Multi-Gestur (Tap Zona, Double-Tap Larmor Spin, Long-Press, Usap Kepala)
+                // Avatar Berlapis "Nano" Diperbesar + Multi-Gestur (Tap Zona, Double-Tap Gantry 360Â° Spin, Long-Press, Usap Kepala)
                 var rubDragAccum by remember { mutableFloatStateOf(0f) }
                 var dragStartedTop by remember { mutableStateOf(false) }
 
@@ -477,12 +477,12 @@ fun InteractiveCharacterStage(
                             scaleX = jumpScale * 1.08f
                             scaleY = jumpScale * 1.08f
                             rotationZ = tiltAngle + rfSwayDeg
-                            rotationY = larmorSpinAngle
+                            rotationY = gantrySpinAngle
                             cameraDistance = 12f * density
                         }
                         .pointerInput(currentAvatar.id) {
                             detectTapGestures(
-                                onDoubleTap = { onDoubleTapLarmorSpin() },
+                                onDoubleTap = { onDoubleTapGantrySpin() },
                                 onLongPress = { onLongPressShiftCard() },
                                 onTap = { offset ->
                                     val fracY = (offset.y / size.height.toFloat()).coerceIn(0f, 1f)

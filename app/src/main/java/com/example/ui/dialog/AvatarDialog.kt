@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.data.CharacterCustomizationState
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.ui.character.AvatarLayerRegistry
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
@@ -64,10 +64,10 @@ fun AvatarDialog(
     onDismiss: () -> Unit,
     onSave: (String, String) -> Unit
 ) {
-    var selectedId by rememberSaveable { mutableStateOf(currentAvatarId.ifBlank { "radiografer_mri" }) }
+    var selectedId by rememberSaveable { mutableStateOf(currentAvatarId.ifBlank { "radiografer_ct" }) }
     var nameInput by rememberSaveable { mutableStateOf(currentName.take(40)) }
 
-    val avatars = MriRepository.avatars
+    val avatars = CtRepository.avatars
     val selectedPreviewLoadout = if (selectedId == characterCustomization.avatarId) {
         characterCustomization
     } else {

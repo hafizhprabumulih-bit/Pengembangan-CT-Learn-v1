@@ -68,24 +68,25 @@ import com.example.ui.theme.RoseDanger
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
 fun LearningAnimationScreen(
-    state: MriUiState,
-    viewModel: MriViewModel,
+    state: CtUiState,
+    viewModel: CtViewModel,
     modifier: Modifier = Modifier
 ) {
     val animList = listOf(
-        "Spin Echo 90°-180°",
-        "Relaksasi T1 & T2",
-        "Trajektori K-space"
+        "Rotasi Gantry & Rantai Sinyal CT",
+        "Atenuasi Beer-Lambert & Kontras HU",
+        "Sinogram & Rekonstruksi FBP",
+        "Pitch Helikal & Bow-Tie Filter"
     )
 
-    // B-04, B-22 & FINAL-06: Sudut rotasi hanya berjalan ketika state.isAnimationPlaying == true
+    // Sudut rotasi hanya berjalan ketika state.isAnimationPlaying == true
     // dan menggunakan rememberSaveable agar tahan rotasi layar.
     var rotAngle by rememberSaveable { mutableFloatStateOf(0f) }
     LaunchedEffect(state.isAnimationPlaying) {
@@ -107,7 +108,7 @@ fun LearningAnimationScreen(
     ) {
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 1. PINNED TOP HEADER: Tetap di atas, tidak bergerak saat di-swipe!
+        // 1. PINNED TOP HEADER
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -119,7 +120,7 @@ fun LearningAnimationScreen(
                     .padding(end = 12.dp)
             ) {
                 Text(
-                    text = "Animasi Belajar MRI",
+                    text = "Animasi Fisika & Akuisisi CT Scan",
                     style = MaterialTheme.typography.titleLarge,
                     color = TextPrimary,
                     fontWeight = FontWeight.Bold
@@ -144,7 +145,7 @@ fun LearningAnimationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 2. PINNED PILIHAN TOPIK ANIMASI: Tetap di atas agar mudah berganti topik
+        // 2. PINNED PILIHAN TOPIK ANIMASI
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -174,7 +175,7 @@ fun LearningAnimationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 3. SCROLLABLE CONTENT: Hanya bagian kartu dan penjelasan di bawah ini yang bergerak saat di-swipe!
+        // 3. SCROLLABLE CONTENT
         val animScrollState = rememberRestorableScrollState("tab_animasi", viewModel)
         Column(
             modifier = Modifier
@@ -182,126 +183,123 @@ fun LearningAnimationScreen(
                 .fillMaxWidth()
                 .verticalScroll(animScrollState)
         ) {
-            // Card Kanvas Animasi Interaktif
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = DarkNavySlate),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CardSlateBorder)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                // Kanvas Render Animasi berdasarkan topik terpilih
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(230.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(DeepObsidian),
-                    contentAlignment = Alignment.Center
-                ) {
-                    // PERF: sudut dikirim sebagai lambda dan baru dibaca di fase gambar (draw phase),
-                    // sehingga perubahan per-frame hanya menggambar ulang Canvas, bukan me-recompose seluruh layar.
-                    val rotAngleProvider = { rotAngle }
-                    when (state.selectedAnimationIndex) {
-                        0 -> SpinEchoCanvas(step = state.animationStep, isPlaying = state.isAnimationPlaying, rotAngleProvider = rotAngleProvider)
-                        1 -> RelaxationCurvesCanvas(step = state.animationStep, isPlaying = state.isAnimationPlaying, rotAngleProvider = rotAngleProvider)
-                        else -> KSpaceFillCanvas(step = state.animationStep, isPlaying = state.isAnimationPlaying, rotAngleProvider = rotAngleProvider)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Pengatur Langkah Bertahap (Step 1 sampai 4)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(
-                            onClick = { viewModel.setAnimationStep(state.animationStep - 1) },
-                            enabled = state.animationStep > 1,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.FastRewind, contentDescription = "Sebelumnya", tint = if (state.animationStep > 1) CyanBright else TextMuted)
-                        }
-
-                        Text(
-                            text = "Langkah ${state.animationStep} dari 4",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-
-                        IconButton(
-                            onClick = { viewModel.setAnimationStep(state.animationStep + 1) },
-                            enabled = state.animationStep < 4,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.FastForward, contentDescription = "Berikutnya", tint = if (state.animationStep < 4) CyanBright else TextMuted)
-                        }
-                    }
-
-                    Button(
-                        onClick = { viewModel.toggleAnimationPlay() },
-                        colors = ButtonDefaults.buttonColors(containerColor = if (state.isAnimationPlaying) CardSlate else CyanPrimary),
-                        shape = RoundedCornerShape(10.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                border = androidx.compose.foundation.BorderStroke(1.dp, CardSlateBorder)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(230.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(DeepObsidian),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = if (state.isAnimationPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = null,
-                            tint = if (state.isAnimationPlaying) CyanBright else DeepObsidian,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.size(4.dp))
-                        Text(
-                            text = if (state.isAnimationPlaying) "Jeda" else "Putar",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (state.isAnimationPlaying) CyanBright else DeepObsidian
-                        )
+                        val rotAngleProvider = { rotAngle }
+                        when (state.selectedAnimationIndex) {
+                            0 -> GantryChainCanvas(step = state.animationStep, isPlaying = state.isAnimationPlaying, rotAngleProvider = rotAngleProvider)
+                            1 -> BeerLambertHuCanvas(step = state.animationStep, isPlaying = state.isAnimationPlaying, rotAngleProvider = rotAngleProvider)
+                            2 -> SinogramFbpCanvas(step = state.animationStep, isPlaying = state.isAnimationPlaying, rotAngleProvider = rotAngleProvider)
+                            else -> HelicalPitchBowTieCanvas(step = state.animationStep, isPlaying = state.isAnimationPlaying, rotAngleProvider = rotAngleProvider)
+                        }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                // Penjelasan Fisika Medis Langkah Terpilih
-                val (stepTitle, stepExplanation, analogyText) = getStepDescription(
-                    animIndex = state.selectedAnimationIndex,
-                    step = state.animationStep
-                )
+                    // Pengatur Langkah Bertahap (Step 1 sampai 4)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = { viewModel.setAnimationStep(state.animationStep - 1) },
+                                enabled = state.animationStep > 1,
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.FastRewind, contentDescription = "Sebelumnya", tint = if (state.animationStep > 1) CyanBright else TextMuted)
+                            }
 
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = DeepObsidian,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CardSlateBorder)
-                ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Text(
-                            text = stepTitle,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = CyanBright
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = stepExplanation,
-                            fontSize = 12.sp,
-                            color = TextPrimary,
-                            lineHeight = 18.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Top) {
-                            Icon(imageVector = Icons.Default.Lightbulb, contentDescription = null, tint = AmberWarning, modifier = Modifier.size(14.dp))
                             Text(
-                                text = "Analogi: $analogyText",
-                                fontSize = 11.sp,
-                                color = AmberWarning,
-                                lineHeight = 16.sp
+                                text = "Langkah ${state.animationStep} dari 4",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
                             )
+
+                            IconButton(
+                                onClick = { viewModel.setAnimationStep(state.animationStep + 1) },
+                                enabled = state.animationStep < 4,
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.FastForward, contentDescription = "Berikutnya", tint = if (state.animationStep < 4) CyanBright else TextMuted)
+                            }
+                        }
+
+                        Button(
+                            onClick = { viewModel.toggleAnimationPlay() },
+                            colors = ButtonDefaults.buttonColors(containerColor = if (state.isAnimationPlaying) CardSlate else CyanPrimary),
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (state.isAnimationPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                tint = if (state.isAnimationPlaying) CyanBright else DeepObsidian,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.size(4.dp))
+                            Text(
+                                text = if (state.isAnimationPlaying) "Jeda" else "Putar",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (state.isAnimationPlaying) CyanBright else DeepObsidian
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    val (stepTitle, stepExplanation, analogyText) = getStepDescription(
+                        animIndex = state.selectedAnimationIndex,
+                        step = state.animationStep
+                    )
+
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = DeepObsidian,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, CardSlateBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Text(
+                                text = stepTitle,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = CyanBright
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = stepExplanation,
+                                fontSize = 12.sp,
+                                color = TextPrimary,
+                                lineHeight = 18.sp
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Top) {
+                                Icon(imageVector = Icons.Default.Lightbulb, contentDescription = null, tint = AmberWarning, modifier = Modifier.size(14.dp))
+                                Text(
+                                    text = "Analogi: $analogyText",
+                                    fontSize = 11.sp,
+                                    color = AmberWarning,
+                                    lineHeight = 16.sp
+                                )
+                            }
                         }
                     }
                 }
@@ -311,15 +309,14 @@ fun LearningAnimationScreen(
         }
     }
 }
-}
 
 // -------------------------------------------------------------
-// Kanvas Animasi 1: Spin Echo 90° - 180° Refokusing (3D Interaktif)
+// Kanvas Animasi 1: Rotasi Gantry 360° & Rantai Sinyal CT Scan
 // -------------------------------------------------------------
 @Composable
-fun SpinEchoCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float) {
-    var camAzimuth by rememberSaveable { mutableFloatStateOf(0.55f) }
-    var camElevation by rememberSaveable { mutableFloatStateOf(0.42f) }
+fun GantryChainCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float) {
+    var camAzimuth by rememberSaveable { mutableFloatStateOf(0.35f) }
+    var camElevation by rememberSaveable { mutableFloatStateOf(0.28f) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Canvas(
@@ -329,108 +326,96 @@ fun SpinEchoCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float)
                     detectDragGestures { change, drag ->
                         change.consume()
                         camAzimuth -= drag.x * 0.011f
-                        camElevation = (camElevation + drag.y * 0.011f).coerceIn(-1.4f, 1.4f)
+                        camElevation = (camElevation + drag.y * 0.011f).coerceIn(-1.2f, 1.2f)
                     }
                 }
         ) {
             val rotAngle = rotAngleProvider()
             val cx = size.width / 2f
-            val cy = size.height / 2f + 6.dp.toPx()
-            val radius = (minOf(size.width, size.height) * 0.36f)
+            val cy = size.height / 2f + 4.dp.toPx()
+            val radius = (minOf(size.width, size.height) * 0.37f)
 
-            fun proj3D(x: Float, y: Float, z: Float): Offset {
-                val ca = cos(camAzimuth)
-                val sa = sin(camAzimuth)
-                val ce = cos(camElevation)
-                val se = sin(camElevation)
-                val x1 = x * ca - y * sa
-                val y1 = x * sa + y * ca
-                val y2 = y1 * se + z * ce
-                val depth = y1 * ce - z * se
-                val persp = (3.4f / (3.4f - depth * 0.4f)).coerceIn(0.78f, 1.3f)
-                return Offset(cx + x1 * radius * persp, cy - y2 * radius * persp)
-            }
-
-            // Bola 3D dan Bidang Ekuator XY
+            // Cincin Slip-Ring & Bore Gantry
             drawCircle(
-                color = CardSlateBorder.copy(alpha = 0.35f),
-                radius = radius,
+                color = CardSlateBorder.copy(alpha = 0.45f),
+                radius = radius * 1.06f,
                 center = Offset(cx, cy),
-                style = Stroke(1.2.dp.toPx())
+                style = Stroke(3.dp.toPx())
             )
-            val eqPath = Path()
-            for (i in 0..48) {
-                val a = (i / 48f) * (2f * Math.PI.toFloat())
-                val p = proj3D(cos(a), sin(a), 0f)
-                if (i == 0) eqPath.moveTo(p.x, p.y) else eqPath.lineTo(p.x, p.y)
-            }
-            drawPath(eqPath, color = CyanPrimary.copy(alpha = 0.12f))
-            drawPath(eqPath, color = CardSlateBorder.copy(alpha = 0.65f), style = Stroke(1.2.dp.toPx()))
+            drawCircle(
+                color = CyanPrimary.copy(alpha = 0.25f),
+                radius = radius * 0.88f,
+                center = Offset(cx, cy),
+                style = Stroke(1.5.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 6f), 0f))
+            )
 
-            // Sumbu Z (Longitudinal B0)
-            val zBottom = proj3D(0f, 0f, -1.05f)
-            val zTop = proj3D(0f, 0f, 1.18f)
-            val origin = proj3D(0f, 0f, 0f)
-            drawLine(color = CardSlateBorder, start = zBottom, end = zTop, strokeWidth = 1.8.dp.toPx())
-            drawCircle(color = CyanBright, radius = 4.dp.toPx(), center = zTop)
+            // Penampang tubuh pasien di titik Laser Isocenter
+            drawCircle(
+                color = Color(0xFF1E293B),
+                radius = radius * 0.34f,
+                center = Offset(cx, cy)
+            )
+            drawCircle(
+                color = Color(0xFFE2E8F0),
+                radius = radius * 0.34f,
+                center = Offset(cx, cy),
+                style = Stroke(2.dp.toPx())
+            )
+            // Laser Isocenter Crosshair
+            drawLine(color = RoseDanger.copy(alpha = 0.5f), start = Offset(cx - radius * 0.45f, cy), end = Offset(cx + radius * 0.45f, cy), strokeWidth = 1.dp.toPx())
+            drawLine(color = RoseDanger.copy(alpha = 0.5f), start = Offset(cx, cy - radius * 0.45f), end = Offset(cx, cy + radius * 0.45f), strokeWidth = 1.dp.toPx())
 
-            when (step) {
-                1 -> {
-                    // Step 1: Eksitasi 90° -> Vektor berpresesi di bidang XY
-                    val rad = Math.toRadians(rotAngle.toDouble()).toFloat()
-                    val tip = proj3D(cos(rad), sin(rad), 0f)
-                    drawLine(color = CyanBright, start = origin, end = tip, strokeWidth = 4.dp.toPx())
-                    drawCircle(color = CyanBright, radius = 6.dp.toPx(), center = tip)
-                    drawCircle(color = EmeraldSuccess, radius = 4.dp.toPx(), center = zTop)
+            val rad = Math.toRadians((rotAngle + camAzimuth * 40f).toDouble()).toFloat()
+            val tubePos = Offset(cx + radius * cos(rad), cy + radius * sin(rad))
+            val detCenterRad = rad + Math.PI.toFloat()
+
+            // Berkas kipas (Fan Beam) dari Tabung Sinar-X melewati Bow-Tie Filter menuju Busur Detektor
+            val fanHalfAngle = 0.42f
+            val detLeft = Offset(cx + radius * cos(detCenterRad - fanHalfAngle), cy + radius * sin(detCenterRad - fanHalfAngle))
+            val detRight = Offset(cx + radius * cos(detCenterRad + fanHalfAngle), cy + radius * sin(detCenterRad + fanHalfAngle))
+
+            if (step >= 2) {
+                val beamPath = Path().apply {
+                    moveTo(tubePos.x, tubePos.y)
+                    lineTo(detLeft.x, detLeft.y)
+                    lineTo(detRight.x, detRight.y)
+                    close()
                 }
-                2 -> {
-                    // Step 2: Dephasing T2* (Spin cepat mendahului, lambat tertinggal)
-                    val fastAngle = Math.toRadians((rotAngle * 1.5)).toFloat()
-                    val slowAngle = Math.toRadians((rotAngle * 0.7)).toFloat()
-                    val midAngle = Math.toRadians(rotAngle.toDouble()).toFloat()
-
-                    val fTip = proj3D(cos(fastAngle), sin(fastAngle), 0f)
-                    val mTip = proj3D(cos(midAngle), sin(midAngle), 0f)
-                    val sTip = proj3D(cos(slowAngle), sin(slowAngle), 0f)
-
-                    drawLine(color = EmeraldSuccess, start = origin, end = fTip, strokeWidth = 3.dp.toPx())
-                    drawCircle(color = EmeraldSuccess, radius = 4.5.dp.toPx(), center = fTip)
-                    drawLine(color = CyanBright, start = origin, end = mTip, strokeWidth = 3.dp.toPx())
-                    drawCircle(color = CyanBright, radius = 4.5.dp.toPx(), center = mTip)
-                    drawLine(color = RoseDanger, start = origin, end = sTip, strokeWidth = 3.dp.toPx())
-                    drawCircle(color = RoseDanger, radius = 4.5.dp.toPx(), center = sTip)
-                }
-                3 -> {
-                    // Step 3: Pulsa Refokusing 180° membalikkan arah fase
-                    val phase = (rotAngle / 360f) * 0.6f
-                    val spreadRad = (1f - phase) * 0.45f
-                    val fTip = proj3D(-cos(spreadRad), -sin(spreadRad), 0f)
-                    val mTip = proj3D(-1f, 0f, 0f)
-                    val sTip = proj3D(-cos(spreadRad), sin(spreadRad), 0f)
-
-                    drawLine(color = EmeraldSuccess, start = origin, end = fTip, strokeWidth = 3.dp.toPx())
-                    drawLine(color = CyanBright, start = origin, end = mTip, strokeWidth = 3.dp.toPx())
-                    drawLine(color = RoseDanger, start = origin, end = sTip, strokeWidth = 3.dp.toPx())
-                    drawCircle(color = AmberWarning, radius = 8.dp.toPx(), center = origin)
-                }
-                4 -> {
-                    // Step 4: Rephasing & Echo Peak terbentuk di TE!
-                    val ripple = 14f + (rotAngle / 360f) * 16f
-                    val echoTip = proj3D(-1.08f, 0f, 0f)
-                    drawLine(color = CyanBright, start = origin, end = echoTip, strokeWidth = 5.dp.toPx())
-                    drawCircle(color = CyanBright, radius = 8.5.dp.toPx(), center = echoTip)
-                    drawCircle(
-                        color = CyanBright.copy(alpha = (1f - (rotAngle / 360f) * 0.6f).coerceIn(0.2f, 0.8f)),
-                        radius = ripple.dp.toPx(),
-                        center = echoTip,
-                        style = Stroke(2.dp.toPx())
+                drawPath(
+                    path = beamPath,
+                    color = when (step) {
+                        2 -> AmberWarning.copy(alpha = 0.22f)
+                        3 -> CyanBright.copy(alpha = 0.24f)
+                        else -> EmeraldSuccess.copy(alpha = 0.26f)
+                    }
+                )
+                for (rIdx in -3..3) {
+                    val rayAng = detCenterRad + (rIdx / 3f) * fanHalfAngle
+                    val rayEnd = Offset(cx + radius * cos(rayAng), cy + radius * sin(rayAng))
+                    drawLine(
+                        color = if (step >= 3) CyanBright.copy(alpha = 0.7f) else AmberWarning.copy(alpha = 0.7f),
+                        start = tubePos,
+                        end = rayEnd,
+                        strokeWidth = 1.4.dp.toPx()
                     )
                 }
+            }
+
+            // Tabung Sinar-X (Merah/Oranye) & Busur Detektor + DAS (Cyan/Hijau) berhadapan 180°
+            drawCircle(color = AmberWarning, radius = 8.dp.toPx(), center = tubePos)
+            for (dIdx in -4..4) {
+                val dAng = detCenterRad + (dIdx / 4f) * fanHalfAngle
+                val dPos = Offset(cx + radius * cos(dAng), cy + radius * sin(dAng))
+                drawCircle(
+                    color = if (step == 4) EmeraldSuccess else CyanBright,
+                    radius = 4.dp.toPx(),
+                    center = dPos
+                )
             }
         }
 
         Text(
-            text = "Geser kanvas untuk memutar tampilan 3D",
+            text = "Tabung Sinar-X & Busur Detektor berputar sinkron 360° (Rotate-Rotate)",
             fontSize = 10.sp,
             color = TextMuted,
             modifier = Modifier
@@ -441,30 +426,30 @@ fun SpinEchoCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float)
 }
 
 // -------------------------------------------------------------
-// Kanvas Animasi 2: Kurva Relaksasi T1 & T2
+// Kanvas Animasi 2: Kurva Atenuasi Beer-Lambert & Kontras HU
 // -------------------------------------------------------------
 @Composable
-fun RelaxationCurvesCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float = { 0f }) {
+fun BeerLambertHuCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float = { 0f }) {
     Spacer(modifier = Modifier.fillMaxSize().drawWithCache {
         val cx = 40f
         val cy = size.height - 40f
         val w = size.width - 80f
         val h = size.height - 70f
 
-        // PERF: Kurva statis T1/T2 (2 × 101 titik eksponensial) hanya dibangun ulang saat ukuran berubah,
-        // bukan di setiap frame animasi.
-        val pathT1 = Path().apply {
-            moveTo(cx, cy)
-            for (i in 0..100) {
-                val t = i / 100f
-                lineTo(cx + t * w, cy - (1f - Math.exp(-t * 2.0).toFloat()) * (h * 0.9f))
-            }
-        }
-        val pathT2 = Path().apply {
+        // Kurva 1 (Cyan): Transmisi Beer-Lambert Jaringan Lunak I(x) = I0 * exp(-mu_soft * x)
+        val pathSoftAtten = Path().apply {
             moveTo(cx, cy - h * 0.9f)
             for (i in 0..100) {
                 val t = i / 100f
-                lineTo(cx + t * w, (cy - h * 0.9f) + (1f - Math.exp(-t * 4.5).toFloat()) * (h * 0.9f))
+                lineTo(cx + t * w, cy - (Math.exp(-t * 1.8).toFloat()) * (h * 0.9f))
+            }
+        }
+        // Kurva 2 (Rose/Merah): Atenuasi Kuat Tulang Kortikal / Kontras Iodin (Z tinggi -> Fotolistrik kuat)
+        val pathBoneIodine = Path().apply {
+            moveTo(cx, cy - h * 0.9f)
+            for (i in 0..100) {
+                val t = i / 100f
+                lineTo(cx + t * w, cy - (Math.exp(-t * 4.6).toFloat()) * (h * 0.9f))
             }
         }
         val axisStroke = 2.dp.toPx()
@@ -474,58 +459,65 @@ fun RelaxationCurvesCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -
         val dashEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f)
 
         onDrawBehind {
-        val rotAngle = rotAngleProvider()
-        // Sumbu X dan Y
-        drawLine(color = CardSlateBorder, start = Offset(cx, cy), end = Offset(cx + w, cy), strokeWidth = axisStroke)
-        drawLine(color = CardSlateBorder, start = Offset(cx, cy), end = Offset(cx, cy - h), strokeWidth = axisStroke)
+            val rotAngle = rotAngleProvider()
+            drawLine(color = CardSlateBorder, start = Offset(cx, cy), end = Offset(cx + w, cy), strokeWidth = axisStroke)
+            drawLine(color = CardSlateBorder, start = Offset(cx, cy), end = Offset(cx, cy - h), strokeWidth = axisStroke)
 
-        // Kurva T1 Recovery (Mz tumbuh) & T2 Decay (Mxy meluruh) dari cache
-        drawPath(path = pathT1, color = CyanBright, style = curveStroke)
-        drawPath(path = pathT2, color = RoseDanger, style = curveStroke)
+            drawPath(path = pathSoftAtten, color = CyanBright, style = curveStroke)
+            drawPath(path = pathBoneIodine, color = RoseDanger, style = curveStroke)
 
-        // Titik penanda waktu aktif yang bergerak mengikuti rotAngle (dan berhenti saat Jeda)
-        val baseProgress = ((step - 1) * 0.22f + (rotAngle / 360f) * 0.25f).coerceIn(0.05f, 0.98f)
-        val markerX = cx + baseProgress * w
-        val markerT1Y = cy - (1f - Math.exp(-baseProgress * 2.0).toFloat()) * (h * 0.9f)
-        val markerT2Y = (cy - h * 0.9f) + (1f - Math.exp(-baseProgress * 4.5).toFloat()) * (h * 0.9f)
+            val baseProgress = ((step - 1) * 0.22f + (rotAngle / 360f) * 0.25f).coerceIn(0.05f, 0.98f)
+            val markerX = cx + baseProgress * w
+            val markerSoftY = cy - (Math.exp(-baseProgress * 1.8).toFloat()) * (h * 0.9f)
+            val markerBoneY = cy - (Math.exp(-baseProgress * 4.6).toFloat()) * (h * 0.9f)
 
-        drawLine(
-            color = AmberWarning.copy(alpha = 0.6f),
-            start = Offset(markerX, cy),
-            end = Offset(markerX, cy - h * 0.92f),
-            strokeWidth = markerStroke,
-            pathEffect = dashEffect
-        )
-        drawCircle(color = CyanBright, radius = markerRadius, center = Offset(markerX, markerT1Y))
-        drawCircle(color = RoseDanger, radius = markerRadius, center = Offset(markerX, markerT2Y))
+            drawLine(
+                color = AmberWarning.copy(alpha = 0.6f),
+                start = Offset(markerX, cy),
+                end = Offset(markerX, cy - h * 0.92f),
+                strokeWidth = markerStroke,
+                pathEffect = dashEffect
+            )
+            drawCircle(color = CyanBright, radius = markerRadius, center = Offset(markerX, markerSoftY))
+            drawCircle(color = RoseDanger, radius = markerRadius, center = Offset(markerX, markerBoneY))
         }
     })
 }
 
 // -------------------------------------------------------------
-// Kanvas Animasi 3: Pengisian K-space
+// Kanvas Animasi 3: Pengisian Sinogram & Rekonstruksi FBP
 // -------------------------------------------------------------
 @Composable
-fun KSpaceFillCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float = { 0f }) {
+fun SinogramFbpCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float = { 0f }) {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val rotAngle = rotAngleProvider()
         val cx = size.width / 2f
         val cy = size.height / 2f
-        val matrixSize = 130f
+        val matrixSize = 140f
 
-        // Grid Matrix
+        // Baris-baris sudut proyeksi Sinogram P(t, theta) dari 0° s.d. 360°
         for (i in -4..4) {
             val y = cy + i * (matrixSize / 9f)
             val isFilled = (i + 4) <= (step * 2)
             drawLine(
-                color = if (isFilled) CyanBright else CardSlateBorder.copy(alpha = 0.4f),
+                color = if (isFilled) CyanBright.copy(alpha = 0.55f) else CardSlateBorder.copy(alpha = 0.35f),
                 start = Offset(cx - matrixSize / 2f, y),
                 end = Offset(cx + matrixSize / 2f, y),
-                strokeWidth = if (isFilled) 2.5.dp.toPx() else 1.dp.toPx()
+                strokeWidth = if (isFilled) 2.2.dp.toPx() else 1.dp.toPx()
             )
         }
 
-        // Current trajectory pen yang melintasi baris kx mengikuti rotAngle (dan berhenti saat Jeda)
+        // Gelombang Sinusoidal jejak organ pada Sinogram
+        val sinePath = Path()
+        for (k in 0..60) {
+            val frac = k / 60f
+            val y = (cy - matrixSize / 2f) + frac * matrixSize
+            val x = cx + (matrixSize * 0.32f) * sin(frac * 2f * Math.PI.toFloat())
+            if (k == 0) sinePath.moveTo(x, y) else sinePath.lineTo(x, y)
+        }
+        drawPath(path = sinePath, color = EmeraldSuccess, style = Stroke(width = 2.5.dp.toPx()))
+
+        // Titik akuisisi DAS yang menyapu baris kanal detektor saat Gantry berputar
         val currY = cy + (-4 + (step * 2)) * (matrixSize / 9f)
         val scanProgress = (rotAngle / 360f).coerceIn(0f, 1f)
         val penX = (cx - matrixSize / 2f) + scanProgress * matrixSize
@@ -533,75 +525,145 @@ fun KSpaceFillCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Floa
     }
 }
 
-// Helper teks penjelasan fisika medis langkah animasi
+@Composable
+fun HelicalPitchBowTieCanvas(step: Int, isPlaying: Boolean, rotAngleProvider: () -> Float = { 0f }) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+        val rotAngle = rotAngleProvider()
+        val cy = h * 0.50f
+        val pitchOffset = ((rotAngle / 360f) * w * 0.16f)
+
+        // Sumbu z meja pasien horizontal + lintasan spiral helikal (Pitch = d / (N * T))
+        drawLine(Color(0xFF475569), Offset(w * 0.08f, cy), Offset(w * 0.92f, cy), strokeWidth = 2.dp.toPx())
+        val spiral = Path()
+        val stepsCount = 60
+        for (i in 0..stepsCount) {
+            val t = i / stepsCount.toFloat()
+            val x = w * 0.10f + t * w * 0.80f
+            val freq = when (step) {
+                1 -> 18f // Pitch rendah ~0.5 overlap rapat
+                2 -> 12f // Pitch 1.0 kontigu
+                else -> 8f // Pitch > 1.0 renggang cepat
+            }
+            val y = cy + sin(t * freq + Math.toRadians(rotAngle.toDouble()).toFloat() + pitchOffset * 0.01f) * (h * 0.28f)
+            if (i == 0) spiral.moveTo(x, y) else spiral.lineTo(x, y)
+        }
+        drawPath(
+            path = spiral,
+            color = if (step == 3) AmberWarning else CyanBright,
+            style = Stroke(width = 3.dp.toPx())
+        )
+
+        // Bow-Tie Filter di bagian atas gantry (tebal di tepi, tipis di pusat isocenter)
+        val btLeft = Path().apply {
+            moveTo(w * 0.34f, h * 0.10f)
+            lineTo(w * 0.48f, h * 0.17f)
+            lineTo(w * 0.34f, h * 0.22f)
+            close()
+        }
+        val btRight = Path().apply {
+            moveTo(w * 0.66f, h * 0.10f)
+            lineTo(w * 0.52f, h * 0.17f)
+            lineTo(w * 0.66f, h * 0.22f)
+            close()
+        }
+        drawPath(btLeft, color = EmeraldSuccess.copy(alpha = 0.78f))
+        drawPath(btRight, color = EmeraldSuccess.copy(alpha = 0.78f))
+    }
+}
+
+// Helper teks penjelasan fisika medis langkah animasi CT Scan
 fun getStepDescription(animIndex: Int, step: Int): Triple<String, String, String> {
     return when (animIndex) {
         0 -> when (step) {
             1 -> Triple(
-                "Langkah 1: Eksitasi Pulsa RF 90° Resonansi",
-                "Pulsa eksitasi radiofrekuensi 90° berfrekuensi Larmor (B1) mendepresikan vektor magnetisasi netto makroskopik (NMV / M0) dari sumbu longitudinal z rebah seutuhnya ke bidang transversal xy, menghasilkan koherensi fase presesi transversal maksimum.",
-                "Menyelaraskan orientasi jarum kompas makroskopik secara serentak ke bidang horizontal di bawah induksi osilasi medan frekuensi radio resonansi."
+                "Langkah 1: Suplai Daya Kontinu Slip-Ring & HF HV Generator",
+                "Cincin konduktor Low-Voltage Slip-Ring menyalurkan daya listrik menuju High-Frequency Inverter HV Generator (80–140 kVp) yang terpasang langsung di atas Rotating Frame Gantry, memungkinkan putaran 360° terus-menerus tanpa kabel terbelit.",
+                "Seperti rel listrik melingkar yang menyuplai daya ke komidi putar berkecepatan tinggi tanpa satu pun kabel yang kusut."
             )
             2 -> Triple(
-                "Langkah 2: Dephasing Transversal Spontan (Peluruhan T2*)",
-                "Fluktuasi medan magnet lokal intravoksel (ΔB0) dan interaksi dipol-dipol spin-spin acak memicu dispersi fase: isokromat spin cepat mengakumulasi fase positif mendahului rerata, sedangkan isokromat spin lambat tertinggal mengakibatkan peluruhan sinyal FID cepat.",
-                "Formasi atlet berkecepatan presesi berbeda yang awalnya berada di garis start yang sama perlahan mengalami dispersi sudut fase."
+                "Langkah 2: Pancaran Berkas Kipas Sinar-X & Bow-Tie Filter",
+                "Tabung Sinar-X CT berkapasitas 5–8+ MHU memancarkan foton Bremsstrahlung dan Karakteristik melewati Bow-Tie Filter (tipis di tengah, tebal di tepi) serta Pre-Patient Collimator untuk menyeragamkan fluks foton dan memangkas dosis kulit tepi.",
+                "Lampu sorot yang dipasangi lensa dasi kupu-kupu agar bagian pinggir tubuh yang tipis tidak kelebihan cahaya."
             )
             3 -> Triple(
-                "Langkah 3: Pulsa Refokusing RF 180° (Inversi Fase)",
-                "Tepat pada interval waktu tau = TE / 2, koil RF memancarkan pulsa refokusing 180° yang membalikkan koordinat fase seluruh isokromat spin transversal terhadap sumbu refokusing (inversi konjugat fase 180°).",
-                "Instruksi pembalikan orientasi di mana isokromat spin yang tertinggal diposisikan berada di depan dan spin yang mendahului diposisikan di belakang."
+                "Langkah 3: Atenuasi Pasien di Isocenter & Penolakan Scatter",
+                "Berkas sinar-X menembus tubuh pasien yang diposisikan tepat di titik Laser Isocenter. Foton yang terhambur miring (Compton scatter) diserap oleh sekat Tungsten Post-Patient Anti-Scatter Septa di depan permukaan detektor.",
+                "Sekat kacamata kuda di depan tiap sensor detektor yang memblokir pantulan cahaya liar dari samping."
             )
             4 -> Triple(
-                "Langkah 4: Rephasing Koheren & Pembentukan Puncak Spin Echo",
-                "Isokromat spin cepat yang berada di belakang menyusul isokromat spin lambat. Tepat pada waktu echo TE = 2 × tau, seluruh isokromat mengalami rephasing koheren sempurna membentuk puncak sinyal Spin Echo yang bebas dari dephasing inhomogenitas B0.",
-                "Seluruh isokromat spin melintasi garis finish pada saat yang bersamaan, menghasilkan interferensi konstruktif sinyal listrik maksimum pada koil penerima."
+                "Langkah 4: Konversi Detektor Solid-State (Gd₂O₂S) & Digitalisasi DAS",
+                "Kristal sintilator Solid-State mengubah sisa foton sinar-X menjadi kilatan cahaya tampak, diubah oleh Silicon Photodiode menjadi arus listrik lemah (pA–nA), lalu diintegrasikan dan dikonversi secara logaritmik ln(I₀/I) oleh ADC di dalam modul DAS.",
+                "Tongkat estafet terakhir yang menerjemahkan kedipan cahaya kristal menjadi deretan angka biner Sinogram berkecepatan gigabit."
             )
             else -> Triple("", "", "")
         }
-        1 -> when (step) {
+        3 -> when (step) {
             1 -> Triple(
-                "Langkah 1: Relaksasi Longitudinal Spin-Lattice (Pemulihan Mz T1)",
-                "Komponen magnetisasi longitudinal Mz pulih kembali secara eksponensial menuju kesetimbangan M0: Mz(t) = M0 · (1 − e^(−t/T1)) melalui disipasi energi termal termodinamika spin ke kisi molekuler (lattice).",
-                "Pengisian kembali cadangan energi magnetisasi longitudinal yang dipengaruhi oleh kesesuaian tumbling rate molekuler terhadap frekuensi Larmor."
+                "Langkah 1: Pitch Helikal Rendah (< 1,0 - Overlapping)",
+                "Meja pasien bergerak lebih pendek daripada total lebar kolimasi berkas (Pitch = d / (N x T) < 1). Irisan saling tumpang tindih sehingga resolusi sumbu-Z tinggi dan noise menurun, ideal untuk organ kecil atau CT Kepala.",
+                "Mengecat dinding dengan sapuan kuas yang tumpang tindih agar hasilnya ekstra rata dan padat."
             )
             2 -> Triple(
-                "Langkah 2: Relaksasi Transversal Spin-Spin (Peluruhan Mxy T2)",
-                "Komponen magnetisasi transversal Mxy meluruh secara ireversibel: Mxy(t) = Mxy0 · e^(−t/T2) akibat dephasing intermolekuler murni antar-proton tanpa pertukaran energi termal ke lingkungan kisi.",
-                "Dispersi acak koherensi fase transversal akibat interaksi medan mikro intramolekuler yang tidak dapat direfokuskan kembali."
+                "Langkah 2: Pitch 1,0 (Akuisisi Kontigu Seimbang)",
+                "Pergerakan meja per rotasi sama persis dengan total lebar berkas (d = N x T). Tidak ada celah maupun tumpang tindih geometris, menyeimbangkan kecepatan akuisisi dan dosis radiasi rutin.",
+                "Berjalan menyusun ubin lantai tepat berdampingan tanpa celah dan tanpa menumpuk."
             )
             3 -> Triple(
-                "Langkah 3: Diferensiasi Kontras Jaringan Intrinsik (Adiposa vs CSF)",
-                "Adiposa (lipid) memiliki relaksasi T1 sangat singkat (~260 ms) dan T2 sedang, sedangkan Cairan Serebrospinal (CSF) memiliki relaksasi T1 sangat panjang (~2400 ms) dan T2 panjang (~1600 ms).",
-                "Rasio kontras intrinsik antara fraksi molekul lipid yang bertukar energi cepat dengan molekul air bebas bervolume besar."
+                "Langkah 3: Pitch Tinggi (> 1,0 - Scan Cepat Toraks/CTPA)",
+                "Meja melaju cepat melewati celah antar-lingkaran heliks sehingga waktu tahan napas pasien jauh lebih singkat. Pada single-source MSCT, perangkat menaikkan mA agar noise tetap terjaga (Effective mAs konstan).",
+                "Meregangkan per/pegas memanjang agar seluruh panjang pasien selesai dipindai dalam beberapa detik."
+            )
+            else -> Triple(
+                "Langkah 4: Bow-Tie Shaping Filter & Penyesuaian Isocenter",
+                "Filter berbentuk dasi kupu-kupu lebih tebal di tepi berkas sinar-X untuk menyerap foton lunak pada bagian pinggir tubuh yang lebih tipis, memangkas dosis kulit hingga 40-50% asalkan pasien ditempatkan tepat di Isocenter.",
+                "Lensa kacamata hitam tergradasi di sisi kiri-kanan agar bagian tepi yang tipis tidak tersilaukan oleh sinar."
+            )
+        }
+        1 -> when (step) {
+            1 -> Triple(
+                "Langkah 1: Penurunan Eksponensial Hukum Beer-Lambert",
+                "Saat menembus jaringan setebal x dengan koefisien atenuasi linier μ, intensitas berkas sinar-X menurun secara eksponensial sesuai I(x) = I₀ · e^(−μx). Setiap ketebalan 1 Half-Value Layer (HVL = 0,693/μ) memangkas intensitas foton menjadi separuhnya (50%).",
+                "Melewati berlapis-lapis kaca film di mana tiap lapis kaca mengurangi separuh cahaya yang lewat."
+            )
+            2 -> Triple(
+                "Langkah 2: Kontras Fotolistrik (Z³/E³) pada Tulang & Iodin",
+                "Kurva merah meluruh jauh lebih tajam daripada kurva biru (jaringan lunak) karena tulang kortikal (Ca, Z=20) dan media kontras Iodin (Z=53, K-edge 33,2 keV) menyerap foton sinar-X secara kuat melalui Efek Fotolistrik.",
+                "Tulang padat dan kontras Iodin bekerja seperti perisai tebal yang menghentikan foton sinar-X sehingga tampak putih terang (hiperdens)."
+            )
+            3 -> Triple(
+                "Langkah 3: Pengerasan Berkas (Beam Hardening) Polikromatik",
+                "Karena spektrum sinar-X tabung bersifat polikromatik, foton berenergi rendah terserap lebih dulu di lapisan dangkal sehingga energi rata-rata berkas yang lolos meningkat. Koreksi filtrasi dan kalibrasi mencegah munculnya cupping artifact.",
+                "Pelari berstamina lemah gugur di tanjakan awal sehingga yang mencapai garis finis hanyalah pelari berenergi tinggi."
             )
             4 -> Triple(
-                "Langkah 4: Manipulasi Ekstrinsik Waktu Repetisi (TR) & Waktu Echo (TE)",
-                "Kombinasi parameter operator konsol: TR pendek & TE pendek mengisolasi kontras T1-weighted (T1w); TR panjang & TE panjang memaksimalkan kontras T2-weighted (T2w); TR panjang & TE pendek menghasilkan Proton Density-weighted (PDw).",
-                "Pengaturan jendela waktu akuisisi ekstrinsik di konsol untuk mengeksploitasi perbedaan relaksasi intrinsik jaringan patologis."
+                "Langkah 4: Standarisasi Skala Hounsfield Unit (HU) & Windowing",
+                "Koefisien atenuasi μ setiap voksel dinormalisasi terhadap air murni menjadi skala kuantitatif HU = 1000 × (μ − μ_air) / μ_air (Air = 0 HU, Udara = −1000 HU), lalu dipetakan ke layar monitor melalui Window Width (WW) dan Window Level (WL).",
+                "Mengubah angka serapan fisik menjadi skala derajat standar seperti termometer Celcius yang berpatokan pada titik nol air."
             )
             else -> Triple("", "", "")
         }
         else -> when (step) {
             1 -> Triple(
-                "Langkah 1: Pengodean Fase K-space Baris demi Baris",
-                "Pada setiap repetisi TR, gradien pengodean fase (G_pe) diaplikasikan dengan amplitudo bertingkat teratur untuk mendeposisikan profil fase spasial dan mengisi satu baris matriks K-space (k_y).",
-                "Pencatatan data frekuensi spasial baris per baris secara terkalibrasi ke dalam domain matriks Fourier."
+                "Langkah 1: Pencuplikan Proyeksi Multi-Sudut (1.000–2.400 Views)",
+                "Selama Gantry berputar 360°, modul DAS membaca nilai integral garis atenuasi P(t, θ) = ln(I₀/I) dari seluruh kanal detektor (t) pada ribuan sudut proyeksi (θ) secara berurutan.",
+                "Memotret siluet bayangan objek dari ribuan sudut melingkar tanpa henti."
             )
             2 -> Triple(
-                "Langkah 2: Distribusi Frekuensi Spasial Domain K-space",
-                "Zona pusat K-space (frekuensi spasial rendah / k_y mendekati 0) dikodekan dengan amplitudo gradien landai untuk menentukan bobot kontras citra dan rasio SNR utama; zona perifer (frekuensi spasial tinggi) menentukan resolusi spasial dan ketajaman tepi anatomi.",
-                "Pemisahan fungsional di mana titik pusat mengendalikan persepsi kontras jaringan dan batas tepi mengendalikan detail spasial beresolusi tinggi."
+                "Langkah 2: Pembentukan Gelombang Sinus pada Matriks Sinogram",
+                "Ketika profil proyeksi dari sudut 0° hingga 360° ditumpuk baris demi baris, setiap struktur anatomi di luar pusat Isocenter membentuk jejak kurva sinusoidal yang mulus (Transformasi Radon / Raw Data Sinogram).",
+                "Jejak posisi mercusuar yang tampak meliuk ke kiri dan kanan membentuk gelombang sinus saat dipotret dari kapal yang berputar mengelilingi pulau."
             )
             3 -> Triple(
-                "Langkah 3: Simetri Konjugat Hermitian K-space (Partial Fourier)",
-                "Matriks K-space memiliki simetri konjugat kompleks Hermitian di mana data kuadran berlawanan merupakan proyeksi simetris, memungkinkan rekonstruksi Fractional Phase/Frequency Encoding untuk mereduksi waktu akuisisi (TA).",
-                "Pemanfaatan redundansi matematis simetri Fourier untuk mempercepat akuisisi tanpa mengorbankan integritas informasi diagnostik."
+                "Langkah 3: Konvolusi Filter Frekuensi (Ramp Filter & Kernel)",
+                "Sebelum diproyeksikan balik, setiap baris Sinogram dikonvolusikan dengan filter matematis (Ramp Filter) untuk menghilangkan kabur bintang 1/r, serta disesuaikan dengan pilihan Soft Kernel (halus, rendah noise) atau Sharp/Bone Kernel (tepi tajam).",
+                "Memasang cetakan penajam tepi pada setiap sorotan proyektor agar bayangan yang bertumpuk tidak saling mengaburkan."
             )
             4 -> Triple(
-                "Langkah 4: Rekonstruksi 2D Fast Fourier Transform (FFT)",
-                "Setelah seluruh data matriks K-space terakuisisi lengkap, prosesor rekonstruksi menjalankan algoritma 2D Fast Fourier Transform (2D-FFT) untuk mendekonvolusi data domain frekuensi spasial menjadi citra anatomi visual berformat matriks piksel.",
-                "Transformasi matematis komputasi yang mendekonstruksi spektrum frekuensi dan fase gelombang RF menjadi visualisasi penampang anatomi diagnostik."
+                "Langkah 4: Back-Projection & Rekonstruksi Iteratif / AI DLIR",
+                "Profil yang telah difilter diproyeksikan balik dari 360° ke atas matriks piksel 512×512 (atau diperbarui secara berulang lewat algoritma Iterative Reconstruction & AI DLIR) untuk menghasilkan citra penampang aksial CT yang tajam dan rendah dosis.",
+                "Menyatukan ribuan goresan sudut pandang menjadi satu lukisan anatomi penampang melintang yang jernih."
             )
             else -> Triple("", "", "")
         }

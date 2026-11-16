@@ -1,6 +1,6 @@
 package com.example.util
 
-import com.example.data.MriQuizQuestion
+import com.example.data.CtQuizQuestion
 import com.example.data.local.QuizAttemptEntity
 
 data class CatalogQuizStats(
@@ -17,7 +17,7 @@ object QuizStatsCalculator {
      * di katalog kurikulum (mengabaikan attempt `story:*` dari Mode Pelajaran Bertahap).
      */
     fun compute(
-        allQuizzes: List<MriQuizQuestion>,
+        allQuizzes: List<CtQuizQuestion>,
         attempts: List<QuizAttemptEntity>,
         selectedModuleFilter: String = "ALL"
     ): CatalogQuizStats {

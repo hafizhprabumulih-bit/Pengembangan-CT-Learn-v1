@@ -184,7 +184,7 @@ fun PathNodeButton(
     semanticLabel: String = label
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val haptics = com.example.util.rememberMriHaptics()
+    val haptics = com.example.util.rememberCtHaptics()
     val reduceMotion = rememberReduceMotion()
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val interactionSource = remember { MutableInteractionSource() }
@@ -736,14 +736,13 @@ fun SectionDivider(
     val colorScheme = MaterialTheme.colorScheme
     val reduceMotion = rememberReduceMotion()
     val resolvedTitle = remember(title) {
-        title.replace("Ruang-k", "K-space").replace("ruang-k", "K-space").replace("Ruang K", "K-space")
+        title
     }
     val resolvedSubtitle = remember(subtitle) {
         subtitle
             ?.replace("simpul", "materi")
             ?.replace("Simpul", "Materi")
-            ?.replace("Ruang-k", "K-space")
-            ?.replace("ruang-k", "K-space")
+
     }
 
     // Parse "done/total" otomatis dari subtitle bila doneCount/totalCount tidak dikirim eksplisit

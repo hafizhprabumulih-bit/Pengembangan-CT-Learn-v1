@@ -14,7 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.BuildConfig
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
+import com.example.data.CtModule
 import com.example.ui.lesson.LessonScreen
 import com.example.ui.module.ModuleDetailScreen
 import com.example.ui.module.ReaderMode
@@ -26,8 +26,8 @@ import com.example.util.lesson.AttemptRecord
 import com.example.util.lesson.LESSON_FLOW_ENABLED
 import com.example.util.lesson.MasteryStars
 import com.example.viewmodel.MainTab
-import com.example.viewmodel.MriUiState
-import com.example.viewmodel.MriViewModel
+import com.example.viewmodel.CtUiState
+import com.example.viewmodel.CtViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,9 +38,9 @@ import java.util.Locale
  */
 @Composable
 fun ModuleRouteHost(
-    module: MriModule,
-    state: MriUiState,
-    viewModel: MriViewModel,
+    module: CtModule,
+    state: CtUiState,
+    viewModel: CtViewModel,
     modifier: Modifier = Modifier
 ) {
     val pathHolder = rememberModulePathStateHolder()

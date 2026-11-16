@@ -6,8 +6,8 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.data.local.ALL_MIGRATIONS
+import com.example.data.local.CtDatabase
 import com.example.data.local.DB_VERSION
-import com.example.data.local.MriDatabase
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -17,12 +17,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class MriMigrationTest {
+class CtMigrationTest {
 
     @get:Rule
     val helper: MigrationTestHelper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
-        MriDatabase::class.java,
+        CtDatabase::class.java,
         emptyList(),
         FrameworkSQLiteOpenHelperFactory()
     )
@@ -35,15 +35,15 @@ class MriMigrationTest {
             )
             execSQL(
                 "INSERT INTO study_notes (id, title, content, category, createdAt, updatedAt, nodeCode, moduleId) " +
-                "VALUES ('note_1', 'Judul Catatan', 'Isi catatan tes', 'Fisika', 1000, 1000, 'M01.T1.1', 'M01')"
+                    "VALUES ('note_1', 'Judul Catatan', 'Isi catatan tes', 'Fisika', 1000, 1000, 'M01.T1.1', 'M01')"
             )
             execSQL(
                 "INSERT INTO quiz_attempts (quizId, nodeCode, moduleId, selectedIndex, isCorrect, answeredAt) " +
-                "VALUES ('M01_Q1', 'M01.T1.1', 'M01', 0, 1, 1000)"
+                    "VALUES ('M01_Q1', 'M01.T1.1', 'M01', 0, 1, 1000)"
             )
             execSQL(
                 "INSERT INTO study_days (dateIso, nodesCompletedCount, lastNodeCode, lastModuleId) " +
-                "VALUES ('2026-11-11', 1, 'M01.T1.1', 'M01')"
+                    "VALUES ('2026-11-11', 1, 'M01.T1.1', 'M01')"
             )
             close()
         }
@@ -90,7 +90,7 @@ class MriMigrationTest {
 
         val appDb = Room.databaseBuilder(
             InstrumentationRegistry.getInstrumentation().targetContext,
-            MriDatabase::class.java,
+            CtDatabase::class.java,
             TEST_DB
         ).addMigrations(*ALL_MIGRATIONS).build()
 

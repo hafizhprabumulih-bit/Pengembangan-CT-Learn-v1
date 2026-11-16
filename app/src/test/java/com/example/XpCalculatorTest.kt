@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.data.MriRepository
+import com.example.data.CtRepository
 import com.example.data.local.QuizAttemptEntity
 import com.example.util.XpCalculator
 import com.example.util.XpRules
@@ -13,7 +13,7 @@ class XpCalculatorTest {
 
     @Test
     fun calculatesReadNodesQuizAndCompleteModuleBonus() {
-        val m01 = MriRepository.modules.first { it.id == "M01" }
+        val m01 = CtRepository.modules.first { it.id == "M01" }
         val m01Codes = m01.nodes.map { it.code }.toSet()
 
         val attempts = listOf(
@@ -28,7 +28,7 @@ class XpCalculatorTest {
             completedCodes = m01Codes + setOf("ORPHAN.NODE.99"),
             skippedCodes = emptySet(),
             quizAttempts = attempts,
-            modules = MriRepository.modules
+            modules = CtRepository.modules
         )
 
         assertEquals(m01.nodes.size, summary.readNodesCount)
@@ -45,7 +45,7 @@ class XpCalculatorTest {
 
     @Test
     fun skippedNodesGiveZeroXpAndExcludeModuleBonusUntilRead() {
-        val m02 = MriRepository.modules.first { it.id == "M02" }
+        val m02 = CtRepository.modules.first { it.id == "M02" }
         val allM02Codes = m02.nodes.map { it.code }.toSet()
         val skipped = setOf(m02.nodes.first().code)
 
@@ -53,7 +53,7 @@ class XpCalculatorTest {
             completedCodes = allM02Codes,
             skippedCodes = skipped,
             quizAttempts = emptyList(),
-            modules = MriRepository.modules
+            modules = CtRepository.modules
         )
 
         assertEquals(m02.nodes.size - 1, withSkipped.readNodesCount)
@@ -65,7 +65,7 @@ class XpCalculatorTest {
             completedCodes = allM02Codes,
             skippedCodes = emptySet(),
             quizAttempts = emptyList(),
-            modules = MriRepository.modules
+            modules = CtRepository.modules
         )
         assertEquals(1, afterRead.completedModulesCount)
         assertEquals(
@@ -76,15 +76,15 @@ class XpCalculatorTest {
 
     @Test
     fun uncompletingNodeReducesXpAndRemovesModuleBonus() {
-        val m02 = MriRepository.modules.first { it.id == "M02" }
+        val m02 = CtRepository.modules.first { it.id == "M02" }
         val allM02Codes = m02.nodes.map { it.code }.toSet()
 
-        val full = XpCalculator.calculate(allM02Codes, emptySet(), emptyList(), MriRepository.modules)
+        val full = XpCalculator.calculate(allM02Codes, emptySet(), emptyList(), CtRepository.modules)
         val reduced = XpCalculator.calculate(
             allM02Codes - m02.nodes.last().code,
             emptySet(),
             emptyList(),
-            MriRepository.modules
+            CtRepository.modules
         )
 
         assertEquals(
@@ -97,7 +97,7 @@ class XpCalculatorTest {
     fun nextUnlockPreviewFindsNearestCharacterRewardProgress() {
         val preview = XpCalculator.nextUnlockPreview(
             completedCodes = setOf("M05.T1.1", "M05.T1.2"),
-            modules = MriRepository.modules,
+            modules = CtRepository.modules,
             preferredModuleId = "M05"
         )
         assertNotNull(preview)
@@ -109,7 +109,7 @@ class XpCalculatorTest {
     fun nextUnlockPreviewAggregatesSplitChapterModulesAndMatchesBranchPreference() {
         val preview = XpCalculator.nextUnlockPreview(
             completedCodes = setOf("M07.T1.1", "M07.T1.2"),
-            modules = MriRepository.modules,
+            modules = CtRepository.modules,
             preferredModuleId = "M07"
         )
         assertNotNull(preview)

@@ -1,6 +1,6 @@
 package com.example.util
 
-import com.example.data.MriQuizQuestion
+import com.example.data.CtQuizQuestion
 import com.example.data.local.QuizAttemptEntity
 
 enum class LevelQuizCompletionState {
@@ -32,7 +32,7 @@ object LevelQuizStatus {
 
     fun compute(
         level: Int,
-        levelQuizzes: List<MriQuizQuestion>,
+        levelQuizzes: List<CtQuizQuestion>,
         levelNodeStates: List<PathNodeState>,
         attempts: List<QuizAttemptEntity>,
         strictLocks: Boolean = PATH_STRICT_LOCKS

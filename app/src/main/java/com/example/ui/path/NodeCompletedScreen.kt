@@ -65,8 +65,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.data.CharacterCustomizationState
-import com.example.data.MriModule
-import com.example.data.MriNode
+import com.example.data.CtModule
+import com.example.data.CtNode
 import com.example.ui.character.AvatarView
 import com.example.ui.character.Expression
 import com.example.ui.theme.AmberAccent
@@ -88,9 +88,9 @@ import com.example.util.XpSummary
 
 @Composable
 fun NodeCompletedScreen(
-    module: MriModule,
-    completedNode: MriNode,
-    nextNode: MriNode?,
+    module: CtModule,
+    completedNode: CtNode,
+    nextNode: CtNode?,
     earnedXp: Int,
     xpSummary: XpSummary,
     streakDays: Int,
@@ -111,7 +111,7 @@ fun NodeCompletedScreen(
     onReplayLesson: (() -> Unit)? = null,
     isReplay: Boolean = false
 ) {
-    val haptics = com.example.util.rememberMriHaptics()
+    val haptics = com.example.util.rememberCtHaptics()
     val reduceMotion = rememberReduceMotion()
     var revealed by remember(completedNode.code) { mutableStateOf(reduceMotion) }
 

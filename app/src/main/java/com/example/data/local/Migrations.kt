@@ -4,7 +4,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
- * Satu-satunya sumber kebenaran versi skema [MriDatabase].
+ * Satu-satunya sumber kebenaran versi skema [CtDatabase].
  * Naikkan nilai ini HANYA bersamaan dengan menulis Migration yang nyata (lihat prosedur di bawah).
  */
 const val DB_VERSION = 14
@@ -38,7 +38,7 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
  *    menyamai 13.json, dan JANGAN menyentuh tabel data pengguna (node_progress, study_notes,
  *    quiz_attempts, study_days) kecuali dengan ALTER TABLE atau tabel sementara yang menyalin data.
  * 4. Daftarkan di ALL_MIGRATIONS DI SINI, dan baru pada langkah ini.
- * 5. Jalankan MigrationChainTest (JVM) dan MriMigrationTest (perangkat) sampai hijau.
+ * 5. Jalankan MigrationChainTest (JVM) dan CtMigrationTest (perangkat) sampai hijau.
  */
 val MIGRATION_13_14 = object : Migration(13, 14) {
     override fun migrate(db: SupportSQLiteDatabase) {

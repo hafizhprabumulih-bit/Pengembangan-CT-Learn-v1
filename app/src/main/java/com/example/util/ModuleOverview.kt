@@ -2,9 +2,9 @@ package com.example.util
 
 import com.example.data.CharacterCatalog
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriModule
-import com.example.data.MriNode
-import com.example.data.MriQuizQuestion
+import com.example.data.CtModule
+import com.example.data.CtNode
+import com.example.data.CtQuizQuestion
 import com.example.data.UnlockRequirement
 
 data class LevelOverview(
@@ -16,7 +16,7 @@ data class LevelOverview(
 )
 
 data class ModuleOverviewSummary(
-    val module: MriModule,
+    val module: CtModule,
     val chapterNumber: Int,
     val moduleIndexInCurriculum: Int,
     val totalModules: Int,
@@ -29,7 +29,7 @@ data class ModuleOverviewSummary(
     val levels: List<LevelOverview>,
     val crossModulePrerequisites: List<String>,
     val isRecommended: Boolean,
-    val currentNode: MriNode?,
+    val currentNode: CtNode?,
     val isComplete: Boolean,
     val isNotStarted: Boolean,
     val rewardItemName: String?
@@ -41,10 +41,10 @@ data class ModuleOverviewSummary(
 object ModuleOverview {
 
     fun compute(
-        module: MriModule,
-        allModules: List<MriModule>,
+        module: CtModule,
+        allModules: List<CtModule>,
         completedCodes: Set<String>,
-        quizzes: List<MriQuizQuestion>,
+        quizzes: List<CtQuizQuestion>,
         enforceCurriculumLocks: Boolean = CharacterCatalog.ENFORCE_CURRICULUM_LOCKS,
         triedLabNodes: Set<String> = emptySet()
     ): ModuleOverviewSummary {

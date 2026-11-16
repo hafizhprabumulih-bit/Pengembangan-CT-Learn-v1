@@ -1,10 +1,10 @@
 package com.example.util
 
-import com.example.data.MriModule
-import com.example.data.MriNode
+import com.example.data.CtModule
+import com.example.data.CtNode
 
 object ResumeNodeResolver {
-    fun findNode(modules: List<MriModule>, code: String?): MriNode? {
+    fun findNode(modules: List<CtModule>, code: String?): CtNode? {
         if (code.isNullOrBlank()) return null
         for (module in modules) {
             for (node in module.nodes) {
@@ -16,7 +16,7 @@ object ResumeNodeResolver {
         return null
     }
 
-    fun moduleIdOf(modules: List<MriModule>, code: String?): String? {
+    fun moduleIdOf(modules: List<CtModule>, code: String?): String? {
         if (code.isNullOrBlank()) return null
         for (module in modules) {
             if (module.nodes.any { it.code == code }) {
@@ -32,7 +32,7 @@ object ResumeNodeResolver {
         return null
     }
 
-    fun codeToRememberOnOpen(module: MriModule, storedCode: String?): String? {
+    fun codeToRememberOnOpen(module: CtModule, storedCode: String?): String? {
         if (storedCode != null && module.nodes.any { it.code == storedCode }) {
             return storedCode
         }
@@ -40,7 +40,7 @@ object ResumeNodeResolver {
             ?: module.nodes.firstOrNull()?.code
     }
 
-    fun isKnownNode(modules: List<MriModule>, code: String): Boolean {
+    fun isKnownNode(modules: List<CtModule>, code: String): Boolean {
         if (code.isBlank()) return false
         for (module in modules) {
             if (module.nodes.any { it.code == code }) {

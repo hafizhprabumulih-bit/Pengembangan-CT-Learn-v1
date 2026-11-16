@@ -5,17 +5,19 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.example.data.GlossaryItem
 import com.example.data.CharacterCustomizationState
+import com.example.data.CtFlashcard
+import com.example.data.CtGlossaryItem
+import com.example.data.CtModule
+import com.example.data.CtNode
+import com.example.data.CtQuizQuestion
+import com.example.data.CtRepository
+import com.example.data.CtTissueAttenuation
 import com.example.data.LegacyNodeCodes
-import com.example.data.MriFlashcard
-import com.example.data.MriModule
-import com.example.data.MriNode
-import com.example.data.MriRepository
-import com.example.data.QuizQuestion
+import com.example.data.PracticeExamStats
 import com.example.data.StudyNote
-import com.example.data.TissueProperties
 import com.example.data.UserDataRepository
+import com.example.util.CtPhysicsCalculator
 import com.example.data.local.QuizAttemptEntity
 import com.example.data.local.StudyDayEntity
 import com.example.data.local.StudyNoteEntity
@@ -36,7 +38,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.util.UUID
-import kotlin.math.exp
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 enum class MainTab {
     BERANDA,
@@ -49,71 +52,57 @@ enum class MainTab {
     KARAKTER
 }
 
-enum class SimType {
-    FISIKA_DASAR_M01,
-    SPIN_LARMOR,
-    KONTRAS_TR_TE,
-    RUANG_K,
-    SAR_SAFETY,
-    PROTOKOL_TA_SNR,
-    KONSOL_VENDOR,
-    PESAWAT_MAGNET_M05,
-    GRADIEN_RF_M06,
-    SEKUENS_KONTRAS_M03,
-    ARTEFAK_QA_M08
+enum class CtSimType {
+    GANTRY_RANTAI_SINYAL,
+    WINDOWING_HU_ATENUASI,
+    MSCT_PITCH_REKON,
+    DOSIMETRI_BOLUS_TRACKING,
+    ARTEFAK_KALIBRASI_QA
 }
 
-data class MriUiState(
+data class CtUiState(
     val currentTab: MainTab = MainTab.BERANDA,
-    val modulesList: List<MriModule> = MriRepository.modules,
-    val quizzesList: List<QuizQuestion> = MriRepository.quizzes,
-    val selectedModule: MriModule? = null,
-    val selectedSimType: SimType = SimType.SPIN_LARMOR,
-    val selectedM01ActivityId: String = "pengantar_atom",
-    val selectedM02ActivityId: String = "m2_fantom_otak",
-    val selectedM03ActivityId: String = "m3a_spin_echo",
-    val selectedM04ActivityId: String = "m4a_gradien_larmor",
-    val selectedM05ActivityId: String = "m5_a1_penampang",
-    val selectedM06ActivityId: String = "m6a_trapesium_gradien",
-    val selectedM07ActivityId: String = "m7a_zona_akses",
-    val selectedM08ActivityId: String = "m8a_luar_fase",
-    val selectedM09ActivityId: String = "ta_snr",
+    val modulesList: List<CtModule> = CtRepository.modules,
+    val quizzesList: List<CtQuizQuestion> = CtRepository.quizzes,
+    val selectedModule: CtModule? = null,
+    val selectedSimType: CtSimType = CtSimType.GANTRY_RANTAI_SINYAL,
+    val selectedCtActivityId: String = "ct_m02_anatomi_pesawat",
     val completedNodeCodes: Set<String> = emptySet(),
     val lastVisitedNodeCode: String? = null,
     val isResumeRestored: Boolean = false,
-    // Streak Hari Belajar 🔥
+    // Streak Hari Belajar
     val studyStreakDays: Int = 0,
     val showStreakDialog: Boolean = false,
-    // Avatar Pengguna & Ruang Karakter 👨‍⚕️
-    val userAvatarId: String = "radiografer_mri",
+    // Avatar Pengguna & Ruang Karakter
+    val userAvatarId: String = "radiografer_ct",
     val userName: String = "",
     val showAvatarDialog: Boolean = false,
     val characterCustomization: CharacterCustomizationState = CharacterCustomizationState(),
-    // Catatan Belajar (Notes) 📝
+    // Catatan Belajar (Notes)
     val notesList: List<StudyNote> = emptyList(),
     val selectedNoteCategory: String = "SEMUA",
     val showNoteDialog: Boolean = false,
     val editingNote: StudyNote? = null,
     // Riwayat Kuis
     val quizAttempts: List<QuizAttemptEntity> = emptyList(),
-    // Animasi Belajar 🎬
+    // Animasi Belajar
     val selectedAnimationIndex: Int = 0,
     val isAnimationPlaying: Boolean = true,
     val animationStep: Int = 1, // 1 to 4
-    // Simulator Kontras & Kurva Relaksasi T1/T2 States
-    val selectedTissue: TissueProperties = MriRepository.tissues[0],
-    val relaxationTimeMs: Float = 260f,
-    val isRelaxationPlaying: Boolean = false,
-    val trMs: Float = 500f,
-    val teMs: Float = 20f,
-    // Simulator Larmor States
-    val selectedB0: Float = 1.5f,
-    val selectedNucleusGamma: Float = MriRepository.GAMMA_1H,
-    val selectedNucleusName: String = "Hidrogen (¹H)",
-    val flipAngleDeg: Float = 90f,
-    // SAR Calculator States
-    val patientWeightKg: Float = 70f,
-    val isTseSequence: Boolean = true,
+    // Parameter Konsol & Fisika CT Scan
+    val selectedTissue: CtTissueAttenuation = CtRepository.tissues[0],
+    val tubeKvp: Int = 120,
+    val tubeMa: Float = 240f,
+    val rotationTimeSec: Float = 0.5f,
+    val helicalPitch: Float = 1.0f,
+    val scanLengthCm: Float = 30f,
+    val isHeadPhantom: Boolean = false,
+    val windowWidthHu: Float = 80f,
+    val windowLevelHu: Float = 40f,
+    val reconstructionMatrix: Int = 512,
+    val displayFovMm: Float = 240f,
+    val isIterativeReconActive: Boolean = true,
+    val bolusThresholdHu: Int = 120,
     // Kuis States
     val quizModuleFilter: String = "SEMUA",
     val quizLevelFilter: Int = 0, // 0 = Semua, 1 = Tingkat 1, 2 = Tingkat 2, 3 = Tingkat 3
@@ -127,12 +116,12 @@ data class MriUiState(
     // Glosarium States
     val glossarySearchQuery: String = "",
     val glossaryModuleFilter: String = "SEMUA",
-    val selectedGlossaryDetail: GlossaryItem? = null,
+    val selectedGlossaryDetail: CtGlossaryItem? = null,
     // Level & Mode filter for Module Detail (-1 = Semua, 0 = Tujuan, 1 = T1, 2 = T2, 3 = T3)
     val nodeLevelFilter: Int = 0,
     val globalNodeMode: String = "s",
     val nodeModeMap: Map<String, String> = emptyMap(),
-    // Bookmark & Flashcards States (dipisahkan per mode Modul vs Glosarium - B-13)
+    // Bookmark & Flashcards States (dipisahkan per mode Modul vs Glosarium)
     val bookmarkedNodeCodes: Set<String> = emptySet(),
     val bookmarkedGlossaryTerms: Set<String> = emptySet(),
     val masteredFlashcardIds: Set<String> = emptySet(),
@@ -154,11 +143,11 @@ data class MriUiState(
     val isLoading: Boolean = false,
     val loadingMessage: String? = null,
     val canNavigateBack: Boolean = false,
-    val matrixNy: Int = 256,
-    val nexCount: Int = 1,
-    val etlCount: Int = 4
+    val instantTransitions: Boolean = false,
+    val enforceCharacterLocks: Boolean = false,
+    val practiceExamStats: PracticeExamStats = PracticeExamStats()
 ) {
-    // B-10, B-22 & N-03: Evaluasi malas (lazy) agar penyalinan state saat geser slider tidak mengalokasikan HashSet baru di setiap frame
+    // Evaluasi malas (lazy) agar penyalinan state saat geser slider tidak mengalokasikan HashSet baru
     val validNodeCodes: Set<String> by lazy(LazyThreadSafetyMode.NONE) {
         modulesList.flatMapTo(HashSet()) { m -> m.nodes.map { it.code } }
     }
@@ -170,7 +159,7 @@ data class MriUiState(
     val isFlashcardMode: Boolean
         get() = if (selectedModule != null) isModuleFlashcardMode else isGlossaryFlashcardMode
 
-    fun isFlashcardBookmarked(card: MriFlashcard): Boolean =
+    fun isFlashcardBookmarked(card: CtFlashcard): Boolean =
         if (card.isGlossaryCard) {
             bookmarkedGlossaryTerms.contains(card.glossaryTermKey) ||
                 bookmarkedGlossaryTerms.contains(card.frontTitle)
@@ -178,13 +167,13 @@ data class MriUiState(
             bookmarkedNodeCodes.contains(card.nodeCode)
         }
 
-    val lastVisitedNode: MriNode
+    val lastVisitedNode: CtNode
         get() = ResumeNodeResolver.findNode(modulesList, lastVisitedNodeCode)
             ?: modulesList.firstOrNull()?.nodes?.firstOrNull { it.level >= 1 }
             ?: modulesList.firstOrNull()?.nodes?.firstOrNull()
-            ?: MriRepository.modules[0].nodes[1]
+            ?: CtRepository.modules[0].nodes[1]
 
-    val filteredQuizzes: List<QuizQuestion>
+    val filteredQuizzes: List<CtQuizQuestion>
         get() = quizzesList.filter { q ->
             val filter = quizModuleFilter
             val matchesMod = filter == "SEMUA" ||
@@ -196,63 +185,48 @@ data class MriUiState(
             matchesMod && matchesLevel
         }.map { QuizShuffle.shuffled(it) }
 
-    val estimatedScanTimeSec: Float
+    // Parameter Turunan Klinis CT Scan (sumber tunggal: CtPhysicsCalculator)
+    val effectiveMas: Float
+        get() = CtPhysicsCalculator.effectiveMas(tubeMa, rotationTimeSec, helicalPitch)
+
+    val pixelSizeMm: Float
+        get() = CtPhysicsCalculator.pixelSizeMm(displayFovMm, reconstructionMatrix)
+
+    val ctdiVolMgy: Float
+        get() = CtPhysicsCalculator.ctdiVolMgy(tubeKvp, effectiveMas, isHeadPhantom)
+
+    val dlpMgyCm: Float
+        get() = CtPhysicsCalculator.dlpMgyCm(ctdiVolMgy, scanLengthCm)
+
+    val effectiveDoseMsv: Float
+        get() = CtPhysicsCalculator.effectiveDoseMsv(dlpMgyCm, isHeadPhantom)
+
+    val isDrlExceeded: Boolean
         get() {
-            val trSec = trMs / 1000f
-            return (trSec * matrixNy * nexCount) / etlCount.coerceAtLeast(1)
+            val drlLimit = if (isHeadPhantom) CtRepository.DRL_HEAD_CTDI_MGY else CtRepository.DRL_BODY_CTDI_MGY
+            return ctdiVolMgy > drlLimit
         }
 
-    val larmorFreqMhz: Float
-        get() = selectedNucleusGamma * selectedB0
+    val estimatedNoiseSdHu: Float
+        get() = CtPhysicsCalculator.relativeNoiseSdHu(tubeKvp, effectiveMas, isIterativeReconActive)
 
-    val mzRecoveryRatio: Float
-        get() = (1f - exp(-relaxationTimeMs / selectedTissue.t1Ms.coerceAtLeast(1f))).coerceIn(0f, 1f)
+    val calculatedHu: Int
+        get() = CtRepository.calculateHu(selectedTissue.muPerCmAt120kVp)
 
-    val mxyDecayRatio: Float
-        get() = exp(-relaxationTimeMs / selectedTissue.t2Ms.coerceAtLeast(1f)).coerceIn(0f, 1f)
-
-    // B-14: Cegah pembagian dengan nol / NaN jika t1Ms atau t2Ms <= 0
-    val calculatedSignal: Float
+    val windowRangeSummary: String
         get() {
-            val t1 = selectedTissue.t1Ms.coerceAtLeast(1f)
-            val t2 = selectedTissue.t2Ms.coerceAtLeast(1f)
-            val pd = selectedTissue.protonDensity
-            val t1Factor = 1f - exp(-trMs / t1)
-            val t2Factor = exp(-teMs / t2)
-            return (pd * t1Factor * t2Factor).coerceIn(0.01f, 1.0f)
+            val low = (windowLevelHu - windowWidthHu / 2f).roundToInt()
+            val high = (windowLevelHu + windowWidthHu / 2f).roundToInt()
+            return "$low s.d. $high HU"
         }
-
-    // B-11: Rentang tengah TR/TE menghasilkan Pembobotan Campuran (Mixed / Intermediate), bukan jatuh ke PDw
-    val weightingType: String
-        get() = when {
-            trMs < 800f && teMs <= 30f -> "Pembobotan T1-Weighted (T1w)"
-            trMs >= 1800f && teMs >= 70f -> "Pembobotan T2-Weighted (T2w)"
-            trMs >= 1800f && teMs <= 30f -> "Pembobotan Proton Density (PDw)"
-            else -> "Pembobotan Campuran (Mixed / Intermediate)"
-        }
-
-    // B-16: Simpan nilai SAR mentah (tanpa pemotongan 5,5 W/kg) dan flag batas terlampaui
-    val rawCalculatedSar: Float
-        get() {
-            val b0Factor = (selectedB0 / 1.5f) * (selectedB0 / 1.5f)
-            val rfPowerFactor = if (isTseSequence) 1.85f else 0.85f
-            val baseSar = 0.95f * b0Factor * rfPowerFactor
-            return (baseSar * (70f / patientWeightKg.coerceAtLeast(30f))).coerceAtLeast(0.2f)
-        }
-
-    val isSarClamped: Boolean
-        get() = rawCalculatedSar > 5.5f
-
-    val calculatedSar: Float
-        get() = rawCalculatedSar.coerceIn(0.2f, 5.5f)
 }
 
-class MriViewModel(
+class CtViewModel(
     application: Application,
     private val savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
 
-    // Konstruktor sekunder untuk kompatibilitas tes unit yang memanggil MriViewModel(application)
+    // Konstruktor sekunder untuk kompatibilitas tes unit yang memanggil CtViewModel(application)
     constructor(application: Application) : this(application, SavedStateHandle())
 
     private val repository = UserDataRepository(application)
@@ -261,19 +235,19 @@ class MriViewModel(
         ?.let { runCatching { MainTab.valueOf(it) }.getOrNull() }
         ?: MainTab.BERANDA
 
-    private val initialSimType: SimType = savedStateHandle.get<String>(KEY_SELECTED_SIM_TYPE)
-        ?.let { runCatching { SimType.valueOf(it) }.getOrNull() }
-        ?: SimType.SPIN_LARMOR
+    private val initialSimType: CtSimType = savedStateHandle.get<String>(KEY_SELECTED_SIM_TYPE)
+        ?.let { runCatching { CtSimType.valueOf(it) }.getOrNull() }
+        ?: CtSimType.GANTRY_RANTAI_SINYAL
 
-    private val initialModule: MriModule? = savedStateHandle.get<String>(KEY_SELECTED_MODULE_ID)
-        ?.let { modId -> MriRepository.modules.find { it.id == modId } }
+    private val initialModule: CtModule? = savedStateHandle.get<String>(KEY_SELECTED_MODULE_ID)
+        ?.let { modId -> CtRepository.modules.find { it.id == modId } }
 
     private val initialQuizModFilter: String = savedStateHandle.get<String>(KEY_QUIZ_MOD_FILTER) ?: "SEMUA"
     private val initialQuizLevelFilter: Int = savedStateHandle.get<Int>(KEY_QUIZ_LEVEL_FILTER) ?: 0
     private val initialNoteCategory: String = savedStateHandle.get<String>(KEY_NOTE_CATEGORY) ?: "SEMUA"
 
     private val _uiState = MutableStateFlow(
-        MriUiState(
+        CtUiState(
             currentTab = initialTab,
             selectedModule = initialModule,
             selectedSimType = initialSimType,
@@ -282,28 +256,20 @@ class MriViewModel(
             selectedNoteCategory = initialNoteCategory
         )
     )
-    val uiState: StateFlow<MriUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<CtUiState> = _uiState.asStateFlow()
 
     private var latestStudyDays: List<StudyDayEntity> = emptyList()
 
     private data class NavSession(
         val tab: MainTab,
         val moduleId: String?,
-        val simType: SimType,
+        val simType: CtSimType,
         val nodeLevelFilter: Int,
         val onlyBookmarkedNodes: Boolean,
         val quizModuleFilter: String,
         val quizLevelFilter: Int,
         val currentQuizIndex: Int,
-        val selectedM01ActivityId: String,
-        val selectedM02ActivityId: String,
-        val selectedM03ActivityId: String,
-        val selectedM04ActivityId: String,
-        val selectedM05ActivityId: String,
-        val selectedM06ActivityId: String,
-        val selectedM07ActivityId: String,
-        val selectedM08ActivityId: String,
-        val selectedM09ActivityId: String,
+        val selectedCtActivityId: String,
         val screenKey: String,
         val scrollOffset: Int
     )
@@ -311,7 +277,7 @@ class MriViewModel(
     private val navigationHistory = ArrayDeque<NavSession>()
     private val screenScrollOffsets = mutableMapOf<String, Int>()
 
-    private fun resolveScreenKey(state: MriUiState): String {
+    private fun resolveScreenKey(state: CtUiState): String {
         val mod = state.selectedModule
         return when {
             mod != null -> "module_${mod.id}"
@@ -338,15 +304,7 @@ class MriViewModel(
             quizModuleFilter = current.quizModuleFilter,
             quizLevelFilter = current.quizLevelFilter,
             currentQuizIndex = current.currentQuizIndex,
-            selectedM01ActivityId = current.selectedM01ActivityId,
-            selectedM02ActivityId = current.selectedM02ActivityId,
-            selectedM03ActivityId = current.selectedM03ActivityId,
-            selectedM04ActivityId = current.selectedM04ActivityId,
-            selectedM05ActivityId = current.selectedM05ActivityId,
-            selectedM06ActivityId = current.selectedM06ActivityId,
-            selectedM07ActivityId = current.selectedM07ActivityId,
-            selectedM08ActivityId = current.selectedM08ActivityId,
-            selectedM09ActivityId = current.selectedM09ActivityId,
+            selectedCtActivityId = current.selectedCtActivityId,
             screenKey = key,
             scrollOffset = screenScrollOffsets[key] ?: 0
         )
@@ -375,7 +333,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal seed kurikulum", e)
+                Log.e("CtViewModel", "gagal seed kurikulum", e)
             }
         }
 
@@ -385,7 +343,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal menormalkan kode lama", e)
+                Log.e("CtViewModel", "gagal menormalkan kode lama", e)
             }
         }
 
@@ -394,7 +352,7 @@ class MriViewModel(
                 if (!seeded) {
                     val count = repository.getNotesCount()
                     if (count == 0) {
-                        MriRepository.defaultNotes.forEach { defaultNote ->
+                        CtRepository.defaultNotes.forEach { defaultNote ->
                             repository.insertNote(
                                 StudyNoteEntity(
                                     id = defaultNote.id,
@@ -417,7 +375,7 @@ class MriViewModel(
                 .map { nodeEntities ->
                     if (nodeEntities.isEmpty()) null else {
                         val groupedByModule = nodeEntities.groupBy { it.moduleId }
-                        MriRepository.modules.map { baseMod ->
+                        CtRepository.modules.map { baseMod ->
                             val orderMap = baseMod.nodes.mapIndexed { idx, n -> n.code to idx }.toMap()
                             val dbNodes = groupedByModule[baseMod.id]
                                 ?.map { it.toDomainModel() }
@@ -451,7 +409,7 @@ class MriViewModel(
                 .map { quizEntities ->
                     if (quizEntities.isEmpty()) null else {
                         val mappedQuizzes = quizEntities.map { it.toDomainModel() }
-                        val orderMap = MriRepository.quizzes.mapIndexed { index, q -> q.id to index }.toMap()
+                        val orderMap = CtRepository.quizzes.mapIndexed { index, q -> q.id to index }.toMap()
                         mappedQuizzes.sortedBy { orderMap[it.id] ?: Int.MAX_VALUE }
                     }
                 }
@@ -539,9 +497,26 @@ class MriViewModel(
                 _uiState.update { it.copy(characterCustomization = charState, userAvatarId = charState.avatarId) }
             }
         }
+
+        viewModelScope.launch {
+            repository.instantTransitionsFlow.collect { instant ->
+                _uiState.update { it.copy(instantTransitions = instant) }
+            }
+        }
+
+        viewModelScope.launch {
+            repository.enforceCharacterLocksFlow.collect { locked ->
+                _uiState.update { it.copy(enforceCharacterLocks = locked) }
+            }
+        }
+
+        viewModelScope.launch {
+            repository.practiceExamStatsFlow.collect { stats ->
+                _uiState.update { it.copy(practiceExamStats = stats) }
+            }
+        }
     }
 
-    // B-17: Hitung ulang streak dengan penjagaan parse tanggal korup dan dukungan refresh saat ganti hari / ON_RESUME
     private fun recomputeStreak(days: List<StudyDayEntity> = latestStudyDays, today: LocalDate = LocalDate.now()) {
         val studyDaysSet = days.mapNotNull { day ->
             runCatching { LocalDate.parse(day.dateIso) }.getOrNull()
@@ -564,7 +539,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal menyimpan posisi terakhir", e)
+                Log.e("CtViewModel", "gagal menyimpan posisi terakhir", e)
             }
         }
     }
@@ -574,6 +549,15 @@ class MriViewModel(
     fun triggerSectionTransition(destinationName: String? = null, onStart: () -> Unit = {}) {
         transitionJob?.cancel()
         onStart()
+        if (_uiState.value.instantTransitions) {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    loadingMessage = null
+                )
+            }
+            return
+        }
         _uiState.update {
             it.copy(
                 isLoading = true,
@@ -581,7 +565,7 @@ class MriViewModel(
             )
         }
         transitionJob = viewModelScope.launch {
-            delay(5100L) // 5.1 seconds duration exactly matching user request & HTML logic (B-01 sengaja disimpan)
+            delay(5100L)
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -607,10 +591,10 @@ class MriViewModel(
         val tabName = when (tab) {
             MainTab.BERANDA -> "Beranda"
             MainTab.ANIMASI -> "Animasi Belajar"
-            MainTab.SIMULASI -> "Laboratorium Simulasi"
+            MainTab.SIMULASI -> "Laboratorium Simulasi CT"
             MainTab.TERSIMPAN -> "Materi & Glosarium Tersimpan"
             MainTab.CATATAN -> "Catatan Klinis"
-            MainTab.GLOSARIUM -> "Glosarium Radiologi"
+            MainTab.GLOSARIUM -> "Glosarium Radiologi CT"
             MainTab.KUIS -> "Uji Kompetensi"
             MainTab.KARAKTER -> "Ruang Karakter"
         }
@@ -631,14 +615,14 @@ class MriViewModel(
         }
     }
 
-    fun updateCharacterCustomization(state: com.example.data.CharacterCustomizationState) {
+    fun updateCharacterCustomization(state: CharacterCustomizationState) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.updateCharacterCustomization(state)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal memperbarui kustomisasi karakter", e)
+                Log.e("CtViewModel", "gagal memperbarui kustomisasi karakter", e)
             }
         }
     }
@@ -646,22 +630,22 @@ class MriViewModel(
     fun resetCharacterCustomization() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val defaultState = com.example.data.CharacterCustomizationState()
+                val defaultState = CharacterCustomizationState()
                 repository.updateCharacterCustomization(defaultState)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal mereset kustomisasi karakter", e)
+                Log.e("CtViewModel", "gagal mereset kustomisasi karakter", e)
             }
         }
     }
 
-    // --- Streak Belajar 🔥 ---
+    // --- Streak Belajar ---
     fun setStreakDialogVisible(visible: Boolean) {
         _uiState.update { it.copy(showStreakDialog = visible) }
     }
 
-    // --- Avatar Pengguna 👨‍⚕️ ---
+    // --- Avatar Pengguna ---
     fun setAvatarDialogVisible(visible: Boolean) {
         _uiState.update { it.copy(showAvatarDialog = visible) }
     }
@@ -676,12 +660,12 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal memperbarui avatar", e)
+                Log.e("CtViewModel", "gagal memperbarui avatar", e)
             }
         }
     }
 
-    // --- Catatan Belajar (Notes) 📝 ---
+    // --- Catatan Belajar (Notes) ---
     fun setNoteCategory(category: String) {
         savedStateHandle[KEY_NOTE_CATEGORY] = category
         _uiState.update { it.copy(selectedNoteCategory = category) }
@@ -695,7 +679,6 @@ class MriViewModel(
         _uiState.update { it.copy(showNoteDialog = false, editingNote = null) }
     }
 
-    // B-08: Cegah penyimpanan catatan kosong & pertahankan createdAt saat mengedit catatan lama
     fun saveNote(
         id: String?,
         title: String,
@@ -736,7 +719,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal menyimpan catatan", e)
+                Log.e("CtViewModel", "gagal menyimpan catatan", e)
             }
         }
     }
@@ -748,7 +731,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal menghapus catatan", e)
+                Log.e("CtViewModel", "gagal menghapus catatan", e)
             }
         }
     }
@@ -756,9 +739,9 @@ class MriViewModel(
     fun exportNotesToJson(): String {
         val currentState = _uiState.value
         val root = org.json.JSONObject()
-        root.put("app", "Belajar MRI")
+        root.put("app", "CT-Learn")
         root.put("exportedAt", LocalDate.now().toString())
-        root.put("userName", currentState.userName.ifBlank { "Radiografer MRI" })
+        root.put("userName", currentState.userName.ifBlank { "Radiografer CT" })
         root.put("totalNotes", currentState.notesList.size)
         val notesArray = org.json.JSONArray()
         currentState.notesList.forEach { note ->
@@ -774,9 +757,8 @@ class MriViewModel(
         return root.toString(2)
     }
 
-
     // --- Simpul Kurikulum & Progress ---
-    fun openModuleDetail(module: MriModule) {
+    fun openModuleDetail(module: CtModule) {
         val resolvedModule = _uiState.value.modulesList.find { it.id == module.id } ?: module
         if (_uiState.value.selectedModule?.id != resolvedModule.id) {
             pushCurrentSession()
@@ -809,7 +791,7 @@ class MriViewModel(
             val prev = navigationHistory.removeLast()
             val prevModule = prev.moduleId?.let { id ->
                 _uiState.value.modulesList.find { it.id == id }
-                    ?: MriRepository.modules.find { it.id == id }
+                    ?: CtRepository.modules.find { it.id == id }
             }
             savedStateHandle[KEY_CURRENT_TAB] = prev.tab.name
             savedStateHandle[KEY_SELECTED_MODULE_ID] = prevModule?.id
@@ -820,13 +802,13 @@ class MriViewModel(
             val destLabel = when {
                 prevModule != null -> "Modul ${prevModule.code}: ${prevModule.title}"
                 prev.tab == MainTab.BERANDA -> "Menu Beranda"
-                prev.tab == MainTab.SIMULASI -> "Laboratorium Simulasi"
+                prev.tab == MainTab.SIMULASI -> "Laboratorium Simulasi CT"
                 prev.tab == MainTab.CATATAN -> "Catatan Klinis"
                 prev.tab == MainTab.KUIS -> "Uji Kompetensi"
                 prev.tab == MainTab.KARAKTER -> "Ruang Karakter"
                 prev.tab == MainTab.ANIMASI -> "Animasi Belajar"
                 prev.tab == MainTab.TERSIMPAN -> "Materi & Glosarium Tersimpan"
-                prev.tab == MainTab.GLOSARIUM -> "Glosarium Radiologi"
+                prev.tab == MainTab.GLOSARIUM -> "Glosarium Radiologi CT"
                 else -> "Sesi Sebelumnya"
             }
             triggerSectionTransition(destLabel) {
@@ -840,15 +822,7 @@ class MriViewModel(
                         quizModuleFilter = prev.quizModuleFilter,
                         quizLevelFilter = prev.quizLevelFilter,
                         currentQuizIndex = prev.currentQuizIndex,
-                        selectedM01ActivityId = prev.selectedM01ActivityId,
-                        selectedM02ActivityId = prev.selectedM02ActivityId,
-                        selectedM03ActivityId = prev.selectedM03ActivityId,
-                        selectedM04ActivityId = prev.selectedM04ActivityId,
-                        selectedM05ActivityId = prev.selectedM05ActivityId,
-                        selectedM06ActivityId = prev.selectedM06ActivityId,
-                        selectedM07ActivityId = prev.selectedM07ActivityId,
-                        selectedM08ActivityId = prev.selectedM08ActivityId,
-                        selectedM09ActivityId = prev.selectedM09ActivityId,
+                        selectedCtActivityId = prev.selectedCtActivityId,
                         canNavigateBack = navigationHistory.isNotEmpty(),
                         isModuleFlashcardMode = false,
                         currentFlashcardIndex = it.glossaryFlashcardIndex,
@@ -919,7 +893,7 @@ class MriViewModel(
         }
     }
 
-    fun setGlobalNodeMode(module: MriModule, mode: String) {
+    fun setGlobalNodeMode(module: CtModule, mode: String) {
         _uiState.update { current ->
             val updatedMap = current.nodeModeMap.toMutableMap()
             module.nodes.forEach { node ->
@@ -956,7 +930,6 @@ class MriViewModel(
         }
     }
 
-    // B-05 & B-03: Gunakan transaksi database atomik untuk toggle selesai dan perhitungan jumlah hari ini
     fun toggleNodeCompletion(nodeCode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -980,19 +953,11 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal mengubah status simpul: $nodeCode", e)
+                Log.e("CtViewModel", "gagal mengubah status simpul: $nodeCode", e)
             }
         }
     }
 
-    /**
-     * Menandai simpul selesai secara satu-arah / idempoten untuk auto-complete simulator (NB-01).
-     * Tidak pernah membatalkan simpul yang sudah selesai meskipun dipanggil berulang kali.
-     *
-     * PERF: Banyak simulator memanggil fungsi ini dari Slider.onValueChange (puluhan kali per detik).
-     * pendingNodeCompletions mencegah peluncuran coroutine IO / transaksi DB berulang untuk simpul yang
-     * sama selama penulisan pertama belum selesai dan completedNodeCodes belum diperbarui.
-     */
     private val pendingNodeCompletions = java.util.Collections.synchronizedSet(HashSet<String>())
 
     fun markNodeCompleted(nodeCode: String) {
@@ -1009,14 +974,14 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal menandai simpul selesai: $normalizedCode", e)
+                Log.e("CtViewModel", "gagal menandai simpul selesai: $normalizedCode", e)
             } finally {
                 pendingNodeCompletions.remove(normalizedCode)
             }
         }
     }
 
-    // --- Bookmark Materi & Glosarium 🔖 ---
+    // --- Bookmark Materi & Glosarium ---
     fun toggleNodeBookmark(nodeCode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -1024,7 +989,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal mengubah markah simpul: $nodeCode", e)
+                Log.e("CtViewModel", "gagal mengubah markah simpul: $nodeCode", e)
             }
         }
     }
@@ -1036,7 +1001,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal menghapus markah simpul: $nodeCode", e)
+                Log.e("CtViewModel", "gagal menghapus markah simpul: $nodeCode", e)
             }
         }
     }
@@ -1048,7 +1013,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal mengubah markah glosarium: $term", e)
+                Log.e("CtViewModel", "gagal mengubah markah glosarium: $term", e)
             }
         }
     }
@@ -1060,7 +1025,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal menghapus markah glosarium: $term", e)
+                Log.e("CtViewModel", "gagal menghapus markah glosarium: $term", e)
             }
         }
     }
@@ -1072,12 +1037,12 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal mengosongkan semua markah", e)
+                Log.e("CtViewModel", "gagal mengosongkan semua markah", e)
             }
         }
     }
 
-    fun toggleFlashcardBookmark(card: MriFlashcard) {
+    fun toggleFlashcardBookmark(card: CtFlashcard) {
         if (card.isGlossaryCard) {
             toggleGlossaryBookmark(card.glossaryTermKey)
         } else {
@@ -1109,7 +1074,7 @@ class MriViewModel(
         }
     }
 
-    // --- Flashcards Hafalan Cepat 🗂️ (B-13: State terpisah untuk Modul vs Glosarium) ---
+    // --- Flashcards Hafalan Cepat ---
     fun setFlashcardMode(enabled: Boolean) {
         if (_uiState.value.selectedModule != null) {
             setModuleFlashcardMode(enabled)
@@ -1140,7 +1105,7 @@ class MriViewModel(
         }
     }
 
-    private fun isModuleDeckActive(state: MriUiState): Boolean =
+    private fun isModuleDeckActive(state: CtUiState): Boolean =
         state.selectedModule != null && state.isModuleFlashcardMode
 
     fun flipFlashcard() {
@@ -1233,7 +1198,6 @@ class MriViewModel(
         }
     }
 
-    // B-03, FINAL-02 & P3: Catat aktivitas belajar dengan penanda flashcardActivity = true saat kartu ditandai dikuasai
     fun toggleFlashcardMastered(cardId: String) {
         val isNowMastered = !_uiState.value.masteredFlashcardIds.contains(cardId)
         viewModelScope.launch(Dispatchers.IO) {
@@ -1249,7 +1213,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal mengubah status flashcard: $cardId", e)
+                Log.e("CtViewModel", "gagal mengubah status flashcard: $cardId", e)
             }
         }
     }
@@ -1267,261 +1231,154 @@ class MriViewModel(
         _uiState.update { it.copy(animationStep = step.coerceIn(1, 4)) }
     }
 
-    // --- Simulator ---
-    fun selectSimType(simType: SimType, recordHistory: Boolean = true) {
+    // --- Simulator CT Scan ---
+    fun selectSimType(simType: CtSimType, recordHistory: Boolean = true) {
         if (recordHistory) {
             pushCurrentSession()
         }
         val simName = when (simType) {
-            SimType.PESAWAT_MAGNET_M05, SimType.SPIN_LARMOR -> "Simulator Anatomi Gantry & Instrumentasi CT"
-            SimType.KONTRAS_TR_TE, SimType.FISIKA_DASAR_M01 -> "Simulator Windowing HU & Atenuasi Sinar-X"
-            SimType.RUANG_K, SimType.SEKUENS_KONTRAS_M03, SimType.GRADIEN_RF_M06 -> "Simulator Geometri MSCT, Pitch & Rekonstruksi"
-            SimType.SAR_SAFETY, SimType.PROTOKOL_TA_SNR, SimType.KONSOL_VENDOR -> "Simulator Dosimetri CTDIvol/DLP & Bolus Tracking"
-            SimType.ARTEFAK_QA_M08 -> "Laboratorium Artefak, Kalibrasi & QA CT"
+            CtSimType.GANTRY_RANTAI_SINYAL -> "Simulator Anatomi Gantry & Rantai Sinyal CT"
+            CtSimType.WINDOWING_HU_ATENUASI -> "Simulator Windowing HU & Atenuasi Sinar-X"
+            CtSimType.MSCT_PITCH_REKON -> "Simulator Geometri MSCT, Pitch & Rekonstruksi"
+            CtSimType.DOSIMETRI_BOLUS_TRACKING -> "Simulator Dosimetri CTDIvol/DLP & Bolus Tracking"
+            CtSimType.ARTEFAK_KALIBRASI_QA -> "Laboratorium Artefak, Kalibrasi & QA CT"
         }
         savedStateHandle[KEY_CURRENT_TAB] = MainTab.SIMULASI.name
         savedStateHandle[KEY_SELECTED_MODULE_ID] = null
         savedStateHandle[KEY_SELECTED_SIM_TYPE] = simType.name
         triggerSectionTransition(simName) {
             _uiState.update {
-                val syncedM09Id = when (simType) {
-                    SimType.PROTOKOL_TA_SNR -> "ta_snr"
-                    SimType.KONSOL_VENDOR -> "console_tabs"
-                    else -> it.selectedM09ActivityId
-                }
                 it.copy(
                     currentTab = MainTab.SIMULASI,
                     selectedModule = null,
                     selectedSimType = simType,
-                    selectedM09ActivityId = syncedM09Id,
                     canNavigateBack = navigationHistory.isNotEmpty()
                 )
             }
         }
     }
 
-    fun selectM01Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM01ActivityId = activityId) }
-    }
-
-    fun launchM01Lab(labType: String) {
-        pushCurrentSession()
-        val mapped = when (labType) {
-            "presesi" -> "presesi_bola"
-            else -> labType
-        }
-        _uiState.update { it.copy(selectedM01ActivityId = mapped) }
-        selectSimType(SimType.FISIKA_DASAR_M01, recordHistory = false)
-    }
-
-    fun selectM02Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM02ActivityId = activityId) }
-    }
-
-    fun launchM02Lab(labType: String) {
-        pushCurrentSession()
-        val mapped = if (labType == "contrast") "m2_fantom_otak" else labType
-        _uiState.update { it.copy(selectedM02ActivityId = mapped) }
-        selectSimType(SimType.KONTRAS_TR_TE, recordHistory = false)
-    }
-
-    fun selectM03Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM03ActivityId = activityId) }
-    }
-
-    fun launchM03Lab(labType: String) {
-        pushCurrentSession()
-        _uiState.update { it.copy(selectedM03ActivityId = labType) }
-        selectSimType(SimType.SEKUENS_KONTRAS_M03, recordHistory = false)
-    }
-
-    fun selectM04Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM04ActivityId = activityId) }
-    }
-
-    fun launchM04Lab(labType: String) {
-        pushCurrentSession()
-        val mapped = if (labType == "kspace") "m4b_lab_terpadu" else labType
-        _uiState.update { it.copy(selectedM04ActivityId = mapped) }
-        selectSimType(SimType.RUANG_K, recordHistory = false)
-    }
-
-    fun selectM05Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM05ActivityId = activityId) }
-    }
-
-    fun launchM05Lab(labType: String) {
-        pushCurrentSession()
-        _uiState.update { it.copy(selectedM05ActivityId = labType) }
-        selectSimType(SimType.PESAWAT_MAGNET_M05, recordHistory = false)
-    }
-
-    fun selectM06Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM06ActivityId = activityId) }
-    }
-
-    fun launchM06Lab(labType: String) {
-        pushCurrentSession()
-        val mapped = if (labType == "m6a_sumbu_gradien") "m6a_peta_frekuensi" else labType
-        _uiState.update { it.copy(selectedM06ActivityId = mapped) }
-        selectSimType(SimType.GRADIEN_RF_M06, recordHistory = false)
-    }
-
-    fun selectM07Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM07ActivityId = activityId) }
-    }
-
-    fun launchM07Lab(labType: String) {
-        pushCurrentSession()
-        val mapped = if (labType == "sar") "m7c_sar" else labType
-        _uiState.update { it.copy(selectedM07ActivityId = mapped) }
-        selectSimType(SimType.SAR_SAFETY, recordHistory = false)
-    }
-
-    fun selectM08Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM08ActivityId = activityId) }
-    }
-
-    fun launchM08Lab(labType: String) {
-        pushCurrentSession()
-        _uiState.update { it.copy(selectedM08ActivityId = labType) }
-        selectSimType(SimType.ARTEFAK_QA_M08, recordHistory = false)
-    }
-
-    fun selectM09Activity(activityId: String) {
-        _uiState.update { it.copy(selectedM09ActivityId = activityId) }
-    }
-
-    fun launchM09Lab(labType: String) {
-        pushCurrentSession()
-        val mapped = if (labType.startsWith("m9_")) "ta_snr" else labType
-        _uiState.update { it.copy(selectedM09ActivityId = mapped) }
-        selectSimType(
-            simType = if (mapped == "console_tabs") SimType.KONSOL_VENDOR else SimType.PROTOKOL_TA_SNR,
-            recordHistory = false
-        )
-    }
-
     fun launchLab(labType: String) {
-        when {
-            labType == "ct_m02_anatomi_pesawat" || labType == "ct_m03_instrumentasi_rantai" -> {
-                pushCurrentSession()
-                _uiState.update { it.copy(selectedM05ActivityId = labType) }
-                selectSimType(SimType.PESAWAT_MAGNET_M05, recordHistory = false)
+        val targetSim = when (labType) {
+            "ct_m02_anatomi_pesawat", "ct_m03_instrumentasi_rantai" -> CtSimType.GANTRY_RANTAI_SINYAL
+            "ct_m01_atenuasi", "ct_m06_hu_windowing" -> CtSimType.WINDOWING_HU_ATENUASI
+            "ct_m04_generasi_pitch", "ct_m05_rekonstruksi" -> CtSimType.MSCT_PITCH_REKON
+            "ct_m07_dosimetri_kualitas", "ct_m08_kontras_3d" -> CtSimType.DOSIMETRI_BOLUS_TRACKING
+            "ct_m09_artefak_qa" -> CtSimType.ARTEFAK_KALIBRASI_QA
+            else -> CtSimType.WINDOWING_HU_ATENUASI
+        }
+        pushCurrentSession()
+        _uiState.update {
+            val base = it.copy(selectedCtActivityId = labType)
+            when (labType) {
+                "ct_m06_hu_windowing" -> base.copy(windowWidthHu = 80f, windowLevelHu = 40f, isHeadPhantom = true)
+                "ct_m08_kontras_3d" -> base.copy(tubeKvp = 100, helicalPitch = 1.2f, isHeadPhantom = false)
+                else -> base
             }
-            labType == "ct_m06_hu_windowing" || labType == "ct_m01_atenuasi" -> {
-                pushCurrentSession()
-                _uiState.update { it.copy(selectedM02ActivityId = labType) }
-                selectSimType(SimType.KONTRAS_TR_TE, recordHistory = false)
-            }
-            labType == "ct_m04_generasi_pitch" || labType == "ct_m05_rekonstruksi" -> {
-                pushCurrentSession()
-                _uiState.update { it.copy(selectedM04ActivityId = labType) }
-                selectSimType(SimType.RUANG_K, recordHistory = false)
-            }
-            labType == "ct_m07_dosimetri_kualitas" || labType == "ct_m08_kontras_3d" -> {
-                pushCurrentSession()
-                _uiState.update { it.copy(selectedM07ActivityId = labType) }
-                selectSimType(SimType.SAR_SAFETY, recordHistory = false)
-            }
-            labType == "ct_m09_artefak_qa" -> {
-                pushCurrentSession()
-                _uiState.update { it.copy(selectedM08ActivityId = labType) }
-                selectSimType(SimType.ARTEFAK_QA_M08, recordHistory = false)
-            }
-            labType == "ta_snr" || labType == "console_tabs" || labType.startsWith("m9_") -> launchM09Lab(labType)
-            labType.startsWith("m3_") || labType.startsWith("m3a_") || labType.startsWith("m3b_") || labType.startsWith("m3c_") -> launchM03Lab(labType)
-            labType == "kspace" || labType.startsWith("m4_") || labType.startsWith("m4a_") || labType.startsWith("m4b_") || labType.startsWith("m4c_") -> launchM04Lab(labType)
-            labType.startsWith("m5_") -> launchM05Lab(labType)
-            labType.startsWith("m6_") || labType.startsWith("m6a_") || labType.startsWith("m6b_") -> launchM06Lab(labType)
-            labType == "sar" || labType.startsWith("m7_") || labType.startsWith("m7a_") || labType.startsWith("m7b_") || labType.startsWith("m7c_") -> launchM07Lab(labType)
-            labType.startsWith("m8_") || labType.startsWith("m8a_") || labType.startsWith("m8b_") || labType.startsWith("m8c_") -> launchM08Lab(labType)
-            labType == "contrast" || labType.startsWith("m2_") -> launchM02Lab(labType)
-            labType.startsWith("m1_") || labType in listOf(
-                "pengantar_atom", "presesi", "presesi_bola", "larmor", "latihan_tebak_larmor",
-                "atom_h", "cek_inti", "populasi_spin", "spektrum_em", "nmv_3d",
-                "sudut_flip", "fase_fid", "bola_bloch", "tr_berulang", "tambahan_tr_te"
-            ) -> launchM01Lab(labType)
-            else -> selectSimType(SimType.RUANG_K)
+        }
+        selectSimType(targetSim, recordHistory = false)
+    }
+
+    fun setInstantTransitions(enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { repository.setInstantTransitions(enabled) }
         }
     }
 
-    fun selectTissue(tissue: TissueProperties) {
+    fun setEnforceCharacterLocks(enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { repository.setEnforceCharacterLocks(enabled) }
+        }
+    }
+
+    fun recordPracticeExamCompleted(scorePercent: Int, weakestDomainName: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                repository.recordPracticeExamResult(scorePercent, weakestDomainName)
+                val todayIso = LocalDate.now().toString()
+                repository.recordStudyActivity(dateIso = todayIso, lastNodeCode = "TRYOUT_UKOM", lastModuleId = "UKOM")
+                repository.incrementDailyShift(todayKey = todayIso, quizzesDelta = 1)
+            }
+        }
+    }
+
+    fun recordConsoleLabCompleted(caseId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                val todayIso = LocalDate.now().toString()
+                repository.recordStudyActivity(dateIso = todayIso, lastNodeCode = "SIM_${caseId.uppercase()}", lastModuleId = "M07")
+                repository.incrementDailyShift(todayKey = todayIso, labsDelta = 1)
+            }
+        }
+    }
+
+    // --- Pengaturan Parameter Konsol CT ---
+    fun selectTissue(tissue: CtTissueAttenuation) {
         _uiState.update { it.copy(selectedTissue = tissue) }
     }
 
-    fun setRelaxationTime(timeMs: Float) {
-        _uiState.update { it.copy(relaxationTimeMs = timeMs.coerceIn(0f, 3000f)) }
+    fun setTubeKvp(kvp: Int) {
+        _uiState.update { it.copy(tubeKvp = kvp.coerceIn(70, 140)) }
     }
 
-    fun resetPulse90() {
-        _uiState.update { it.copy(relaxationTimeMs = 0f) }
+    fun setTubeMa(ma: Float) {
+        _uiState.update { it.copy(tubeMa = ma.coerceIn(20f, 800f)) }
     }
 
-    fun toggleRelaxationPlay() {
-        _uiState.update { it.copy(isRelaxationPlaying = !it.isRelaxationPlaying) }
+    fun setRotationTime(sec: Float) {
+        _uiState.update { it.copy(rotationTimeSec = sec.coerceIn(0.25f, 2.0f)) }
     }
 
-    fun setTr(tr: Float) {
-        _uiState.update { it.copy(trMs = tr) }
+    fun setHelicalPitch(pitch: Float) {
+        _uiState.update { it.copy(helicalPitch = pitch.coerceIn(0.3f, 1.75f)) }
     }
 
-    fun setTe(te: Float) {
-        _uiState.update { it.copy(teMs = te) }
+    fun setScanLength(cm: Float) {
+        _uiState.update { it.copy(scanLengthCm = cm.coerceIn(5f, 120f)) }
     }
 
-    fun setB0(b0: Float) {
-        _uiState.update { it.copy(selectedB0 = b0) }
+    fun setHeadPhantom(isHead: Boolean) {
+        _uiState.update { it.copy(isHeadPhantom = isHead) }
     }
 
-    fun setNucleus(name: String, gamma: Float) {
-        _uiState.update { it.copy(selectedNucleusName = name, selectedNucleusGamma = gamma) }
+    fun setWindowing(wwHu: Float, wlHu: Float) {
+        _uiState.update {
+            it.copy(
+                windowWidthHu = wwHu.coerceIn(20f, 4000f),
+                windowLevelHu = wlHu.coerceIn(-1000f, 2000f)
+            )
+        }
     }
 
-    // B-15: Preset T1w Otak memilih Substansia Alba (wm); Preset T2w Otak memilih CSF (csf) karena cairan serebrospinal
-    // memiliki T2 sangat panjang sehingga tampak hiperintens terang pada T2w; Preset PDw memilih Substansia Grisea (gm).
-    fun applyPresetT1Brain() {
-        setTr(500f)
-        setTe(20f)
-        setRelaxationTime(500f)
-        selectTissue(MriRepository.tissues.find { it.id == "wm" } ?: MriRepository.tissues[0])
+    fun setDisplayFov(mm: Float) {
+        _uiState.update { it.copy(displayFovMm = mm.coerceIn(80f, 500f)) }
     }
 
-    fun applyPresetT2Brain() {
-        setTr(2500f)
-        setTe(100f)
-        setRelaxationTime(950f)
-        selectTissue(MriRepository.tissues.find { it.id == "csf" } ?: MriRepository.tissues[0])
+    fun setReconstructionMatrix(matrix: Int) {
+        _uiState.update { it.copy(reconstructionMatrix = matrix.coerceIn(256, 1024)) }
     }
 
-    fun applyPresetPdwJoint() {
-        setTr(2500f)
-        setTe(20f)
-        setRelaxationTime(600f)
-        selectTissue(MriRepository.tissues.find { it.id == "gm" } ?: MriRepository.tissues[0])
+    fun setIterativeRecon(enabled: Boolean) {
+        _uiState.update { it.copy(isIterativeReconActive = enabled) }
     }
 
-    fun setPatientWeight(weight: Float) {
-        _uiState.update { it.copy(patientWeightKg = weight) }
+    fun applyBrainWindowPreset() {
+        _uiState.update { it.copy(windowWidthHu = 80f, windowLevelHu = 40f, isHeadPhantom = true) }
     }
 
-    fun setTseSequence(isTse: Boolean) {
-        _uiState.update { it.copy(isTseSequence = isTse) }
+    fun applyStrokeWindowPreset() {
+        _uiState.update { it.copy(windowWidthHu = 40f, windowLevelHu = 40f, isHeadPhantom = true) }
     }
 
-    fun setMatrixNy(ny: Int) {
-        _uiState.update { it.copy(matrixNy = ny) }
+    fun applyLungWindowPreset() {
+        _uiState.update { it.copy(windowWidthHu = 1500f, windowLevelHu = -600f, isHeadPhantom = false) }
     }
 
-    fun setNexCount(nex: Int) {
-        _uiState.update { it.copy(nexCount = nex) }
+    fun applyBoneWindowPreset() {
+        _uiState.update { it.copy(windowWidthHu = 2000f, windowLevelHu = 500f) }
     }
 
-    fun setEtlCount(etl: Int) {
-        _uiState.update { it.copy(etlCount = etl) }
-    }
-
-    // --- Kuis (B-02: Kunci jawaban per soal, cegah jawab ulang & skor melampaui jumlah soal) ---
+    // --- Kuis Kompetensi ---
     fun setQuizModuleFilter(moduleId: String) {
         savedStateHandle[KEY_QUIZ_MOD_FILTER] = moduleId
         _uiState.update {
@@ -1567,7 +1424,6 @@ class MriViewModel(
         }
     }
 
-    // B-02 & N-05: Evaluasi jawaban kuis tanpa efek samping di dalam lambda _uiState.update
     fun submitQuizAnswer() {
         val snapshot = _uiState.value
         val selected = snapshot.selectedOptionIndex ?: return
@@ -1617,7 +1473,7 @@ class MriViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e("MriViewModel", "gagal menyimpan hasil kuis", e)
+                Log.e("CtViewModel", "gagal menyimpan hasil kuis", e)
             }
         }
     }

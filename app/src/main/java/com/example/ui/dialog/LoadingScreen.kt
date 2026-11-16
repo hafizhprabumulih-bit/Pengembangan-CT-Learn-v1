@@ -204,7 +204,7 @@ fun LoadingScreen(
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(24.dp)
         ) {
-            // Stage containing wave rings, spin arc, and MRI logo all moving in unison (proporsi seimbang)
+            // Stage containing wave rings, spin arc, and CT logo all moving in unison (proporsi seimbang)
             Box(
                 modifier = Modifier
                     .size(204.dp)
@@ -270,14 +270,14 @@ fun LoadingScreen(
                     )
                 }
 
-                // MRI Icon perfectly centered and symmetrical
+                // CT Icon perfectly centered and symmetrical
                 Box(
                     modifier = Modifier.size(138.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.mri_icon_bersih),
-                        contentDescription = "Ikon mesin MRI",
+                        contentDescription = "Ikon mesin CT Scan",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit
                     )
@@ -286,7 +286,7 @@ fun LoadingScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Title: Belajar MRI matching HTML h1
+            // Title: CT-Learn hero title
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -300,7 +300,7 @@ fun LoadingScreen(
                         letterSpacing = 0.2.sp
                     )
                     Text(
-                        text = "MRI",
+                        text = "CT Scan",
                         fontSize = 21.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF2DD4BF),
@@ -309,7 +309,7 @@ fun LoadingScreen(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Radiologi Medis · MRI EDU",
+                    text = "Radiologi Medis · CT-Learn",
                     fontSize = 11.sp,
                     color = Color(0xFF8FA3B5),
                     fontWeight = FontWeight.Normal
@@ -349,7 +349,7 @@ fun LoadingScreen(
                     contentAlignment = Alignment.BottomStart
                 ) {
                     AvatarView(
-                        role = "radiografer_mri",
+                        role = "radiografer_ct",
                         equipped = CharacterCustomizationState(),
                         expression = if (percentage >= 95) Expression.SENANG else Expression.BERPIKIR,
                         modifier = Modifier

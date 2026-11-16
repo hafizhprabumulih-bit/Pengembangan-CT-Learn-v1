@@ -75,8 +75,38 @@ object NotesPdfExporter {
         return out
     }
 
-    fun buildPrintableSections(notes: List<StudyNote>): List<PrintableNoteSection> {
-        return notes.mapIndexed { idx, note ->
+    fun buildCtProtocolReferenceNotes(): List<StudyNote> {
+        val today = LocalDate.now().toString()
+        return listOf(
+            StudyNote(
+                id = "ct_ref_hu",
+                title = "Lembar Saku CT: Skala Hounsfield Unit (HU) & Windowing",
+                content = "Rumus: HU = 1000 x (mu_jaringan - mu_air) / mu_air\n" +
+                    "Udara: -1000 HU | Paru: -750..-600 HU | Lemak: -100..-50 HU | Air: 0 HU | CSF: +5..+15 HU\n" +
+                    "Alba Otak: +25..+30 HU | Grisea Otak: +38..+42 HU | Darah Akut: +55..+80 HU | Tulang Korteks: +1000..+1500 HU\n" +
+                    "Preset: Stroke (WW 40, WL 40), Brain (WW 80, WL 40), Abdomen (WW 350, WL 40), Lung (WW 1500, WL -600), Bone (WW 2000, WL 500).",
+                category = "Protokol Klinis",
+                dateString = today
+            ),
+            StudyNote(
+                id = "ct_ref_dosimetry_qa",
+                title = "Lembar Saku CT: Rumus Pitch, Dosimetri & QA Fantom Air",
+                content = "Beam Pitch = d / (N x T) | Effective mAs = (mA x t_rot) / Pitch\n" +
+                    "DLP = CTDIvol x L (cm) | Dosis Efektif E = DLP x faktor k | SSDE = f_size x CTDIvol\n" +
+                    "Bolus Tracking CTA: ROI aorta/pulmonalis, trigger +100..+150 HU, Saline Chaser 40 mL.\n" +
+                    "QA Fantom Air Harian (5-ROI): Akurasi pusat 0 +/- 4 HU; Uniformity |perifer - pusat| <= 5 HU.",
+                category = "Proteksi Dosis & QA",
+                dateString = today
+            )
+        )
+    }
+
+    fun buildPrintableSections(
+        notes: List<StudyNote>,
+        includeCtReferenceSheet: Boolean = false
+    ): List<PrintableNoteSection> {
+        val combined = if (includeCtReferenceSheet) notes + buildCtProtocolReferenceNotes() else notes
+        return combined.mapIndexed { idx, note ->
             val safeTitle = note.title.ifBlank { "Catatan Tanpa Judul" }
             val safeCat = note.category.ifBlank { "Catatan Bebas" }
             val safeDate = note.dateString.ifBlank { LocalDate.now().toString() }
@@ -88,17 +118,25 @@ object NotesPdfExporter {
         }
     }
 
-    fun buildPlainPreviewText(notes: List<StudyNote>, userName: String): String {
-        val owner = userName.ifBlank { "Peserta MRI" }
-        if (notes.isEmpty()) {
-            return "Dokumen PDF Catatan Belajar MRI\nPemilik: $owner\nBelum ada catatan untuk dicetak."
+    fun buildPlainPreviewText(
+        notes: List<StudyNote>,
+        userName: String,
+        includeCtReferenceSheet: Boolean = false
+    ): String {
+        val owner = userName.ifBlank { "Peserta CT-Learn" }
+        val sections = buildPrintableSections(notes, includeCtReferenceSheet)
+        if (sections.isEmpty()) {
+            return "Dokumen PDF Catatan Belajar CT Scan\nPemilik: $owner\nBelum ada catatan untuk dicetak."
         }
         return buildString {
-            appendLine("DOKUMEN PDF · CATATAN BELAJAR MRI")
-            appendLine("Pemilik: $owner · Total: ${notes.size} catatan")
+            appendLine("DOKUMEN PDF · CATATAN BELAJAR CT SCAN")
+            appendLine(
+                "Pemilik: $owner · Total: ${notes.size} catatan" +
+                    if (includeCtReferenceSheet) " + Lembar Saku Protokol CT" else ""
+            )
             appendLine("Format: A4 Siap Cetak (.pdf)")
             appendLine("----------------------------------------")
-            buildPrintableSections(notes).forEach { sec ->
+            sections.forEach { sec ->
                 appendLine(sec.title)
                 appendLine(sec.metaLine)
                 sec.bodyLines.forEach { line -> appendLine("  $line") }
@@ -107,10 +145,14 @@ object NotesPdfExporter {
         }
     }
 
-    fun createPdfDocument(notes: List<StudyNote>, userName: String): PdfDocument {
+    fun createPdfDocument(
+        notes: List<StudyNote>,
+        userName: String,
+        includeCtReferenceSheet: Boolean = false
+    ): PdfDocument {
         val doc = PdfDocument()
-        val sections = buildPrintableSections(notes)
-        val owner = userName.ifBlank { "Peserta MRI" }
+        val sections = buildPrintableSections(notes, includeCtReferenceSheet)
+        val owner = userName.ifBlank { "Peserta CT-Learn" }
         val dateLabel = LocalDate.now().toString()
 
         val headerBgPaint = Paint().apply { color = Color.rgb(10, 29, 51) }
@@ -160,13 +202,20 @@ object NotesPdfExporter {
         fun drawHeader(c: Canvas) {
             c.drawRect(0f, 0f, PAGE_WIDTH.toFloat(), 84f, headerBgPaint)
             c.drawRect(0f, 80f, PAGE_WIDTH.toFloat(), 84f, accentPaint)
-            c.drawText("Catatan Belajar MRI", MARGIN_X, 38f, titleHeaderPaint)
-            c.drawText("Pemilik: $owner  ·  Total: ${notes.size} catatan  ·  Dicetak: $dateLabel", MARGIN_X, 60f, subtitleHeaderPaint)
+            c.drawText("Catatan Belajar CT Scan", MARGIN_X, 38f, titleHeaderPaint)
+            c.drawText(
+                "Pemilik: $owner  ·  Total: ${notes.size} catatan" +
+                    (if (includeCtReferenceSheet) " + Lembar Saku" else "") +
+                    "  ·  Dicetak: $dateLabel",
+                MARGIN_X,
+                60f,
+                subtitleHeaderPaint
+            )
         }
 
         fun drawFooter(c: Canvas, num: Int) {
             c.drawLine(MARGIN_X, PAGE_HEIGHT - 44f, PAGE_WIDTH - MARGIN_X, PAGE_HEIGHT - 44f, dividerPaint)
-            c.drawText("Belajar MRI · Ringkasan Catatan Klinis & Fisika MRI", MARGIN_X, PAGE_HEIGHT - 26f, footerPaint)
+            c.drawText("CT-Learn · Ringkasan Catatan Klinis & Fisika CT Scan", MARGIN_X, PAGE_HEIGHT - 26f, footerPaint)
             c.drawText("Hal. $num", PAGE_WIDTH - MARGIN_X - 36f, PAGE_HEIGHT - 26f, footerPaint)
         }
 
@@ -228,9 +277,10 @@ object NotesPdfExporter {
     fun writeNotesPdf(
         notes: List<StudyNote>,
         userName: String,
-        outputStream: OutputStream
+        outputStream: OutputStream,
+        includeCtReferenceSheet: Boolean = false
     ) {
-        val doc = createPdfDocument(notes, userName)
+        val doc = createPdfDocument(notes, userName, includeCtReferenceSheet)
         try {
             doc.writeTo(outputStream)
         } finally {
@@ -241,11 +291,12 @@ object NotesPdfExporter {
     fun printNotesPdf(
         context: Context,
         notes: List<StudyNote>,
-        userName: String
+        userName: String,
+        includeCtReferenceSheet: Boolean = false
     ): Result<Unit> = runCatching {
         val printManager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager
             ?: error("Layanan cetak PDF sistem tidak tersedia di perangkat ini.")
-        val jobName = "Catatan_Belajar_MRI_${LocalDate.now()}"
+        val jobName = "Catatan_Belajar_CT_${LocalDate.now()}"
         val adapter = object : PrintDocumentAdapter() {
             override fun onLayout(
                 oldAttributes: PrintAttributes?,
@@ -277,7 +328,7 @@ object NotesPdfExporter {
                 }
                 runCatching {
                     FileOutputStream(destination.fileDescriptor).use { out ->
-                        writeNotesPdf(notes, userName, out)
+                        writeNotesPdf(notes, userName, out, includeCtReferenceSheet)
                     }
                 }.onSuccess {
                     callback.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
@@ -292,18 +343,19 @@ object NotesPdfExporter {
     fun shareNotesPdf(
         context: Context,
         notes: List<StudyNote>,
-        userName: String
+        userName: String,
+        includeCtReferenceSheet: Boolean = false
     ): Result<Unit> = runCatching {
         val sharedDir = File(context.cacheDir, "shared_cards").apply { mkdirs() }
-        val fileName = "catatan_belajar_mri_${LocalDate.now()}.pdf"
+        val fileName = "catatan_belajar_ct_${LocalDate.now()}.pdf"
         val pdfFile = File(sharedDir, fileName)
         FileOutputStream(pdfFile).use { out ->
-            writeNotesPdf(notes, userName, out)
+            writeNotesPdf(notes, userName, out, includeCtReferenceSheet)
         }
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", pdfFile)
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
-            putExtra(Intent.EXTRA_SUBJECT, "Catatan Belajar MRI (PDF)")
+            putExtra(Intent.EXTRA_SUBJECT, "Catatan Belajar CT Scan (PDF)")
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }

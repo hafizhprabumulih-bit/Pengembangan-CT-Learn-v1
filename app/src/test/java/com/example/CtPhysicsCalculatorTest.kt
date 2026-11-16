@@ -39,4 +39,18 @@ class CtPhysicsCalculatorTest {
         val pedSsde = CtPhysicsCalculator.ssdeConversionFactor(isHeadPhantom = false, patientDiameterCm = 18f)
         assertTrue("Small 18cm patient must have SSDE factor > 1.3", pedSsde > 1.3f)
     }
+
+    @Test
+    fun `low kvp increases iodine contrast HU while water stays zero HU`() {
+        val water80 = CtPhysicsCalculator.calculateHuAtKvp(CtPhysicsCalculator.MU_WATER_120_KVP, effectiveZRatio = 1.0f, tubeKvp = 80)
+        assertEquals(0, water80)
+
+        val iodine120 = CtPhysicsCalculator.calculateHuAtKvp(0.280f, effectiveZRatio = 2.6f, tubeKvp = 120)
+        val iodine80 = CtPhysicsCalculator.calculateHuAtKvp(0.280f, effectiveZRatio = 2.6f, tubeKvp = 80)
+        assertTrue("Iodine HU at 80 kVp ($iodine80) must exceed 120 kVp ($iodine120)", iodine80 > iodine120)
+
+        val aortaHu120 = CtPhysicsCalculator.pixelHuAtNormalized(sliceIndex = 1, nx = 0.53f, ny = 0.48f, tubeKvp = 120)
+        val aortaHu80 = CtPhysicsCalculator.pixelHuAtNormalized(sliceIndex = 1, nx = 0.53f, ny = 0.48f, tubeKvp = 80)
+        assertTrue(aortaHu80 > aortaHu120)
+    }
 }

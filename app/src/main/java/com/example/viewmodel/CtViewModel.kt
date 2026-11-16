@@ -145,7 +145,8 @@ data class CtUiState(
     val canNavigateBack: Boolean = false,
     val instantTransitions: Boolean = false,
     val enforceCharacterLocks: Boolean = false,
-    val practiceExamStats: PracticeExamStats = PracticeExamStats()
+    val practiceExamStats: PracticeExamStats = PracticeExamStats(),
+    val completedConsoleCases: Set<String> = emptySet()
 ) {
     // Evaluasi malas (lazy) agar penyalinan state saat geser slider tidak mengalokasikan HashSet baru
     val validNodeCodes: Set<String> by lazy(LazyThreadSafetyMode.NONE) {
@@ -513,6 +514,12 @@ class CtViewModel(
         viewModelScope.launch {
             repository.practiceExamStatsFlow.collect { stats ->
                 _uiState.update { it.copy(practiceExamStats = stats) }
+            }
+        }
+
+        viewModelScope.launch {
+            repository.completedConsoleCasesFlow.collect { cases ->
+                _uiState.update { it.copy(completedConsoleCases = cases) }
             }
         }
     }
@@ -1291,10 +1298,14 @@ class CtViewModel(
         }
     }
 
-    fun recordPracticeExamCompleted(scorePercent: Int, weakestDomainName: String?) {
+    fun recordPracticeExamCompleted(
+        scorePercent: Int,
+        weakestDomainName: String?,
+        domainBreakdown: List<com.example.util.CtDomainScore> = emptyList()
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
-                repository.recordPracticeExamResult(scorePercent, weakestDomainName)
+                repository.recordPracticeExamResult(scorePercent, weakestDomainName, domainBreakdown)
                 val todayIso = LocalDate.now().toString()
                 repository.recordStudyActivity(dateIso = todayIso, lastNodeCode = "TRYOUT_UKOM", lastModuleId = "UKOM")
                 repository.incrementDailyShift(todayKey = todayIso, quizzesDelta = 1)
@@ -1305,6 +1316,7 @@ class CtViewModel(
     fun recordConsoleLabCompleted(caseId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
+                repository.recordCompletedConsoleCase(caseId)
                 val todayIso = LocalDate.now().toString()
                 repository.recordStudyActivity(dateIso = todayIso, lastNodeCode = "SIM_${caseId.uppercase()}", lastModuleId = "M07")
                 repository.incrementDailyShift(todayKey = todayIso, labsDelta = 1)

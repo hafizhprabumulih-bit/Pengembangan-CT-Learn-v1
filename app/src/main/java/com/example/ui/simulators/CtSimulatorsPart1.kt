@@ -10,6 +10,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -581,21 +584,27 @@ fun CtHuWindowingAndBeerLambertSimulator(
     state: CtUiState? = null,
     viewModel: CtViewModel? = null
 ) {
-    var ww by rememberSaveable { mutableFloatStateOf(state?.windowWidthHu ?: 80f) }
-    var wl by rememberSaveable { mutableFloatStateOf(state?.windowLevelHu ?: 40f) }
-    var selectedPresetName by rememberSaveable { mutableStateOf("Brain (80/40)") }
-    var sliceIndex by rememberSaveable { mutableIntStateOf(0) } // 0: Kepala, 1: Toraks, 2: Abdomen
-
-    LaunchedEffect(state?.windowWidthHu, state?.windowLevelHu) {
-        if (state != null) {
-            ww = state.windowWidthHu
-            wl = state.windowLevelHu
-            val matched = clinicalWindowPresets.firstOrNull {
-                kotlin.math.abs(it.ww - state.windowWidthHu) < 2f && kotlin.math.abs(it.wl - state.windowLevelHu) < 2f
-            }
-            if (matched != null) selectedPresetName = matched.name
+    var localWw by rememberSaveable { mutableFloatStateOf(80f) }
+    var localWl by rememberSaveable { mutableFloatStateOf(40f) }
+    val ww = state?.windowWidthHu ?: localWw
+    val wl = state?.windowLevelHu ?: localWl
+    val updateWindowing: (Float, Float) -> Unit = { nextWw, nextWl ->
+        if (viewModel != null) {
+            viewModel.setWindowing(nextWw, nextWl)
+        } else {
+            localWw = nextWw
+            localWl = nextWl
         }
     }
+    val selectedPresetName = clinicalWindowPresets.firstOrNull {
+        kotlin.math.abs(it.ww - ww) < 2f && kotlin.math.abs(it.wl - wl) < 2f
+    }?.name ?: "Kustom"
+    var sliceIndex by rememberSaveable { mutableIntStateOf(0) } // 0: Kepala, 1: Toraks, 2: Abdomen
+    var roiNormX by rememberSaveable { mutableFloatStateOf(0.34f) }
+    var roiNormY by rememberSaveable { mutableFloatStateOf(0.50f) }
+    val activeKvp = state?.tubeKvp ?: 120
+    val roiMeanHu = CtPhysicsCalculator.pixelHuAtNormalized(sliceIndex, roiNormX, roiNormY, activeKvp)
+    val roiNoiseSd = state?.estimatedNoiseSdHu ?: 5.8f
 
     // Beer-Lambert & HU Interactive Calculator state
     var muTissue by rememberSaveable { mutableFloatStateOf(0.210f) } // cm^-1 (Water = 0.200 cm^-1)
@@ -638,12 +647,7 @@ fun CtHuWindowingAndBeerLambertSimulator(
                     clinicalWindowPresets.forEach { preset ->
                         FilterChip(
                             selected = selectedPresetName == preset.name,
-                            onClick = {
-                                selectedPresetName = preset.name
-                                ww = preset.ww
-                                wl = preset.wl
-                                viewModel?.setWindowing(preset.ww, preset.wl)
-                            },
+                            onClick = { updateWindowing(preset.ww, preset.wl) },
                             label = { Text(preset.name, fontSize = 11.sp) }
                         )
                     }
@@ -682,7 +686,24 @@ fun CtHuWindowingAndBeerLambertSimulator(
                         .background(Color.Black)
                         .padding(8.dp)
                 ) {
-                    Canvas(modifier = Modifier.fillMaxWidth().height(214.dp)) {
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(214.dp)
+                            .pointerInput(sliceIndex) {
+                                detectTapGestures { pos ->
+                                    roiNormX = (pos.x / size.width.coerceAtLeast(1)).coerceIn(0.08f, 0.92f)
+                                    roiNormY = (pos.y / size.height.coerceAtLeast(1)).coerceIn(0.08f, 0.92f)
+                                }
+                            }
+                            .pointerInput(sliceIndex) {
+                                detectDragGestures { change, _ ->
+                                    change.consume()
+                                    roiNormX = (change.position.x / size.width.coerceAtLeast(1)).coerceIn(0.08f, 0.92f)
+                                    roiNormY = (change.position.y / size.height.coerceAtLeast(1)).coerceIn(0.08f, 0.92f)
+                                }
+                            }
+                    ) {
                         val cx = size.width / 2f
                         val cy = size.height / 2f
                         val rMax = size.minDimension * 0.44f
@@ -780,6 +801,17 @@ fun CtHuWindowingAndBeerLambertSimulator(
                             drawCircle(color = huToGrayscaleColor(260f, ww, wl), radius = rMax * 0.13f, center = Offset(cx + rMax * 0.06f, cy + rMax * 0.12f))
                             drawCircle(color = huToGrayscaleColor(1100f, ww, wl), radius = rMax * 0.20f, center = Offset(cx, cy + rMax * 0.48f))
                         }
+
+                        // Lingkaran ROI Interaktif (geser/ketuk untuk membaca Mean HU & Noise)
+                        val roiPos = Offset(size.width * roiNormX, size.height * roiNormY)
+                        drawCircle(
+                            color = Color(0xFF22D3EE),
+                            radius = 16.dp.toPx(),
+                            center = roiPos,
+                            style = Stroke(width = 2.dp.toPx())
+                        )
+                        drawLine(Color(0xFF22D3EE), Offset(roiPos.x - 5.dp.toPx(), roiPos.y), Offset(roiPos.x + 5.dp.toPx(), roiPos.y), 1.5.dp.toPx())
+                        drawLine(Color(0xFF22D3EE), Offset(roiPos.x, roiPos.y - 5.dp.toPx()), Offset(roiPos.x, roiPos.y + 5.dp.toPx()), 1.5.dp.toPx())
                     }
 
                     Column(
@@ -798,6 +830,13 @@ fun CtHuWindowingAndBeerLambertSimulator(
                             text = "Rentang Abu-Abu: [$minDisplayedHu s.d. $maxDisplayedHu HU]",
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 10.sp,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Text(
+                            text = "ROI @${activeKvp}kVp: ${roiMeanHu.roundToInt()} HU (Â±${String.format(ID_LOCALE, "%.1f", roiNoiseSd)}) Â· 50 mmÂ²",
+                            color = Color(0xFF4ADE80),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace
                         )
                     }
@@ -827,11 +866,7 @@ fun CtHuWindowingAndBeerLambertSimulator(
                 }
                 Slider(
                     value = ww,
-                    onValueChange = {
-                        ww = it
-                        selectedPresetName = "Kustom"
-                        viewModel?.setWindowing(ww, wl)
-                    },
+                    onValueChange = { updateWindowing(it, wl) },
                     valueRange = 20f..2500f,
                     modifier = Modifier.testTag("slider_ct_ww")
                 )
@@ -845,11 +880,7 @@ fun CtHuWindowingAndBeerLambertSimulator(
                 }
                 Slider(
                     value = wl,
-                    onValueChange = {
-                        wl = it
-                        selectedPresetName = "Kustom"
-                        viewModel?.setWindowing(ww, wl)
-                    },
+                    onValueChange = { updateWindowing(ww, it) },
                     valueRange = -800f..800f,
                     modifier = Modifier.testTag("slider_ct_wl")
                 )

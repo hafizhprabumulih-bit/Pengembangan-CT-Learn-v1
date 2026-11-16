@@ -207,7 +207,7 @@ fun MetalDefenseScreen(
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Nano Magnet Defense",
+                    text = "CT Metal Streak Defense",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = TextPrimary
@@ -258,7 +258,20 @@ fun MetalDefenseScreen(
                     Text("COMBO", fontSize = 10.sp, color = TextSecondary)
                     Text("x${gameState.combo}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AmberWarning)
                 }
-                if (gameState.combo >= 3 && !gameState.isGameOver) {
+                if (gameState.isMarReady && gameState.combo < 3) {
+                    Button(
+                        onClick = {
+                            haptics.mediumAction()
+                            gameState = CtArcadeEngine.activateMarPowerUp(gameState)
+                        },
+                        modifier = Modifier.defaultMinSize(minHeight = 40.dp),
+                        shape = RoundedCornerShape(999.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary, contentColor = DeepObsidian),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text("MAR", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
+                    }
+                } else if (gameState.combo >= 3 && !gameState.isGameOver) {
                     Button(
                         onClick = {
                             haptics.completionBuzz()
@@ -269,7 +282,7 @@ fun MetalDefenseScreen(
                                 score = gameState.score + bonus,
                                 combo = 0,
                                 deflectedCount = gameState.deflectedCount + unsafeCount,
-                                lastEventMessage = "Gelombang Perisai Aktif! $unsafeCount benda feromagnetik disapu (+$bonus)!",
+                                lastEventMessage = "Gelombang Perisai Aktif! $unsafeCount logam pemicu streak dibersihkan (+$bonus)!",
                                 lastEventGood = true
                             )
                         },
@@ -279,11 +292,11 @@ fun MetalDefenseScreen(
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Icon(Icons.Default.Bolt, contentDescription = null, modifier = Modifier.size(14.dp))
-                        Text("EMP 5G", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
+                        Text("SAPU FOV", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
                     }
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("PERISAI 5G", fontSize = 10.sp, color = TextSecondary)
+                    Text("PERISAI CT", fontSize = 10.sp, color = TextSecondary)
                     if (gameState.lives <= 0) {
                         Text("Habis", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = RoseDanger)
                     } else {

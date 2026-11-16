@@ -82,4 +82,21 @@ class CtConsoleCaseEvaluatorTest {
         assertTrue(badPed.scoreOutOf100 < 50)
         assertTrue(badPed.warnings.size >= 4)
     }
+
+    @Test
+    fun `excessive noise and wrong window fail stroke case even when dose is low`() {
+        val noisyStroke = CtConsoleCaseEvaluator.evaluateCase(
+            caseId = "case_stroke",
+            kvp = 120,
+            effectiveMas = 220f,
+            pitch = 0.8f,
+            ctdiVol = 40f,
+            isHeadPhantom = true,
+            noiseSdHu = 16.5f,
+            selectedWindowLabel = "Lung (1500/-600)"
+        )
+        assertFalse(noisyStroke.passed)
+        assertTrue(noisyStroke.warnings.any { it.contains("noise", ignoreCase = true) })
+        assertTrue(noisyStroke.warnings.any { it.contains("Windowing", ignoreCase = true) })
+    }
 }

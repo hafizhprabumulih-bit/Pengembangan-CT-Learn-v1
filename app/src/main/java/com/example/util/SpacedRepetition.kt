@@ -25,6 +25,13 @@ data class ReviewCandidate(
 object SpacedRepetition {
     private const val MILLIS_PER_DAY = 86_400_000L
 
+    fun nextDueIntervalDays(consecutiveCorrectCount: Int): Int = when {
+        consecutiveCorrectCount <= 0 -> 0
+        consecutiveCorrectCount == 1 -> 3
+        consecutiveCorrectCount == 2 -> 7
+        else -> 14
+    }
+
     fun isNodeQueuedForReview(
         nodeCode: String,
         manualReviewNodes: Set<String>,
@@ -109,7 +116,12 @@ object SpacedRepetition {
                 val accuracyPercent = (correctCount * 100) / latestByQuiz.size
                 val lastAnsweredAt = group.maxOf { it.answeredAt }
                 val daysSince = ((nowMillis - lastAnsweredAt).coerceAtLeast(0L) / MILLIS_PER_DAY).toInt()
-                val isAutoDue = accuracyPercent < 80 || daysSince >= 3
+                val trailingCorrectStreak = group
+                    .sortedByDescending { it.answeredAt }
+                    .takeWhile { it.isCorrect }
+                    .size
+                val dueIntervalDays = nextDueIntervalDays(trailingCorrectStreak)
+                val isAutoDue = accuracyPercent < 80 || daysSince >= dueIntervalDays
 
                 if (!isAutoDue && !isManuallyAdded) {
                     return@mapNotNull null
@@ -118,7 +130,7 @@ object SpacedRepetition {
                 val reasonLabel = when {
                     accuracyPercent < 60 -> "Akurasi $accuracyPercent%"
                     accuracyPercent < 80 -> "Perlu penguatan ($accuracyPercent%)"
-                    daysSince >= 3 -> "Belum diulang $daysSince hari"
+                    daysSince >= dueIntervalDays -> "Jadwal ulang tiba ($daysSince hr)"
                     else -> "Ditandai untuk diulang"
                 }
                 val manualBoost = if (isManuallyAdded && !isAutoDue) 65.0 else 0.0

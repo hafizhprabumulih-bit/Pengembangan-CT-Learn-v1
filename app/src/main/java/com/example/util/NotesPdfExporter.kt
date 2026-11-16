@@ -75,6 +75,33 @@ object NotesPdfExporter {
         return out
     }
 
+    fun buildCompetencyReportNote(
+        userName: String,
+        completedNodes: Int,
+        totalNodes: Int,
+        totalXp: Int,
+        tryoutBestPercent: Int,
+        completedConsoleCasesCount: Int
+    ): StudyNote {
+        val today = LocalDate.now().toString()
+        val pct = if (totalNodes > 0) ((completedNodes * 100f) / totalNodes).toInt() else 0
+        val body = buildString {
+            appendLine("Peserta: ${userName.ifBlank { "Radiografer CT" }}")
+            appendLine("Tanggal Rapor: $today")
+            appendLine("Progres Kurikulum: $completedNodes/$totalNodes simpul ($pct%)")
+            appendLine("Total XP Kompetensi: $totalXp XP")
+            appendLine("Skor Terbaik Try-Out UKOM CT: $tryoutBestPercent%")
+            appendLine("Kasus Konsol Klinis Lulus: $completedConsoleCasesCount / 5 kasus")
+        }.trimEnd()
+        return StudyNote(
+            id = "ct_competency_report_$today",
+            title = "Rapor Ringkasan Kompetensi CT-Learn",
+            content = body,
+            category = "Rapor Kompetensi",
+            dateString = today
+        )
+    }
+
     fun buildCtProtocolReferenceNotes(): List<StudyNote> {
         val today = LocalDate.now().toString()
         return listOf(

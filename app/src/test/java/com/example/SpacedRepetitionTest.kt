@@ -23,7 +23,7 @@ class SpacedRepetitionTest {
             nodes = listOf(
                 CtNode(
                     code = "M01.T1.1",
-                    title = "Spin Hidrogen",
+                    title = "Atenuasi Sinar-X",
                     level = 1,
                     summaryShort = "Ringkas",
                     detailFull = "Panjang",
@@ -192,5 +192,21 @@ class SpacedRepetitionTest {
                 autoNeedsReview = true
             )
         )
+    }
+
+    @Test
+    fun `consecutive correct answers extend review interval to 7 days`() {
+        val dayMs = 86_400_000L
+        val now = 100L * dayMs
+        val attempts = listOf(
+            QuizAttemptEntity(quizId = "q1", nodeCode = "M01.T1.1", moduleId = "M01", selectedIndex = 0, isCorrect = true, answeredAt = now - (10 * dayMs)),
+            QuizAttemptEntity(quizId = "q1", nodeCode = "M01.T1.1", moduleId = "M01", selectedIndex = 0, isCorrect = true, answeredAt = now - (5 * dayMs))
+        )
+        val dueAtDay5 = SpacedRepetition.selectDueReviews(attempts, sampleModules, nowMillis = now)
+        assertTrue("2 consecutive correct answers must wait 7 days before auto-review", dueAtDay5.isEmpty())
+
+        val dueAtDay8 = SpacedRepetition.selectDueReviews(attempts, sampleModules, nowMillis = now + (3 * dayMs))
+        assertEquals(1, dueAtDay8.size)
+        assertEquals("M01.T1.1", dueAtDay8.first().nodeCode)
     }
 }

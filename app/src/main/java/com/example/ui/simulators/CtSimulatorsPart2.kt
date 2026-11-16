@@ -394,23 +394,19 @@ fun CtDosimetryAndBolusTrackingSimulator(
     state: CtUiState? = null,
     viewModel: CtViewModel? = null
 ) {
-    var kvp by rememberSaveable { mutableIntStateOf(state?.tubeKvp ?: 120) } // 80, 100, 120, 140
-    var tubeMa by rememberSaveable { mutableFloatStateOf(state?.tubeMa ?: 240f) } // 50 to 500 mA
-    var rotTime by rememberSaveable { mutableFloatStateOf(state?.rotationTimeSec ?: 0.5f) } // 0.28 to 1.0 s
-    var pitch by rememberSaveable { mutableFloatStateOf(state?.helicalPitch ?: 1.0f) } // 0.5 to 1.5
-    var scanLengthCm by rememberSaveable { mutableFloatStateOf(state?.scanLengthCm ?: 30f) } // 10 to 60 cm
-    var isHeadPhantom by rememberSaveable { mutableStateOf(state?.isHeadPhantom ?: false) } // true: 16cm Head, false: 32cm Body
+    var localKvp by rememberSaveable { mutableIntStateOf(120) }
+    var localMa by rememberSaveable { mutableFloatStateOf(240f) }
+    var localRotTime by rememberSaveable { mutableFloatStateOf(0.5f) }
+    var localPitch by rememberSaveable { mutableFloatStateOf(1.0f) }
+    var localScanLen by rememberSaveable { mutableFloatStateOf(30f) }
+    var localHead by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(state?.tubeKvp, state?.tubeMa, state?.rotationTimeSec, state?.helicalPitch, state?.scanLengthCm, state?.isHeadPhantom) {
-        if (state != null) {
-            kvp = state.tubeKvp
-            tubeMa = state.tubeMa
-            rotTime = state.rotationTimeSec
-            pitch = state.helicalPitch
-            scanLengthCm = state.scanLengthCm
-            isHeadPhantom = state.isHeadPhantom
-        }
-    }
+    val kvp = state?.tubeKvp ?: localKvp
+    val tubeMa = state?.tubeMa ?: localMa
+    val rotTime = state?.rotationTimeSec ?: localRotTime
+    val pitch = state?.helicalPitch ?: localPitch
+    val scanLengthCm = state?.scanLengthCm ?: localScanLen
+    val isHeadPhantom = state?.isHeadPhantom ?: localHead
 
     // Bolus tracking controls
     var flowRateMlSec by rememberSaveable { mutableFloatStateOf(4.0f) } // 2.0 to 6.0 mL/s
@@ -501,14 +497,14 @@ fun CtDosimetryAndBolusTrackingSimulator(
                         listOf(80, 100, 120, 140).forEach { v ->
                             FilterChip(
                                 selected = kvp == v,
-                                onClick = { kvp = v; viewModel?.setTubeKvp(v) },
+                                onClick = { if (viewModel != null) viewModel.setTubeKvp(v) else localKvp = v },
                                 label = { Text("$v kVp", fontSize = 11.sp) }
                             )
                         }
                     }
                     FilterChip(
                         selected = isHeadPhantom,
-                        onClick = { val next = !isHeadPhantom; isHeadPhantom = next; viewModel?.setHeadPhantom(next) },
+                        onClick = { val next = !isHeadPhantom; if (viewModel != null) viewModel.setHeadPhantom(next) else localHead = next },
                         label = { Text(if (isHeadPhantom) "Fantom 16cm (Kepala)" else "Fantom 32cm (Tubuh)", fontSize = 11.sp) }
                     )
                 }
@@ -519,20 +515,20 @@ fun CtDosimetryAndBolusTrackingSimulator(
                 }
                 Slider(
                     value = tubeMa,
-                    onValueChange = { tubeMa = it; viewModel?.setTubeMa(it) },
+                    onValueChange = { if (viewModel != null) viewModel.setTubeMa(it) else localMa = it },
                     valueRange = 50f..500f,
                     modifier = Modifier.testTag("slider_ct_ma")
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Slider(
                         value = rotTime,
-                        onValueChange = { rotTime = it; viewModel?.setRotationTime(it) },
+                        onValueChange = { if (viewModel != null) viewModel.setRotationTime(it) else localRotTime = it },
                         valueRange = 0.28f..1.0f,
                         modifier = Modifier.weight(1f).testTag("slider_ct_rottime")
                     )
                     Slider(
                         value = pitch,
-                        onValueChange = { pitch = it; viewModel?.setHelicalPitch(it) },
+                        onValueChange = { if (viewModel != null) viewModel.setHelicalPitch(it) else localPitch = it },
                         valueRange = 0.5f..1.5f,
                         modifier = Modifier.weight(1f).testTag("slider_ct_dosimetry_pitch")
                     )
@@ -546,7 +542,7 @@ fun CtDosimetryAndBolusTrackingSimulator(
                 }
                 Slider(
                     value = scanLengthCm,
-                    onValueChange = { scanLengthCm = it; viewModel?.setScanLength(it) },
+                    onValueChange = { if (viewModel != null) viewModel.setScanLength(it) else localScanLen = it },
                     valueRange = 10f..60f,
                     modifier = Modifier.testTag("slider_ct_scan_length")
                 )
@@ -688,7 +684,7 @@ fun CtDosimetryAndBolusTrackingSimulator(
                 )
                 if (selectedCaseId != null) {
                     val activeCase = CtConsoleCaseEvaluator.clinicalCases.first { it.id == selectedCaseId }
-                    val windowTag = state?.let { "WW ${it.windowWidthHu.roundToInt()}/WL ${it.windowLevelHu.roundToInt()}" }
+                    val windowTag = state?.let { "${it.windowWidthHu.roundToInt()}/${it.windowLevelHu.roundToInt()}" }
                     val caseEval = CtConsoleCaseEvaluator.evaluateCase(
                         caseId = activeCase.id,
                         kvp = kvp,
@@ -696,6 +692,8 @@ fun CtDosimetryAndBolusTrackingSimulator(
                         pitch = pitch,
                         ctdiVol = ctdiVol,
                         isHeadPhantom = isHeadPhantom,
+                        noiseSdHu = relativeNoiseSd,
+                        ssdeMgy = ctdiVol * ssdeFactor,
                         selectedWindowLabel = windowTag
                     )
                     Spacer(modifier = Modifier.height(10.dp))

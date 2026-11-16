@@ -88,7 +88,7 @@ fun CtPracticeExamPanel(
     allCurriculumQuizzes: List<CtQuizQuestion>,
     attemptModuleOutcomes: List<Pair<String, Boolean>> = emptyList(),
     examStats: PracticeExamStats = PracticeExamStats(),
-    onExamCompleted: ((Int, String?) -> Unit)? = null,
+    onExamCompleted: ((Int, String?, List<com.example.util.CtDomainScore>) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val haptics = rememberCtHaptics()
@@ -114,12 +114,13 @@ fun CtPracticeExamPanel(
         )
     ) { mutableStateMapOf<String, Int>() }
 
-    val sessionQuestions: List<CtExamQuestion> = remember(allCurriculumQuizzes, questionCount, examSeed, useAdaptiveMode, attemptModuleOutcomes.size) {
+    val sessionQuestions: List<CtExamQuestion> = remember(allCurriculumQuizzes, questionCount, examSeed, useAdaptiveMode, attemptModuleOutcomes.size, examStats.completedCount) {
         if (useAdaptiveMode) {
             CtPracticeExamEngine.buildAdaptiveWeakestSession(
                 questionCount = questionCount,
                 curriculumQuizzes = allCurriculumQuizzes,
                 attemptModuleOutcomes = attemptModuleOutcomes,
+                tryoutDomainTotals = examStats.domainTotals,
                 seed = examSeed
             )
         } else {
@@ -296,7 +297,7 @@ fun CtPracticeExamPanel(
                 if (isExamSubmitted && recordedSubmissionSeed != examSeed) {
                     recordedSubmissionSeed = examSeed
                     val weakest = eval.domainBreakdown.filter { it.total > 0 }.minByOrNull { it.accuracyPct }
-                    onExamCompleted?.invoke(eval.scorePercent, weakest?.domain?.fullLabel)
+                    onExamCompleted?.invoke(eval.scorePercent, weakest?.domain?.fullLabel, eval.domainBreakdown)
                 }
             }
 

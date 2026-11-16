@@ -34,14 +34,20 @@ data class MetalDefenseState(
     val deflectedCount: Int = 0,
     val lastEventMessage: String = "Ketuk benda logam pemicu Metal Streak Artifact (merah) sebelum masuk ke FOV Gantry CT!",
     val lastEventGood: Boolean = true,
-    val isGameOver: Boolean = false
+    val isGameOver: Boolean = false,
+    val marCooldownSec: Float = 0f,
+    val marActivations: Int = 0
 ) {
     val kvpLabel: String
         get() = when {
-            wave >= 3 -> "140 kVp"
-            wave == 2 -> "120 kVp"
-            else -> "80 kVp"
+            wave >= 5 -> "Pan-Scan Trauma"
+            wave == 4 -> "CCTA Cepat"
+            wave == 3 -> "Helikal Toraks"
+            wave == 2 -> "Helikal Abdomen"
+            else -> "Topogram Scout"
         }
+
+    val isMarReady: Boolean get() = marCooldownSec <= 0f && !isGameOver
 
     val rankTitle: String
         get() = CtArcadeEngine.rankForMetalDefenseScore(score)
@@ -285,6 +291,8 @@ object CtArcadeEngine {
             cooldown = (1.16f - (newWave - 1) * 0.14f).coerceAtLeast(0.50f)
         }
 
+        val nextMarCooldown = (state.marCooldownSec - dt).coerceAtLeast(0f)
+
         return state.copy(
             items = surviving,
             score = score,
@@ -296,7 +304,39 @@ object CtArcadeEngine {
             nextId = nextId,
             lastEventMessage = lastMsg,
             lastEventGood = lastGood,
-            isGameOver = lives <= 0
+            isGameOver = lives <= 0,
+            marCooldownSec = nextMarCooldown
+        )
+    }
+
+    /**
+     * Mengaktifkan Algoritma MAR (Metal Artifact Reduction) sementara untuk menyingkirkan
+     * hingga 2 benda logam pemicu streak terdekat ke FOV secara aman.
+     */
+    fun activateMarPowerUp(state: MetalDefenseState): MetalDefenseState {
+        if (state.isGameOver || state.marCooldownSec > 0f) return state
+        val targets = state.items
+            .filter { it.category == DefenseArtifactCategory.CT_METAL_ARTIFACT }
+            .sortedBy { hypot(it.x - GANTRY_ISOCENTER_X, it.y - GANTRY_ISOCENTER_Y) }
+            .take(2)
+        if (targets.isEmpty()) {
+            return state.copy(
+                marCooldownSec = 6f,
+                lastEventMessage = "MAR aktif: tidak ada artefak logam aktif di jalur berkas!",
+                lastEventGood = true
+            )
+        }
+        val targetIds = targets.map { it.id }.toSet()
+        val remaining = state.items.filterNot { it.id in targetIds }
+        val pts = targets.size * 90
+        return state.copy(
+            items = remaining,
+            score = state.score + pts,
+            deflectedCount = state.deflectedCount + targets.size,
+            marCooldownSec = 12f,
+            marActivations = state.marActivations + 1,
+            lastEventMessage = "Algoritma MAR menyingkirkan ${targets.size} logam streak! +$pts",
+            lastEventGood = true
         )
     }
 

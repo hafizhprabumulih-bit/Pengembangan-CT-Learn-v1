@@ -116,4 +116,30 @@ class XpCalculatorTest {
         assertEquals("M07", preview?.moduleCode)
         assertEquals(2, preview?.completedInModule)
     }
+
+    @Test
+    fun `console cases and tryout mastery grant capped bonus XP`() {
+        val base = XpCalculator.calculate(
+            completedCodes = setOf("M01.T1.1"),
+            skippedCodes = emptySet(),
+            quizAttempts = emptyList(),
+            modules = emptyList(),
+            completedConsoleCasesCount = 3,
+            tryoutPassedCount = 1
+        )
+        assertEquals(45, base.consoleLabXp)
+        assertEquals(30, base.tryoutBonusXp)
+        assertEquals(75, base.totalXp)
+
+        val capped = XpCalculator.calculate(
+            completedCodes = emptySet(),
+            skippedCodes = emptySet(),
+            quizAttempts = emptyList(),
+            modules = emptyList(),
+            completedConsoleCasesCount = 99,
+            tryoutPassedCount = 4
+        )
+        assertEquals(75, capped.consoleLabXp)
+        assertEquals(30, capped.tryoutBonusXp)
+    }
 }

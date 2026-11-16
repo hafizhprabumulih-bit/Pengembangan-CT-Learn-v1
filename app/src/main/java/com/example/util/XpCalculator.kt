@@ -12,6 +12,9 @@ object XpRules {
     const val XP_PER_FIRST_CORRECT_QUIZ = 5
     const val XP_PER_COMPLETE_MODULE_BONUS = 50
     const val XP_PER_SKIPPED_NODE = 0
+    const val XP_PER_CONSOLE_CASE = 15
+    const val MAX_CONSOLE_CASE_COUNT = 5
+    const val XP_TRYOUT_MASTERY_BONUS = 30
 }
 
 data class XpSummary(
@@ -21,7 +24,9 @@ data class XpSummary(
     val firstCorrectQuizCount: Int,
     val quizXp: Int,
     val completedModulesCount: Int,
-    val moduleBonusXp: Int
+    val moduleBonusXp: Int,
+    val consoleLabXp: Int = 0,
+    val tryoutBonusXp: Int = 0
 )
 
 data class CharacterUnlockProgress(
@@ -50,7 +55,9 @@ object XpCalculator {
         completedCodes: Set<String>,
         skippedCodes: Set<String>,
         quizAttempts: List<QuizAttemptEntity>,
-        modules: List<CtModule>
+        modules: List<CtModule>,
+        completedConsoleCasesCount: Int = 0,
+        tryoutPassedCount: Int = 0
     ): XpSummary {
         val validNodeCodes = modules.flatMapTo(HashSet()) { module ->
             module.nodes.map { LegacyNodeCodes.normalize(it.code) }
@@ -78,15 +85,19 @@ object XpCalculator {
             }
         }
         val moduleBonusXp = completedModulesCount * XpRules.XP_PER_COMPLETE_MODULE_BONUS
+        val consoleLabXp = completedConsoleCasesCount.coerceIn(0, XpRules.MAX_CONSOLE_CASE_COUNT) * XpRules.XP_PER_CONSOLE_CASE
+        val tryoutBonusXp = if (tryoutPassedCount > 0) XpRules.XP_TRYOUT_MASTERY_BONUS else 0
 
         return XpSummary(
-            totalXp = readNodesXp + quizXp + moduleBonusXp,
+            totalXp = readNodesXp + quizXp + moduleBonusXp + consoleLabXp + tryoutBonusXp,
             readNodesCount = readNodesCount,
             readNodesXp = readNodesXp,
             firstCorrectQuizCount = firstCorrectQuizCount,
             quizXp = quizXp,
             completedModulesCount = completedModulesCount,
-            moduleBonusXp = moduleBonusXp
+            moduleBonusXp = moduleBonusXp,
+            consoleLabXp = consoleLabXp,
+            tryoutBonusXp = tryoutBonusXp
         )
     }
 

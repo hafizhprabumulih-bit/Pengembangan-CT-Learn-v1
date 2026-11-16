@@ -158,4 +158,21 @@ class CtArcadeEngineTest {
         assertNotNull(key)
         assertEquals("PINSET", key)
     }
+
+    @Test
+    fun `activateMarPowerUp clears up to 2 metal projectiles and starts cooldown`() {
+        val items = listOf(
+            DefenseProjectile(1, "Klip", "KLIP", DefenseArtifactCategory.CT_METAL_ARTIFACT, 0.45f, 0.50f, 0f, 0f),
+            DefenseProjectile(2, "Gunting", "GUNTING", DefenseArtifactCategory.CT_METAL_ARTIFACT, 0.30f, 0.50f, 0f, 0f),
+            DefenseProjectile(3, "Ponsel", "PONSEL", DefenseArtifactCategory.CT_METAL_ARTIFACT, 0.15f, 0.50f, 0f, 0f),
+            DefenseProjectile(4, "Bantal", "BANTAL", DefenseArtifactCategory.CT_RADIOLUCENT_SAFE, 0.48f, 0.50f, 0f, 0f)
+        )
+        val state = MetalDefenseState(items = items)
+        val after = CtArcadeEngine.activateMarPowerUp(state)
+        assertEquals(2, after.items.size)
+        assertTrue(after.items.any { it.id == 3 })
+        assertTrue(after.items.any { it.id == 4 })
+        assertEquals(180, after.score)
+        assertTrue(after.marCooldownSec > 0f)
+    }
 }

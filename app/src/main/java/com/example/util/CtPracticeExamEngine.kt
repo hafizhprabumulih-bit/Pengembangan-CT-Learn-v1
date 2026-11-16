@@ -460,12 +460,18 @@ object CtPracticeExamEngine {
      * Menghitung akurasi historis per domain dari daftar pasangan `(moduleId, isCorrect)`.
      * Mengembalikan daftar domain terurut dari akurasi terendah agar sesi adaptif fokus ke titik lemah.
      */
-    fun rankedDomainsByWeakness(attemptModuleOutcomes: List<Pair<String, Boolean>>): List<CtExamDomain> {
-        if (attemptModuleOutcomes.isEmpty()) return CtExamDomain.entries
+    fun rankedDomainsByWeakness(
+        attemptModuleOutcomes: List<Pair<String, Boolean>>,
+        tryoutDomainTotals: Map<CtExamDomain, Pair<Int, Int>> = emptyMap()
+    ): List<CtExamDomain> {
+        if (attemptModuleOutcomes.isEmpty() && tryoutDomainTotals.isEmpty()) return CtExamDomain.entries
         val grouped = attemptModuleOutcomes.groupBy { (moduleId, _) -> domainForModule(moduleId) }
         return CtExamDomain.entries.sortedBy { domain ->
             val records = grouped[domain].orEmpty()
-            if (records.isEmpty()) 0.5f else records.count { it.second }.toFloat() / records.size.toFloat()
+            val prior = tryoutDomainTotals[domain] ?: (0 to 0)
+            val totalCorrect = records.count { it.second } + prior.first
+            val totalCount = records.size + prior.second
+            if (totalCount <= 0) 0.5f else totalCorrect.toFloat() / totalCount.toFloat()
         }
     }
 
@@ -477,6 +483,7 @@ object CtPracticeExamEngine {
         questionCount: Int = 20,
         curriculumQuizzes: List<CtQuizQuestion> = emptyList(),
         attemptModuleOutcomes: List<Pair<String, Boolean>> = emptyList(),
+        tryoutDomainTotals: Map<CtExamDomain, Pair<Int, Int>> = emptyMap(),
         seed: Int = 0
     ): List<CtExamQuestion> {
         val pool = allQuestionPool(curriculumQuizzes)
@@ -484,7 +491,7 @@ object CtPracticeExamEngine {
         val target = questionCount.coerceIn(1, pool.size)
         val rng = Random(seed)
 
-        val rankedDomains = rankedDomainsByWeakness(attemptModuleOutcomes)
+        val rankedDomains = rankedDomainsByWeakness(attemptModuleOutcomes, tryoutDomainTotals)
         val grouped = CtExamDomain.entries.associateWith { domain ->
             pool.filter { it.domain == domain }.shuffled(rng).toMutableList()
         }

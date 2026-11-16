@@ -331,13 +331,17 @@ fun ModuleRouteHost(
                 effectiveCompleted,
                 effectiveSkipped,
                 state.quizAttempts,
-                state.modulesList
+                state.modulesList,
+                state.completedConsoleCases,
+                state.practiceExamStats.bestScorePercent
             ) {
                 XpCalculator.calculate(
                     completedCodes = effectiveCompleted,
                     skippedCodes = effectiveSkipped,
                     quizAttempts = state.quizAttempts,
-                    modules = state.modulesList
+                    modules = state.modulesList,
+                    completedConsoleCasesCount = state.completedConsoleCases.size,
+                    tryoutPassedCount = if (state.practiceExamStats.bestScorePercent >= 70) 1 else 0
                 )
             }
             val nodeQuizzes = remember(state.quizzesList, normCode) {

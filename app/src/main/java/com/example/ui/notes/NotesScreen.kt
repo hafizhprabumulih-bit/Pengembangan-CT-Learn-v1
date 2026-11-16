@@ -467,7 +467,20 @@ fun NotesScreen(
                     }
                 },
                 onSharePdf = {
-                    NotesPdfExporter.shareNotesPdf(context, state.notesList, state.userName, includeCtReferenceSheet)
+                    val notesForExport = if (includeCtReferenceSheet) {
+                        val reportNote = NotesPdfExporter.buildCompetencyReportNote(
+                            userName = state.userName,
+                            completedNodes = state.completedCount,
+                            totalNodes = state.totalNodesCount,
+                            totalXp = state.completedCount * 10 + state.completedConsoleCases.size * 15,
+                            tryoutBestPercent = state.practiceExamStats.bestScorePercent,
+                            completedConsoleCasesCount = state.completedConsoleCases.size
+                        )
+                        listOf(reportNote) + state.notesList
+                    } else {
+                        state.notesList
+                    }
+                    NotesPdfExporter.shareNotesPdf(context, notesForExport, state.userName, includeCtReferenceSheet)
                         .onSuccess {
                             exportStatusMessage = "File PDF siap dibagikan."
                         }

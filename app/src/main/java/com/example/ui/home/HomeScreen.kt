@@ -358,13 +358,17 @@ fun HomeScreen(
             state.completedNodeCodes,
             skippedCodes,
             state.quizAttempts,
-            state.modulesList
+            state.modulesList,
+            state.completedConsoleCases,
+            state.practiceExamStats.bestScorePercent
         ) {
             XpCalculator.calculate(
                 completedCodes = state.completedNodeCodes,
                 skippedCodes = skippedCodes,
                 quizAttempts = state.quizAttempts,
-                modules = state.modulesList
+                modules = state.modulesList,
+                completedConsoleCasesCount = state.completedConsoleCases.size,
+                tryoutPassedCount = if (state.practiceExamStats.bestScorePercent >= 70) 1 else 0
             )
         }
         val chapterGroups = remember(state.modulesList, state.completedNodeCodes) {

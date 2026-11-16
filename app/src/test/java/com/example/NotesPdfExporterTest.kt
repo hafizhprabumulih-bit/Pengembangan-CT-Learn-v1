@@ -45,4 +45,20 @@ class NotesPdfExporterTest {
         assertTrue(preview.contains("Hounsfield Unit"))
         assertTrue(preview.contains("CTDIvol"))
     }
+
+    @Test
+    fun `buildCompetencyReportNote includes XP tryout and console progress`() {
+        val report = NotesPdfExporter.buildCompetencyReportNote(
+            userName = "Budi Radiografer",
+            completedNodes = 40,
+            totalNodes = 50,
+            totalXp = 640,
+            tryoutBestPercent = 85,
+            completedConsoleCasesCount = 4
+        )
+        val preview = NotesPdfExporter.buildPlainPreviewText(listOf(report), "Budi Radiografer", includeCtReferenceSheet = false)
+        assertTrue(preview.contains("40/50 simpul (80%)"))
+        assertTrue(preview.contains("640 XP"))
+        assertTrue(preview.contains("85%"))
+    }
 }

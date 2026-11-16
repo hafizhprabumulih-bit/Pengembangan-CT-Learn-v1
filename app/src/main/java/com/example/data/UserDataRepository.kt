@@ -46,7 +46,8 @@ data class PracticeExamStats(
     val completedCount: Int = 0,
     val bestScorePercent: Int = 0,
     val lastScorePercent: Int = 0,
-    val weakestDomainName: String? = null
+    val weakestDomainName: String? = null,
+    val domainTotals: Map<com.example.util.CtExamDomain, Pair<Int, Int>> = emptyMap()
 )
 
 class UserDataRepository(
@@ -97,6 +98,8 @@ class UserDataRepository(
         val TRYOUT_BEST_SCORE = intPreferencesKey("tryout_best_score")
         val TRYOUT_LAST_SCORE = intPreferencesKey("tryout_last_score")
         val TRYOUT_LAST_WEAKEST_DOMAIN = stringPreferencesKey("tryout_last_weakest_domain")
+        val TRYOUT_DOMAIN_TOTALS_JSON = stringPreferencesKey("tryout_domain_totals_json")
+        val COMPLETED_CONSOLE_CASES = stringSetPreferencesKey("completed_console_cases")
 
         fun lessonStepKey(nodeCode: String): Preferences.Key<Int> {
             val norm = LegacyNodeCodes.normalize(nodeCode.trim())
@@ -437,16 +440,50 @@ class UserDataRepository(
         }
     }
 
+    val completedConsoleCasesFlow: Flow<Set<String>> = dataStore.data.map { prefs ->
+        prefs[PreferencesKeys.COMPLETED_CONSOLE_CASES] ?: emptySet()
+    }
+
+    suspend fun recordCompletedConsoleCase(caseId: String) {
+        if (caseId.isBlank()) return
+        dataStore.edit { prefs ->
+            val current = prefs[PreferencesKeys.COMPLETED_CONSOLE_CASES] ?: emptySet()
+            prefs[PreferencesKeys.COMPLETED_CONSOLE_CASES] = current + caseId.trim()
+        }
+    }
+
     val practiceExamStatsFlow: Flow<PracticeExamStats> = dataStore.data.map { prefs ->
+        val rawTotals = prefs[PreferencesKeys.TRYOUT_DOMAIN_TOTALS_JSON]
+        val parsedTotals = parseDomainTotalsJson(rawTotals)
         PracticeExamStats(
             completedCount = prefs[PreferencesKeys.TRYOUT_COMPLETED_COUNT] ?: 0,
             bestScorePercent = prefs[PreferencesKeys.TRYOUT_BEST_SCORE] ?: 0,
             lastScorePercent = prefs[PreferencesKeys.TRYOUT_LAST_SCORE] ?: 0,
-            weakestDomainName = prefs[PreferencesKeys.TRYOUT_LAST_WEAKEST_DOMAIN]
+            weakestDomainName = prefs[PreferencesKeys.TRYOUT_LAST_WEAKEST_DOMAIN],
+            domainTotals = parsedTotals
         )
     }
 
-    suspend fun recordPracticeExamResult(scorePercent: Int, weakestDomainName: String?) {
+    private fun parseDomainTotalsJson(raw: String?): Map<com.example.util.CtExamDomain, Pair<Int, Int>> {
+        if (raw.isNullOrBlank()) return emptyMap()
+        return runCatching {
+            val obj = org.json.JSONObject(raw)
+            buildMap {
+                com.example.util.CtExamDomain.entries.forEach { domain ->
+                    val arr = obj.optJSONArray(domain.name)
+                    if (arr != null && arr.length() >= 2) {
+                        put(domain, arr.optInt(0, 0) to arr.optInt(1, 0))
+                    }
+                }
+            }
+        }.getOrDefault(emptyMap())
+    }
+
+    suspend fun recordPracticeExamResult(
+        scorePercent: Int,
+        weakestDomainName: String?,
+        domainBreakdown: List<com.example.util.CtDomainScore> = emptyList()
+    ) {
         val clamped = scorePercent.coerceIn(0, 100)
         dataStore.edit { prefs ->
             prefs[PreferencesKeys.TRYOUT_COMPLETED_COUNT] =
@@ -458,6 +495,18 @@ class UserDataRepository(
             }
             if (!weakestDomainName.isNullOrBlank()) {
                 prefs[PreferencesKeys.TRYOUT_LAST_WEAKEST_DOMAIN] = weakestDomainName
+            }
+            if (domainBreakdown.isNotEmpty()) {
+                val existing = parseDomainTotalsJson(prefs[PreferencesKeys.TRYOUT_DOMAIN_TOTALS_JSON]).toMutableMap()
+                domainBreakdown.forEach { ds ->
+                    val prev = existing[ds.domain] ?: (0 to 0)
+                    existing[ds.domain] = (prev.first + ds.correct) to (prev.second + ds.total)
+                }
+                val out = org.json.JSONObject()
+                existing.forEach { (dom, pair) ->
+                    out.put(dom.name, org.json.JSONArray().put(pair.first).put(pair.second))
+                }
+                prefs[PreferencesKeys.TRYOUT_DOMAIN_TOTALS_JSON] = out.toString()
             }
         }
     }

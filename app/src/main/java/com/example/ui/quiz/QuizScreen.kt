@@ -533,8 +533,8 @@ fun QuizScreen(
                 allCurriculumQuizzes = allQuizzes,
                 attemptModuleOutcomes = state.quizAttempts.map { it.moduleId to it.isCorrect },
                 examStats = state.practiceExamStats,
-                onExamCompleted = { scorePct, weakestDomain ->
-                    viewModel.recordPracticeExamCompleted(scorePct, weakestDomain)
+                onExamCompleted = { scorePct, weakestDomain, breakdown ->
+                    viewModel.recordPracticeExamCompleted(scorePct, weakestDomain, breakdown)
                 },
                 modifier = Modifier.weight(1f)
             )

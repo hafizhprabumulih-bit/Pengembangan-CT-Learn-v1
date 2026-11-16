@@ -57,7 +57,7 @@ class ExampleUnitTest {
             name = "Air Murni",
             huMin = 0,
             huMax = 0,
-            huTypical = 0,
+            huTypical = 0f,
             muPerCmAt120kVp = CtRepository.MU_WATER_120_KVP,
             recommendedWindow = "Brain",
             description = "Test",

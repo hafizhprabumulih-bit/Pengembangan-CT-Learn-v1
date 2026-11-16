@@ -66,7 +66,7 @@ import com.example.R
 import com.example.data.CharacterAccentPalette
 import com.example.data.CharacterCategory
 import com.example.data.CharacterItem
-import com.example.data.MedicalAvatar
+import com.example.data.CtMedicalAvatar
 import com.example.ui.theme.CharAccentCyan
 import com.example.ui.theme.CharAccentMint
 import com.example.ui.theme.CharActionOrange
@@ -83,10 +83,10 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun SpecialistAvatarGrid(
-    avatars: List<MedicalAvatar>,
+    avatars: List<CtMedicalAvatar>,
     selectedAvatarId: String,
     accentPalette: CharacterAccentPalette,
-    onSelectAvatar: (MedicalAvatar) -> Unit,
+    onSelectAvatar: (CtMedicalAvatar) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyRow(

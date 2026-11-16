@@ -61,8 +61,8 @@ class LessonChunkerAndPlanTest {
         val text = "Nilai CT Number jaringan berkisar dari -1000 HU hingga +3000 HU (mis. pemeriksaan kepala dan toraks, lihat T1.7 atau M07A. untuk detail dosimetri). Sinyal kemudian didigitalisasi oleh sistem DAS."
         val sentences = LessonChunker.splitSentences(text)
         assertEquals(2, sentences.size)
-        assertTrue(sentences[0].contains("63,87 MHz"))
-        assertTrue(sentences[0].contains("(mis. untuk pemeriksaan lutut dan otak, lihat T1.7 atau M07A. untuk detail keselamatan)"))
+        assertTrue(sentences[0].contains("-1000 HU"))
+        assertTrue(sentences[0].contains("(mis. pemeriksaan kepala dan toraks, lihat T1.7 atau M07A. untuk detail dosimetri)"))
     }
 
     @Test

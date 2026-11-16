@@ -79,7 +79,7 @@ import com.example.R
 import com.example.data.CharacterAccentPalette
 import com.example.data.CharacterCatalog
 import com.example.data.CharacterCustomizationState
-import com.example.data.MedicalAvatar
+import com.example.data.CtMedicalAvatar
 import com.example.ui.components.CtGlobalAssetImage
 import com.example.ui.components.CtGlobalAssetKey
 import com.example.ui.theme.CharAccentCyan
@@ -356,7 +356,7 @@ fun NanoShiftStatusDialog(
 @Composable
 fun NanoSnapshotStudioDialog(
     workingState: CharacterCustomizationState,
-    currentAvatar: MedicalAvatar,
+    currentAvatar: CtMedicalAvatar,
     specialistRole: String,
     favoriteSequence: String,
     userName: String,

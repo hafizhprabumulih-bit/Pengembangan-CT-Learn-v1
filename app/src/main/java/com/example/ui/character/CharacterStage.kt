@@ -69,7 +69,7 @@ import com.example.R
 import com.example.data.CharacterAccentPalette
 import com.example.data.CharacterCatalog
 import com.example.data.CharacterCustomizationState
-import com.example.data.MedicalAvatar
+import com.example.data.CtMedicalAvatar
 import com.example.ui.theme.CharAccentCyan
 import com.example.ui.theme.CharAccentMint
 import com.example.ui.theme.CharActionDarkText
@@ -93,7 +93,7 @@ enum class NanoBodyZone { HEAD, TORSO, TOOL }
 @Composable
 fun InteractiveCharacterStage(
     workingState: CharacterCustomizationState,
-    currentAvatar: MedicalAvatar,
+    currentAvatar: CtMedicalAvatar,
     specialistRole: String,
     favoriteSequence: String,
     userName: String,

@@ -211,7 +211,7 @@ data class CtUiState(
         get() = CtPhysicsCalculator.relativeNoiseSdHu(tubeKvp, effectiveMas, isIterativeReconActive)
 
     val calculatedHu: Int
-        get() = CtRepository.calculateHu(selectedTissue.muPerCmAt120kVp)
+        get() = CtPhysicsCalculator.calculateHu(selectedTissue.muPerCmAt120kVp)
 
     val windowRangeSummary: String
         get() {

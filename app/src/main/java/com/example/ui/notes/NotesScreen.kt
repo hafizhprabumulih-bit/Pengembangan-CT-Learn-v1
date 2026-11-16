@@ -106,7 +106,6 @@ fun NotesScreen(
     val categories = listOf("SEMUA", "Protokol Klinis", "Fisika & Atenuasi CT", "Mitigasi Artefak", "Proteksi Dosis & QA", "Catatan Bebas")
     var showExportDialog by rememberSaveable { mutableStateOf(false) }
     var includeCtReferenceSheet by rememberSaveable { mutableStateOf(true) }
-    var showExportDialog by rememberSaveable { mutableStateOf(false) }
     var exportStatusMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
     val createPdfDocumentLauncher = rememberLauncherForActivityResult(

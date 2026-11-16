@@ -1,0 +1,113 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build Debug APK & Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configure preinstalled Android SDK & accept licenses
+        run: |
+          SDK_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=${SDK_DIR}" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=${SDK_DIR}" >> "$GITHUB_ENV"
+          echo "sdk.dir=${SDK_DIR}" > local.properties
+          SDKMANAGER=$(command -v sdkmanager || find "${SDK_DIR}/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n 1)
+          if [ -n "$SDKMANAGER" ]; then
+            set +o pipefail
+            yes | "$SDKMANAGER" --licenses >/dev/null || true
+          fi
+          mkdir -p "${SDK_DIR}/licenses"
+          printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" >> "${SDK_DIR}/licenses/android-sdk-license"
+          printf "\n84831b9409646a918e30573bab4c9c91346d8abd" >> "${SDK_DIR}/licenses/android-sdk-preview-license"
+
+      - name: Restore project debug keystore
+        run: |
+          if [ -f debug.keystore.base64 ]; then
+            echo "Restoring official project debug.keystore from base64..."
+            base64 -d debug.keystore.base64 > debug.keystore
+          elif [ ! -f debug.keystore ]; then
+            keytool -genkeypair -noprompt \
+              -keystore debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      - name: Run unit tests and build debug APK
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x gradlew
+            ./gradlew testDebugUnitTest assembleDebug --stacktrace
+          else
+            gradle testDebugUnitTest assembleDebug --stacktrace
+          fi
+
+      - name: Upload Debug APK Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mri-edu-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: app/build/reports/tests/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Write CI Run Summary
+        if: always()
+        run: |
+          echo "## 🚀 MRI EDU - Android CI Build Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Status:** ${{ job.status == 'success' && '✅ SUCCESS' || '❌ FAILED' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Commit:** \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "### 📦 Unduh File APK:" >> "$GITHUB_STEP_SUMMARY"
+            echo "1. Gulir ke bagian **Artifacts** di bawah ringkasan run ini." >> "$GITHUB_STEP_SUMMARY"
+            echo "2. Klik artefak **\`mri-edu-debug-apk\`** untuk mengunduh file zip." >> "$GITHUB_STEP_SUMMARY"
+            echo "3. Ekstrak file dan pasang file **\`app-debug.apk\`** ke ponsel atau emulator Android." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ⚠️ Build Gagal:" >> "$GITHUB_STEP_SUMMARY"
+            echo "Periksa tab log di atas atau unduh artefak **\`unit-test-reports\`** untuk melihat laporan pengujian gagal." >> "$GITHUB_STEP_SUMMARY"
+          fi

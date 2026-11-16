@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "nodes": {
+    "M01.T0": {
+      "nanoHints": [
+        "Sinar-X diproduksi saat elektron cepat menumbuk anoda Tungsten di dalam tabung CT.",
+        "CT Scan mengatasi superposisi organ dengan mengambil proyeksi atenuasi 360 derajat."
+      ],
+      "nanoHintsReviewed": false,
+      "recap": {
+        "items": [
+          "Pahami produksi sinar-X Bremsstrahlung dan Karakteristik pada anoda Tungsten.",
+          "Bedakan serapan fotolistrik (Z^3/E^3) dari hamburan Compton.",
+          "Hitung transmisi foton dengan Hukum Beer-Lambert I = I0 * exp(-mu * x)."
+        ],
+        "reviewed": false
+      },
+      "stories": [],
+      "interactive": null
+    },
+    "M01.T2.2": {
+      "nanoHints": [
+        "Setiap 1 HVL memangkas intensitas sinar-X menjadi separuh (50%) dari nilai awalnya.",
+        "DAS mengambil logaritma natural ln(I0/I) untuk memperoleh total atenuasi garis."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Hukum Beer-Lambert: I = I0 * exp(-mu * x) memodelkan atenuasi berkas monokromatik.",
+          "Hubungan Half-Value Layer dan koefisien atenuasi: HVL = 0,693 / mu.",
+          "Transformasi ln(I0/I) mengubah kurva eksponensial menjadi penjumlahan linier mu."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M01.T2.2:1",
+          "scenario": "Seorang fisikawan medis menguji berkas sinar-X pada fantom homogen dengan HVL = 3 cm. Jika ketebalan fantom ditambah menjadi 6 cm (2 x HVL), berapa sisa intensitas foton yang mencapai detektor?",
+          "question": "Berapa persentase intensitas sinar-X yang berhasil menembus 2 x HVL?",
+          "options": [
+            "75% dari intensitas awal",
+            "50% dari intensitas awal",
+            "25% dari intensitas awal",
+            "10% dari intensitas awal"
+          ],
+          "correctIndex": 2,
+          "explanation": "Melewati 1 HVL menyisakan 50%, sehingga melewati 2 HVL menyisakan (0,5)^2 = 25% dari intensitas awal.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-15"
+        }
+      ],
+      "interactive": {
+        "type": "REVEAL_CHAIN",
+        "title": "Urutan Atenuasi Berkas Sinar-X menuju Sinogram",
+        "intro": "Susun tahapan perjalanan berkas sinar-X dari tabung hingga menjadi nilai proyeksi logaritmik:",
+        "reviewed": true,
+        "steps": [
+          { "text": "Tabung sinar-X memancarkan intensitas awal (I0) melewati Bow-Tie Filter." },
+          { "text": "Foton mengalami atenuasi eksponensial sepanjang voxel tubuh sesuai I = I0 * exp(-mu * x)." },
+          { "text": "Detektor menangkap sisa foton transmisi (I) dan mengubahnya menjadi sinyal listrik." },
+          { "text": "Modul DAS menghitung logaritma natural ln(I0/I) untuk membentuk baris data Sinogram." }
+        ]
+      }
+    },
+    "M02.T2.1": {
+      "nanoHints": [
+        "Tabung sinar-X dan busur detektor dipasang berhadapan 180 derajat di rangka putar.",
+        "HV Generator ikut berputar di dalam gantry berkat pasokan daya dari Slip-Ring."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Rotating frame menopang X-Ray Tube, HV Generator, Cooling Unit, dan Detector Arc.",
+          "Bow-Tie Filter dan Pre-Patient Collimator berada di antara tabung dan pasien.",
+          "Laser Aksial, Koronal, dan Sagital memandu penempatan organ tepat di Isocenter."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M02.T2.1:1",
+          "scenario": "Saat memposisikan pasien untuk CT Toraks dengan fitur AEC aktif, meja pasien tidak sengaja disetel 5 cm terlalu rendah dari garis Laser Horizontal (Isocenter).",
+          "question": "Apa risiko teknis langsung akibat kesalahan off-centering vertikal tersebut?",
+          "options": [
+            "Bagian tubuh tebal meleset dari tengah Bow-Tie Filter sehingga noise meningkat dan dosis AEC melenceng",
+            "Tabung sinar-X berhenti berputar secara mendadak",
+            "Detektor berubah menjadi detektor gas Xenon",
+            "Resolusi spasial citra meningkat dua kali lipat"
+          ],
+          "correctIndex": 0,
+          "explanation": "Off-centering membuat profil tubuh tidak sejajar dengan lekuk tengah Bow-Tie Filter dan mengubah magnifikasi topogram scout sehingga kalkulasi mA pada AEC menjadi tidak akurat.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-15"
+        }
+      ],
+      "interactive": {
+        "type": "REVEAL_CHAIN",
+        "title": "Geometri Lintasan Berkas di Dalam Gantry CT",
+        "intro": "Urutkan komponen yang dilalui berkas sinar-X dari sumber hingga ke sistem akuisisi data:",
+        "reviewed": true,
+        "steps": [
+          { "text": "Foton sinar-X keluar dari jendela Focal Spot pada X-Ray Tube Assembly." },
+          { "text": "Berkas dibentuk profilnya oleh Bow-Tie Filter dan dibatasi oleh Pre-Patient Collimator." },
+          { "text": "Berkas menembus tubuh pasien yang berada tepat di titik Isocenter meja karbon." },
+          { "text": "Sisa foton melewati Post-Patient Anti-Scatter Grid lalu ditangkap oleh Detector Array & DAS." }
+        ]
+      }
+    },
+    "M03.T2.1": {
+      "nanoHints": [
+        "Anoda tabung CT memiliki kapasitas panas 5-8+ MHU untuk menahan beban scan helikal.",
+        "z-Flying Focal Spot menggandakan jumlah irisan sampel per rotasi secara elektromagnetik."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "HV Generator berfrekuensi tinggi (10-100 kHz) menghasilkan kVp yang sangat stabil.",
+          "Anoda Tungsten-Rhenium-Molybdenum-Graphite mampu melepaskan panas dengan cepat.",
+          "Defleksi z-Flying Focal Spot menekan artefak kincir angin (windmill artifact)."
+        ],
+        "reviewed": true
+      },
+      "stories": [],
+      "interactive": null
+    },
+    "M04.T2.2": {
+      "nanoHints": [
+        "Rumus Beam Pitch = Pergeseran meja per rotasi (d) / Lebar kolimasi berkas total (W).",
+        "Pitch < 1 memberi tumpang-tindih data (koroner), Pitch > 1 mempercepat scan (trauma)."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Kolimasi berkas total W = jumlah baris detektor aktif (N) dikali lebar satu baris (T).",
+          "Pitch = 1,0 berarti lintasan spiral berkas bersinggungan tepat tanpa celah.",
+          "Kecepatan meja (mm/detik) = Table Feed per rotasi (d) dibagi waktu rotasi (t_rot)."
+        ],
+        "reviewed": true
+      },
+      "stories": [
+        {
+          "id": "story:M04.T2.2:1",
+          "scenario": "Seorang pasien trauma multipel yang sesak napas membutuhkan CT Toraks-Abdomen-Pelvis cepat. Pesawat MSCT menggunakan kolimasi 64 x 0,625 mm (W = 40 mm) dan waktu rotasi 0,4 detik.",
+          "question": "Pengaturan Pitch manakah yang paling tepat untuk meminimalkan motion artifact akibat napas?",
+          "options": [
+            "Pitch tinggi (1,2 - 1,4) agar seluruh rentang tubuh selesai dipindai dalam hitungan detik",
+            "Pitch sangat rendah (0,2) agar waktu pemindaian berlangsung lebih dari 30 detik",
+            "Pitch = 0 (tanpa pergerakan meja sama sekali)",
+            "Mematikan Slip-Ring dan kembali ke mode step-and-shoot lambat"
+          ],
+          "correctIndex": 0,
+          "explanation": "Pitch > 1 (1,2 - 1,4) memperbesar pergeseran meja per rotasi sehingga waktu scan total sangat singkat dan artefak gerakan napas dapat dihindari.",
+          "reviewed": true,
+          "reviewedBy": "Tim Fisika Medis CT",
+          "reviewedAt": "2026-11-15"
+        }
+      ],
+      "interactive": null
+    },
+    "M06.T2.1": {
+      "nanoHints": [
+        "Window Level (WL) disetel sesuai nilai HU rata-rata organ yang ingin dievaluasi.",
+        "Window Width (WW) sempit menghasilkan kontras tinggi untuk membedakan jaringan otak."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Rumus skala HU: HU = 1000 * (mu_jaringan - mu_air) / mu_air; Air = 0 HU, Udara = -1000 HU.",
+          "Brain Window (WW 80, WL 40) dan Stroke Window (WW 40, WL 40) menggunakan WW sempit.",
+          "Lung Window (WW 1500, WL -600) dan Bone Window (WW 2000, WL 500) menggunakan WW lebar."
+        ],
+        "reviewed": true
+      },
+      "stories": [],
+      "interactive": null
+    },
+    "M07.T2.1": {
+      "nanoHints": [
+        "Quantum noise berbanding terbalik dengan akar kuadrat mAs: sigma ~ 1 / sqrt(mAs).",
+        "DLP (mGy.cm) adalah hasil kali CTDIvol (mGy) dengan panjang scan L (cm)."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Effective mAs = (mA * t_rot) / Pitch menentukan kuantitas foton per volume irisan.",
+          "CTDIvol = CTDIw / Pitch mengukur intensitas dosis rata-rata pada fantom 16 cm atau 32 cm.",
+          "Membatasi panjang scan (Scan Length L) seperlunya langsung menurunkan nilai DLP."
+        ],
+        "reviewed": true
+      },
+      "stories": [],
+      "interactive": null
+    },
+    "M08.T2.1": {
+      "nanoHints": [
+        "Bolus Tracking memantau kenaikan HU di ROI arteri target setiap 1-2 detik secara live.",
+        "Saline chaser memadatkan bolus kontras dan mencegah streak di vena kava superior."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Wajib periksa kreatinin serum & eGFR sebelum injeksi kontras Iodin IV.",
+          "Trigger threshold Bolus Tracking CTA umumnya disetel pada +100 hingga +150 HU.",
+          "Gunakan MIP untuk angiografi/nodul paru, MinIP untuk jalan napas, dan VRT untuk 3D."
+        ],
+        "reviewed": true
+      },
+      "stories": [],
+      "interactive": null
+    },
+    "M09.T2.1": {
+      "nanoHints": [
+        "Jalankan Tube Warm-Up setiap pagi agar anoda dingin tidak mengalami thermal shock.",
+        "Kosongkan bore gantry sepenuhnya sebelum menjalankan Fast Air Calibration."
+      ],
+      "nanoHintsReviewed": true,
+      "recap": {
+        "items": [
+          "Ring artifact disebabkan oleh ketidakseimbangan gain/offset satu kanal detektor Gen-3.",
+          "Tube Warm-Up dan Air Calibration wajib dilakukan sebelum pemeriksaan pasien pertama.",
+          "Standar QA fantom air harian: akurasi pusat 0 +/- 4 HU dan uniformity <= 5 HU."
+        ],
+        "reviewed": true
+      },
+      "stories": [],
+      "interactive": null
+    }
+  }
+}

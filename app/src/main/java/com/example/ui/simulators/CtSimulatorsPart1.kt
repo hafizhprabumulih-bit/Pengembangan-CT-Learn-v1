@@ -602,7 +602,8 @@ fun CtHuWindowingAndBeerLambertSimulator(
     var sliceIndex by rememberSaveable { mutableIntStateOf(0) } // 0: Kepala, 1: Toraks, 2: Abdomen
     var roiNormX by rememberSaveable { mutableFloatStateOf(0.34f) }
     var roiNormY by rememberSaveable { mutableFloatStateOf(0.50f) }
-    val activeKvp = state?.tubeKvp ?: 120
+    var localKvp by rememberSaveable { mutableIntStateOf(120) }
+    val activeKvp = state?.tubeKvp ?: localKvp
     val roiMeanHu = CtPhysicsCalculator.pixelHuAtNormalized(sliceIndex, roiNormX, roiNormY, activeKvp)
     val roiNoiseSd = state?.estimatedNoiseSdHu ?: 5.8f
 
@@ -610,7 +611,11 @@ fun CtHuWindowingAndBeerLambertSimulator(
     var muTissue by rememberSaveable { mutableFloatStateOf(0.210f) } // cm^-1 (Water = 0.200 cm^-1)
     var thicknessCm by rememberSaveable { mutableFloatStateOf(10f) }
 
-    val calculatedHu = CtPhysicsCalculator.calculateHu(muTissue).toFloat()
+    val calculatedHu = CtPhysicsCalculator.calculateHuAtKvp(
+        mu120 = muTissue,
+        effectiveZRatio = if (muTissue > 0.24f) 1.65f else 1.0f,
+        tubeKvp = activeKvp
+    ).toFloat()
     val transmittedRatio = CtPhysicsCalculator.beerLambertTransmission(muTissue, thicknessCm)
     val transmittedPct = transmittedRatio * 100f
     val hvlCm = CtPhysicsCalculator.halfValueLayerCm(muTissue)
@@ -833,7 +838,7 @@ fun CtHuWindowingAndBeerLambertSimulator(
                             fontFamily = FontFamily.Monospace
                         )
                         Text(
-                            text = "ROI @${activeKvp}kVp: ${roiMeanHu.roundToInt()} HU (Â±${String.format(ID_LOCALE, "%.1f", roiNoiseSd)}) Â· 50 mmÂ²",
+                            text = "ROI @${activeKvp}kVp: ${roiMeanHu.roundToInt()} HU (±${String.format(ID_LOCALE, "%.1f", roiNoiseSd)}) · 50 mm²",
                             color = Color(0xFF4ADE80),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -900,6 +905,16 @@ fun CtHuWindowingAndBeerLambertSimulator(
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf(80, 100, 120, 140).forEach { v ->
+                            FilterChip(
+                                selected = activeKvp == v,
+                                onClick = { if (viewModel != null) viewModel.setTubeKvp(v) else localKvp = v },
+                                label = { Text("$v kVp", fontSize = 10.5.sp) }
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Row(

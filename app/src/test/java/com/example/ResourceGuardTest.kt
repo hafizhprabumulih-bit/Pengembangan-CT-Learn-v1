@@ -40,8 +40,8 @@ class ResourceGuardTest {
     fun requiredDrawablesExist() {
         val dir = requireNotNull(drawableDir()) { "Folder res/drawable tidak ditemukan" }
         val wajib = listOf(
-            "mri_app_icon.jpg", "mri_scanner_hero.jpg", "mri_icon_bersih.png",
-            "avatar_radiografer_mri.png", "avatar_radiolog.png", "avatar_ahli_neuro_mri.png",
+            "ct_app_icon.jpg", "ct_scanner_hero.jpg", "ct_icon_bersih.png",
+            "avatar_radiografer_ct.png", "avatar_radiolog.png", "avatar_ahli_neuro_ct.png",
             "avatar_fisikawan_medis.png", "avatar_petugas_proteksi_radiasi.png",
             "avatar_ahli_jantung.png", "avatar_perawat.png", "avatar_dokter_bedah.png",
             "avatar_dokter_robot.png", "avatar_dosen.png", "avatar_mahasiswa.png"

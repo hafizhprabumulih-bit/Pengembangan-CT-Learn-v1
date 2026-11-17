@@ -210,17 +210,17 @@ object AvatarLayerRegistry {
 
     fun getHeadLayer(headId: String): AvatarItem {
         val (drawableRes, lockedNode) = when (headId) {
-            "hair_default" -> R.drawable.nano_head_larmor to null
+            "hair_default" -> R.drawable.nano_head_ct_default to null
             "hair_visor" -> R.drawable.nano_head_visor to "m01"
             "hair_goggles" -> R.drawable.nano_head_goggles to "m03a"
             "hair_cyber" -> R.drawable.nano_head_cyber to "m05"
             "hair_crown_rf" -> R.drawable.nano_head_coil64 to "m07"
             "hair_mortarboard" -> R.drawable.nano_head_mortarboard to null
-            "hair_beanie_ct" -> R.drawable.nano_head_beanie_mri to null
+            "hair_beanie_ct" -> R.drawable.nano_head_beanie_ct to null
             "hair_loupe" -> R.drawable.nano_head_loupe to null
             "hair_bandana_3t" -> R.drawable.nano_head_bandana_3t to null
             "hair_cryo_cap" -> R.drawable.nano_head_cryo_cap to null
-            else -> R.drawable.nano_head_larmor to null
+            else -> R.drawable.nano_head_ct_default to null
         }
         return AvatarItem(
             id = headId,
@@ -238,7 +238,7 @@ object AvatarLayerRegistry {
             "uniform_standard" -> R.drawable.nano_uniform_labcoat to "m01"
             "uniform_scrub_blue" -> R.drawable.nano_uniform_scrub_blue to "m03b"
             "uniform_scrub_teal" -> R.drawable.nano_uniform_scrub_teal to "m04"
-            "uniform_apron_shield" -> R.drawable.nano_uniform_vest_mrso to "m09"
+            "uniform_apron_shield" -> R.drawable.nano_uniform_vest_ppr to "m09"
             "uniform_armor" -> R.drawable.nano_uniform_cryo to "m05"
             "uniform_dosen" -> R.drawable.nano_uniform_dosen to null
             "uniform_mahasiswa" -> R.drawable.nano_uniform_mahasiswa to null
@@ -293,7 +293,7 @@ object AvatarLayerRegistry {
             "acc_handbook_ct" -> R.drawable.nano_tool_handbook to null
             "acc_ctdi_meter" -> R.drawable.nano_tool_gaussmeter to null
             "acc_cryo_gauge" -> R.drawable.nano_tool_cryo_gauge to null
-            "acc_ct_keycard" -> R.drawable.nano_tool_mri_keycard to null
+            "acc_ct_keycard" -> R.drawable.nano_tool_ct_keycard to null
             else -> R.drawable.nano_tool_detector to null
         }
         return AvatarItem(

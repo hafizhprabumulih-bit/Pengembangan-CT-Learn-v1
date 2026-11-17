@@ -64,16 +64,21 @@ import kotlin.math.sqrt
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CtMsctPitchAndReconstructionSimulator() {
+fun CtMsctPitchAndReconstructionSimulator(
+    state: CtUiState? = null,
+    viewModel: CtViewModel? = null
+) {
     var detectorRows by rememberSaveable { mutableIntStateOf(64) } // 16, 64, 128, 320
-    var pitch by rememberSaveable { mutableFloatStateOf(1.0f) } // 0.5 to 1.5
-    var reconAlgo by rememberSaveable { mutableIntStateOf(1) } // 0: Simple BP, 1: FBP, 2: Iterative / DLIR
+    var localPitch by rememberSaveable { mutableFloatStateOf(1.0f) } // 0.5 to 1.5
+    val pitch = state?.helicalPitch ?: localPitch
+    var localReconAlgo by rememberSaveable { mutableIntStateOf(1) } // 0: Simple BP, 1: FBP, 2: Iterative / DLIR
+    val reconAlgo = if (state?.isIterativeReconActive == true && localReconAlgo != 0) 2 else localReconAlgo
     var isSharpKernel by rememberSaveable { mutableStateOf(false) } // false: Soft/Standard, true: Sharp/Bone
 
     val singleRowWidthMm = if (detectorRows == 320) 0.5f else 0.625f
     val totalCollimationMm = detectorRows * singleRowWidthMm
     val tableFeedPerRotMm = pitch * totalCollimationMm
-    val rotTimeSec = 0.5f
+    val rotTimeSec = state?.rotationTimeSec ?: 0.5f
     val tableSpeedMmPerSec = tableFeedPerRotMm / rotTimeSec
     val effectiveSliceMm = singleRowWidthMm * (1f + (pitch - 0.5f).coerceAtLeast(0f) * 0.35f)
     val scanTimeFor30Cm = 300f / tableSpeedMmPerSec
@@ -206,7 +211,7 @@ fun CtMsctPitchAndReconstructionSimulator() {
                 }
                 Slider(
                     value = pitch,
-                    onValueChange = { pitch = it },
+                    onValueChange = { if (viewModel != null) viewModel.setHelicalPitch(it) else localPitch = it },
                     valueRange = 0.5f..1.5f,
                     modifier = Modifier.testTag("slider_ct_pitch")
                 )
@@ -224,17 +229,17 @@ fun CtMsctPitchAndReconstructionSimulator() {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     FilterChip(
                         selected = reconAlgo == 0,
-                        onClick = { reconAlgo = 0 },
+                        onClick = { localReconAlgo = 0; viewModel?.setIterativeRecon(false) },
                         label = { Text("Simple BP (Kabur 1/r)", fontSize = 11.sp) }
                     )
                     FilterChip(
                         selected = reconAlgo == 1,
-                        onClick = { reconAlgo = 1 },
+                        onClick = { localReconAlgo = 1; viewModel?.setIterativeRecon(false) },
                         label = { Text("FBP (Ramp Filter)", fontSize = 11.sp) }
                     )
                     FilterChip(
                         selected = reconAlgo == 2,
-                        onClick = { reconAlgo = 2 },
+                        onClick = { localReconAlgo = 2; viewModel?.setIterativeRecon(true) },
                         label = { Text("Iterative / DLIR", fontSize = 11.sp) }
                     )
                 }

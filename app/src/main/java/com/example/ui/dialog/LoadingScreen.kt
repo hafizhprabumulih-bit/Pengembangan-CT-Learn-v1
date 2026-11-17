@@ -276,7 +276,7 @@ fun LoadingScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.mri_icon_bersih),
+                        painter = painterResource(id = R.drawable.ct_icon_bersih),
                         contentDescription = "Ikon mesin CT Scan",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit

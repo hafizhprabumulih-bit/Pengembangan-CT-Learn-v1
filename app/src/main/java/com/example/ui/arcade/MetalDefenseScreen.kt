@@ -393,7 +393,7 @@ fun MetalDefenseScreen(
             val minDimPx = minOf(widthPx, heightPx)
 
             Image(
-                painter = painterResource(id = R.drawable.img_arcade_magnet_arena),
+                painter = painterResource(id = R.drawable.img_arcade_metal_arena),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()

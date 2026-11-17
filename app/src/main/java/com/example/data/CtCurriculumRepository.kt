@@ -311,9 +311,9 @@ object CtRepository {
     )
 
     fun getAvatarDrawableRes(avatarId: String): Int = when (avatarId) {
-        "radiografer_ct", "radiografer_mri" -> R.drawable.avatar_radiografer_mri
+        "radiografer_ct", "radiografer_mri" -> R.drawable.avatar_radiografer_ct
         "radiolog" -> R.drawable.avatar_radiolog
-        "ahli_neuro_ct", "ahli_neuro_mri" -> R.drawable.avatar_ahli_neuro_mri
+        "ahli_neuro_ct", "ahli_neuro_mri" -> R.drawable.avatar_ahli_neuro_ct
         "fisikawan_medis" -> R.drawable.avatar_fisikawan_medis
         "petugas_proteksi_radiasi" -> R.drawable.avatar_petugas_proteksi_radiasi
         "ahli_jantung" -> R.drawable.avatar_ahli_jantung
@@ -322,7 +322,7 @@ object CtRepository {
         "dokter_robot" -> R.drawable.avatar_dokter_robot
         "dosen" -> R.drawable.avatar_dosen
         "mahasiswa" -> R.drawable.avatar_mahasiswa
-        else -> R.drawable.avatar_radiografer_mri
+        else -> R.drawable.avatar_radiografer_ct
     }
 
     val tissues = listOf(

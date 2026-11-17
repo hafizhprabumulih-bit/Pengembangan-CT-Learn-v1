@@ -426,6 +426,17 @@ fun HomeScreen(
                         onResumePillPositioned = { resumeBounds = it }
                     )
                 }
+                val practicalBonusXp = xpSummary.consoleLabXp + xpSummary.tryoutBonusXp
+                if (practicalBonusXp > 0) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Termasuk +${practicalBonusXp} XP Praktik Konsol (${xpSummary.consoleLabXp}) & Try-Out UKOM (${xpSummary.tryoutBonusXp})",
+                        fontSize = 10.5.sp,
+                        color = EmeraldSuccess,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
@@ -983,7 +994,7 @@ fun HeroProgressCard(
         Box(modifier = Modifier.fillMaxSize()) {
             // Background Image CT Scanner Hero
             Image(
-                painter = painterResource(id = R.drawable.mri_scanner_hero),
+                painter = painterResource(id = R.drawable.ct_scanner_hero),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop

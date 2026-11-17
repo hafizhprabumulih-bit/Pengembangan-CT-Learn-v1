@@ -90,6 +90,7 @@ import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.util.NotesPdfExporter
+import com.example.util.XpCalculator
 import com.example.util.rememberCtHaptics
 import com.example.viewmodel.CtUiState
 import com.example.viewmodel.CtViewModel
@@ -107,6 +108,46 @@ fun NotesScreen(
     var showExportDialog by rememberSaveable { mutableStateOf(false) }
     var includeCtReferenceSheet by rememberSaveable { mutableStateOf(true) }
     var exportStatusMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    val xpForReport = remember(
+        state.completedNodeCodes,
+        state.quizAttempts,
+        state.modulesList,
+        state.completedConsoleCases,
+        state.practiceExamStats.bestScorePercent
+    ) {
+        XpCalculator.calculate(
+            completedCodes = state.completedNodeCodes,
+            skippedCodes = emptySet(),
+            quizAttempts = state.quizAttempts,
+            modules = state.modulesList,
+            completedConsoleCasesCount = state.completedConsoleCases.size,
+            tryoutPassedCount = if (state.practiceExamStats.bestScorePercent >= 70) 1 else 0
+        )
+    }
+    val notesForPdfExport = remember(
+        state.notesList,
+        includeCtReferenceSheet,
+        state.userName,
+        state.completedCount,
+        state.totalNodesCount,
+        xpForReport.totalXp,
+        state.practiceExamStats.bestScorePercent,
+        state.completedConsoleCases.size
+    ) {
+        if (includeCtReferenceSheet) {
+            val reportNote = NotesPdfExporter.buildCompetencyReportNote(
+                userName = state.userName,
+                completedNodes = state.completedCount,
+                totalNodes = state.totalNodesCount,
+                totalXp = xpForReport.totalXp,
+                tryoutBestPercent = state.practiceExamStats.bestScorePercent,
+                completedConsoleCasesCount = state.completedConsoleCases.size
+            )
+            listOf(reportNote) + state.notesList
+        } else {
+            state.notesList
+        }
+    }
 
     val createPdfDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/pdf")
@@ -116,7 +157,7 @@ fun NotesScreen(
                 val stream = context.contentResolver.openOutputStream(uri)
                     ?: throw java.io.IOException("Aliran penyimpanan PDF tujuan tidak tersedia.")
                 stream.use { outputStream ->
-                    NotesPdfExporter.writeNotesPdf(state.notesList, state.userName, outputStream, includeCtReferenceSheet)
+                    NotesPdfExporter.writeNotesPdf(notesForPdfExport, state.userName, outputStream, includeCtReferenceSheet)
                 }
                 exportStatusMessage = "Catatan berhasil disimpan sebagai file PDF siap cetak."
             }.onFailure { err ->
@@ -440,8 +481,8 @@ fun NotesScreen(
 
         // Dialog Cetak & Export Catatan ke Format PDF
         if (showExportDialog) {
-                        val pdfPreviewText = remember(state.notesList, state.userName, includeCtReferenceSheet) {
-                NotesPdfExporter.buildPlainPreviewText(state.notesList, state.userName, includeCtReferenceSheet)
+            val pdfPreviewText = remember(notesForPdfExport, state.userName, includeCtReferenceSheet) {
+                NotesPdfExporter.buildPlainPreviewText(notesForPdfExport, state.userName, includeCtReferenceSheet)
             }
             ExportNotesPdfDialog(
                 notesCount = state.notesList.size,
@@ -450,7 +491,7 @@ fun NotesScreen(
                 pdfPreviewText = pdfPreviewText,
                 statusMessage = exportStatusMessage,
                 onPrintPdf = {
-                    NotesPdfExporter.printNotesPdf(context, state.notesList, state.userName, includeCtReferenceSheet)
+                    NotesPdfExporter.printNotesPdf(context, notesForPdfExport, state.userName, includeCtReferenceSheet)
                         .onSuccess {
                             exportStatusMessage = "Dialog cetak / simpan PDF sistem dibuka."
                         }
@@ -467,20 +508,7 @@ fun NotesScreen(
                     }
                 },
                 onSharePdf = {
-                    val notesForExport = if (includeCtReferenceSheet) {
-                        val reportNote = NotesPdfExporter.buildCompetencyReportNote(
-                            userName = state.userName,
-                            completedNodes = state.completedCount,
-                            totalNodes = state.totalNodesCount,
-                            totalXp = state.completedCount * 10 + state.completedConsoleCases.size * 15,
-                            tryoutBestPercent = state.practiceExamStats.bestScorePercent,
-                            completedConsoleCasesCount = state.completedConsoleCases.size
-                        )
-                        listOf(reportNote) + state.notesList
-                    } else {
-                        state.notesList
-                    }
-                    NotesPdfExporter.shareNotesPdf(context, notesForExport, state.userName, includeCtReferenceSheet)
+                    NotesPdfExporter.shareNotesPdf(context, notesForPdfExport, state.userName, includeCtReferenceSheet)
                         .onSuccess {
                             exportStatusMessage = "File PDF siap dibagikan."
                         }

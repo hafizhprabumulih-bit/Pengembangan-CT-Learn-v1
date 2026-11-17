@@ -155,12 +155,12 @@ object CtGlobalAssetCatalog {
     @DrawableRes
     fun drawableResOrNull(key: CtGlobalAssetKey): Int? = when (key) {
         CtGlobalAssetKey.GLOBAL_CT_EMBLEM,
-        CtGlobalAssetKey.FALLBACK_CT -> R.drawable.img_mri_global_placeholder
-        CtGlobalAssetKey.BOLUS_MONITOR -> R.drawable.img_larmor_monitor
+        CtGlobalAssetKey.FALLBACK_CT -> R.drawable.img_ct_global_placeholder
+        CtGlobalAssetKey.BOLUS_MONITOR -> R.drawable.img_bolus_monitor
         CtGlobalAssetKey.SCREENING_GATE -> R.drawable.img_arcade_screening_gate
-        CtGlobalAssetKey.METAL_DEFENSE_ARENA -> R.drawable.img_arcade_magnet_arena
+        CtGlobalAssetKey.METAL_DEFENSE_ARENA -> R.drawable.img_arcade_metal_arena
         CtGlobalAssetKey.GANTRY_RHYTHM_STAGE -> R.drawable.img_arcade_rhythm_stage
-        CtGlobalAssetKey.CT_GANTRY -> R.drawable.mri_icon_bersih
+        CtGlobalAssetKey.CT_GANTRY -> R.drawable.ct_icon_bersih
         else -> null
     }
 }

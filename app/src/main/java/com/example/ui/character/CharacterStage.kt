@@ -464,7 +464,7 @@ fun InteractiveCharacterStage(
                     }
                 }
 
-                // Avatar Berlapis "Nano" Diperbesar + Multi-Gestur (Tap Zona, Double-Tap Gantry 360Â° Spin, Long-Press, Usap Kepala)
+                // Avatar Berlapis "Nano" Diperbesar + Multi-Gestur (Tap Zona, Double-Tap Gantry 360° Spin, Long-Press, Usap Kepala)
                 var rubDragAccum by remember { mutableFloatStateOf(0f) }
                 var dragStartedTop by remember { mutableStateOf(false) }
 

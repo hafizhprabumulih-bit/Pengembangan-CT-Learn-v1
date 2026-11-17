@@ -236,7 +236,7 @@ object CharacterCatalog {
             badgeLabel = "Standar CT",
             previewColorHex = 0xFF1FB6E8,
             secondaryColorHex = 0xFF7FDCD6,
-            drawableRes = R.drawable.nano_head_larmor,
+            drawableRes = R.drawable.nano_head_ct_default,
             unlockRequirement = UnlockRequirement(null, null, 0, "Terbuka sejak awal")
         ),
         CharacterItem(
@@ -308,7 +308,7 @@ object CharacterCatalog {
             badgeLabel = "Shift Jaga",
             previewColorHex = 0xFF14B8D4,
             secondaryColorHex = 0xFFF97316,
-            drawableRes = R.drawable.nano_head_beanie_mri,
+            drawableRes = R.drawable.nano_head_beanie_ct,
             unlockRequirement = UnlockRequirement(futureNote = "Tersedia sejak awal")
         ),
         CharacterItem(
@@ -407,7 +407,7 @@ object CharacterCatalog {
             badgeLabel = "0,5 mm Pb",
             previewColorHex = 0xFFFF8A1F,
             secondaryColorHex = 0xFFFFC93C,
-            drawableRes = R.drawable.nano_uniform_vest_mrso,
+            drawableRes = R.drawable.nano_uniform_vest_ppr,
             unlockRequirement = UnlockRequirement("m09", "M09: Artefak, Kalibrasi & QA Harian CT", 5, "Syarat rencana: 5 simpul M09")
         ),
         CharacterItem(
@@ -737,7 +737,7 @@ object CharacterCatalog {
             badgeLabel = "Lisensi PPR",
             previewColorHex = 0xFF0E7490,
             secondaryColorHex = 0xFF22D3EE,
-            drawableRes = R.drawable.nano_tool_mri_keycard,
+            drawableRes = R.drawable.nano_tool_ct_keycard,
             unlockRequirement = UnlockRequirement(futureNote = "Tersedia sejak awal")
         )
     )

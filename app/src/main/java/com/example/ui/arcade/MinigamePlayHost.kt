@@ -848,7 +848,7 @@ internal fun MinigamePlayHost(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Image(
-                                    painter = painterResource(id = R.drawable.img_larmor_monitor),
+                                    painter = painterResource(id = R.drawable.img_bolus_monitor),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .fillMaxSize()

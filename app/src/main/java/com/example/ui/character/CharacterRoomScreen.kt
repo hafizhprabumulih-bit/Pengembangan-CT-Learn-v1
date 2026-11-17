@@ -125,7 +125,7 @@ fun CharacterRoomScreen(
     var isJumping by remember { mutableStateOf(false) }
     var isWaveActive by rememberSaveable { mutableStateOf(false) }
 
-    // State Interaksi (Body Zones, Rub, Double-Tap Gantry 360Â° Spin, Shift Card, Studio)
+    // State Interaksi (Body Zones, Rub, Double-Tap Gantry 360° Spin, Shift Card, Studio)
     var forcedExpression by remember { mutableStateOf<Expression?>(null) }
     var gantrySpinTrigger by remember { mutableIntStateOf(0) }
     var heartBurstTrigger by remember { mutableIntStateOf(0) }

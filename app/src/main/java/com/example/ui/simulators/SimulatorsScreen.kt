@@ -132,12 +132,40 @@ fun SimulatorsScreen(
             }
         }
 
+        val focusBanner = when (state?.selectedCtActivityId) {
+            "ct_m01_atenuasi" -> "Fokus Lab M01: Uji koefisien atenuasi Beer-Lambert, HVL & nilai HU."
+            "ct_m02_anatomi_pesawat" -> "Fokus Lab M02: Eksplorasi Gantry Gen-3, Slip-Ring & Laser Isocenter."
+            "ct_m03_instrumentasi_rantai" -> "Fokus Lab M03: Rantai sinyal Tabung Sinar-X, GOS Detektor & DAS."
+            "ct_m04_generasi_pitch" -> "Fokus Lab M04: Simulasi Geometri MSCT Helikal & kurva SSP Pitch."
+            "ct_m05_rekonstruksi" -> "Fokus Lab M05: Perbandingan Simple BP, FBP Ramp Filter & Iterative/DLIR."
+            "ct_m06_hu_windowing" -> "Fokus Lab M06: Latihan preset Windowing (Brain/Stroke/Lung/Bone) & ROI."
+            "ct_m07_dosimetri_kualitas" -> "Fokus Lab M07: Keseimbangan CTDIvol, SSDE, DLP & Quantum Noise SD."
+            "ct_m08_kontras_3d" -> "Fokus Lab M08: Kurva Bolus Tracking Iodin & post-processing MPR/MIP/MinIP/VRT."
+            "ct_m09_artefak_qa" -> "Fokus Lab M09: Mitigasi Ring/Beam Hardening/Metal Streak & Uji QA 5-ROI."
+            else -> null
+        }
+        if (focusBanner != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = focusBanner,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
 
         when (selectedTabIndex.coerceIn(0, 4)) {
             0 -> CtGantryAnatomyAndChainSimulator()
             1 -> CtHuWindowingAndBeerLambertSimulator(state = state, viewModel = viewModel)
-            2 -> CtMsctPitchAndReconstructionSimulator()
+            2 -> CtMsctPitchAndReconstructionSimulator(state = state, viewModel = viewModel)
             3 -> CtDosimetryAndBolusTrackingSimulator(state = state, viewModel = viewModel)
             4 -> CtArtifactAndDailyQaSimulator()
         }

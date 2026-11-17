@@ -170,12 +170,50 @@ fun CtPracticeExamPanel(
                     )
                     if (examStats.completedCount > 0) {
                         Text(
-                            text = "Riwayat Try-Out: ${examStats.completedCount}x selesai Â· Skor Terbaik: ${examStats.bestScorePercent}%" +
-                                (examStats.weakestDomainName?.let { " Â· Fokus Perlu Kuat: $it" } ?: ""),
+                            text = "Riwayat Try-Out: ${examStats.completedCount}x selesai · Skor Terbaik: ${examStats.bestScorePercent}%" +
+                                (examStats.weakestDomainName?.let { " · Fokus Perlu Kuat: $it" } ?: ""),
                             fontSize = 11.sp,
                             color = EmeraldSuccess,
                             fontWeight = FontWeight.SemiBold
                         )
+                    }
+                    if (examStats.domainTotals.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(CardSlate.copy(alpha = 0.65f))
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Text(
+                                text = "Profil Akurasi 5 Domain UKOM Anda:",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = CyanBright
+                            )
+                            com.example.util.CtExamDomain.entries.forEach { dom ->
+                                val pair = examStats.domainTotals[dom]
+                                if (pair != null && pair.second > 0) {
+                                    val pct = ((pair.first * 100f) / pair.second).toInt().coerceIn(0, 100)
+                                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(dom.shortLabel, fontSize = 10.sp, color = TextPrimary)
+                                            Text("$pct% (${pair.first}/${pair.second})", fontSize = 10.sp, fontFamily = FontFamily.Monospace, color = if (pct >= 70) EmeraldSuccess else AmberWarning)
+                                        }
+                                        LinearProgressIndicator(
+                                            progress = { pct / 100f },
+                                            modifier = Modifier.fillMaxWidth().height(5.dp).clip(RoundedCornerShape(3.dp)),
+                                            color = if (pct >= 70) EmeraldSuccess else AmberWarning,
+                                            trackColor = DeepObsidian
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                     Text(
                         text = "Latihan terpadu acak berimbang dari ${CtPracticeExamEngine.allQuestionPool(allCurriculumQuizzes).size} bank soal (50 materi kurikulum + 25 kasus klinis UKOM CT lanjutan) lintas 5 domain kompetensi.",

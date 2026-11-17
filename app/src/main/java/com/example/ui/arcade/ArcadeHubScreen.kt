@@ -485,9 +485,9 @@ private fun ArcadeGameCard(
     )
     val backdropRes = when (artKind) {
         0 -> R.drawable.img_arcade_screening_gate
-        1 -> R.drawable.img_larmor_monitor
-        2 -> R.drawable.img_mri_global_placeholder
-        3 -> R.drawable.img_arcade_magnet_arena
+        1 -> R.drawable.img_bolus_monitor
+        2 -> R.drawable.img_ct_global_placeholder
+        3 -> R.drawable.img_arcade_metal_arena
         else -> R.drawable.img_arcade_rhythm_stage
     }
 
